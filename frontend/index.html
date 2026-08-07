@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HappyFeet - Enterprise Wellness & Social Walking Platform</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Header & Navigation -->
+  <header>
+    <div class="logo-container">
+      <i class="fa-solid fa-shoe-prints logo-icon"></i>
+      <span class="logo-text">HappyFeet</span>
+    </div>
+
+    <nav class="nav-tabs">
+      <button class="nav-btn active" data-tab="dashboard-view"><i class="fa-solid fa-chart-pie"></i> Dashboard</button>
+      <button class="nav-btn" data-tab="rankings-view"><i class="fa-solid fa-trophy"></i> Rankings Universe</button>
+      <button class="nav-btn" data-tab="groups-view"><i class="fa-solid fa-users"></i> Groups & Battles</button>
+      <button class="nav-btn" data-tab="rewards-view"><i class="fa-solid fa-gift"></i> Marketplace</button>
+    </nav>
+
+    <div class="user-profile-widget">
+      <button class="register-hero-btn" id="open-register-modal-btn">
+        <i class="fa-solid fa-user-plus"></i> Create New Profile
+      </button>
+
+      <div class="coins-badge">
+        <i class="fa-solid fa-coins"></i> <span id="user-coins">1,450</span> WalkCoins
+      </div>
+
+      <select id="user-selector" class="profile-select">
+        <option value="brijesh@happyfeet.com">Brijesh Sharma (Hyderabad)</option>
+        <option value="priya@happyfeet.com">Priya Verma (Hyderabad)</option>
+        <option value="rahul@happyfeet.com">Rahul Mehta (Hyderabad)</option>
+        <option value="amit@happyfeet.com">Amit Patel (Mumbai)</option>
+        <option value="ananya@happyfeet.com">Ananya Rao (Bangalore)</option>
+      </select>
+    </div>
+  </header>
+
+  <main>
+    <!-- View 1: Main Dashboard -->
+    <section id="dashboard-view" class="view-panel active">
+      <div class="dashboard-grid">
+        <div class="left-column">
+          <!-- Step Hero Card -->
+          <div class="glass-card hero-step-card">
+            <div class="step-info-main">
+              <h2>Today's Activity</h2>
+              <div class="step-counter" id="step-count-display">14,521</div>
+              <div class="step-goal-text">Daily Goal: <strong id="step-goal-target">10,000</strong> steps (<span id="goal-percent">145%</span> completed)</div>
+              
+              <button class="sync-action-btn" id="sync-steps-btn">
+                <i class="fa-solid fa-rotate"></i> Sync +1,000 Steps (HealthKit / Google Fit)
+              </button>
+            </div>
+            
+            <div class="stats-mini-grid" style="display: flex; gap: 24px; text-align: center;">
+              <div>
+                <i class="fa-solid fa-fire" style="color: #F59E0B; font-size: 20px;"></i>
+                <div style="font-weight: 800; font-size: 22px; margin-top: 4px;" id="calories-display">581</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Calories</div>
+              </div>
+              <div>
+                <i class="fa-solid fa-route" style="color: #06B6D4; font-size: 20px;"></i>
+                <div style="font-weight: 800; font-size: 22px; margin-top: 4px;" id="distance-display">12.4 km</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Distance</div>
+              </div>
+              <div>
+                <i class="fa-solid fa-bolt" style="color: #10B981; font-size: 20px;"></i>
+                <div style="font-weight: 800; font-size: 22px; margin-top: 4px;" id="streak-display">21 Days</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Streak</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Insight Card -->
+          <div class="glass-card ai-card">
+            <div class="ai-header">
+              <i class="fa-solid fa-brain-circuit"></i> AI Wellness Coach Insight
+            </div>
+            <div class="ai-message" id="ai-message-text">
+              "You walked more than 83% of Males aged 35-44 in Hyderabad today."
+            </div>
+            <div class="ai-nudge" id="ai-nudge-text">
+              "Take a quick 15-minute walk at 6 PM to maintain your 21-day streak and enter the top 10%!"
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column (Highlights & Status) -->
+        <div class="right-column">
+          <div class="glass-card">
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px;">Top Rank Summary</h3>
+            <div id="quick-rank-summary" style="display: flex; flex-direction: column; gap: 14px;">
+              <!-- Dynamic items populated by JS -->
+            </div>
+          </div>
+
+          <div class="glass-card" style="margin-top: 20px;">
+            <h3 style="font-size: 15px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">Anti-Cheat Status</h3>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 14px; font-weight: 600;">Fraud Score:</span>
+              <span class="rank-badge" style="background: rgba(16,185,129,0.2); color: #10B981;">0 / 100 (Verified Clean)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View 2: My Rankings Universe -->
+    <section id="rankings-view" class="view-panel">
+      <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 8px;">My Rankings Universe</h2>
+      <p style="color: var(--text-muted); margin-bottom: 24px;">Demographic & Geographic fair competition layers where everyone has a chance to win.</p>
+
+      <div class="rankings-grid" id="rankings-container">
+        <!-- Rendered dynamically by JavaScript -->
+      </div>
+    </section>
+
+    <!-- View 3: Social Groups -->
+    <section id="groups-view" class="view-panel">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <div>
+          <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 4px;">Social Groups & Challenges</h2>
+          <p style="color: var(--text-muted);">Family, office, and neighborhood walking circles.</p>
+        </div>
+        <button class="sync-action-btn" id="create-group-btn" style="margin-top: 0;">
+          <i class="fa-solid fa-plus"></i> Create New Group
+        </button>
+      </div>
+
+      <div id="groups-container">
+        <!-- Rendered dynamically by JavaScript -->
+      </div>
+    </section>
+
+    <!-- View 4: Marketplace -->
+    <section id="rewards-view" class="view-panel">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <div>
+          <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 4px;">WalkCoins Marketplace</h2>
+          <p style="color: var(--text-muted);">Redeem your steps for real-world rewards and vouchers.</p>
+        </div>
+        <div class="coins-badge" style="font-size: 16px;">
+          <i class="fa-solid fa-coins"></i> Balance: <span id="marketplace-coins">1,450</span> WalkCoins
+        </div>
+      </div>
+
+      <div class="rewards-grid" id="rewards-container">
+        <!-- Rendered dynamically by JavaScript -->
+      </div>
+    </section>
+  </main>
+
+  <!-- MULTI-STEP USER REGISTRATION MODAL -->
+  <div class="modal-overlay" id="register-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2>Create Your HappyFeet Profile</h2>
+          <p style="font-size: 13px; color: var(--text-muted);">Step <span id="onboarding-step-num">1</span> of 3</p>
+        </div>
+        <button class="close-modal-btn" id="close-modal-btn">&times;</button>
+      </div>
+
+      <form id="registration-form">
+        <!-- Step 1: Account Information -->
+        <div class="form-step active" id="form-step-1">
+          <h3 class="step-heading"><i class="fa-solid fa-user-lock"></i> Basic Details</h3>
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="reg-name" placeholder="e.g. Vikramaditya Rao" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" id="reg-email" placeholder="vikram@example.com" required>
+            </div>
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input type="tel" id="reg-phone" placeholder="+91 9876543210" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="reg-password" value="Password123!" required>
+          </div>
+          <div class="modal-actions">
+            <span></span>
+            <button type="button" class="form-btn primary" id="next-step-1">Next: Location & Demographics <i class="fa-solid fa-arrow-right"></i></button>
+          </div>
+        </div>
+
+        <!-- Step 2: Demographic & Location Data -->
+        <div class="form-step" id="form-step-2">
+          <h3 class="step-heading"><i class="fa-solid fa-earth-asia"></i> Location & Demographic Cohort</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input type="date" id="reg-dob" value="1995-08-15" required>
+            </div>
+            <div class="form-group">
+              <label>Gender</label>
+              <select id="reg-gender">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+                <option value="PreferNotToSay">Prefer Not To Say</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Country</label>
+              <input type="text" id="reg-country" value="India" required>
+            </div>
+            <div class="form-group">
+              <label>State</label>
+              <input type="text" id="reg-state" value="Telangana" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>City</label>
+              <input type="text" id="reg-city" value="Hyderabad" required>
+            </div>
+            <div class="form-group">
+              <label>Locality / Neighborhood</label>
+              <input type="text" id="reg-locality" value="Madhapur" placeholder="e.g. Gachibowli, Bandra" required>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="form-btn secondary" id="prev-step-2"><i class="fa-solid fa-arrow-left"></i> Back</button>
+            <button type="button" class="form-btn primary" id="next-step-2">Next: Health Profile <i class="fa-solid fa-arrow-right"></i></button>
+          </div>
+        </div>
+
+        <!-- Step 3: Health & Fitness Profile -->
+        <div class="form-step" id="form-step-3">
+          <h3 class="step-heading"><i class="fa-solid fa-heart-pulse"></i> Health Profile & Goals</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Height (cm)</label>
+              <input type="number" id="reg-height" value="175" min="100" max="250" required>
+            </div>
+            <div class="form-group">
+              <label>Weight (kg)</label>
+              <input type="number" id="reg-weight" value="72" min="30" max="200" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Occupation</label>
+              <select id="reg-occupation">
+                <option value="IT Professional">IT Professional</option>
+                <option value="Doctor">Doctor / Healthcare</option>
+                <option value="Student">Student</option>
+                <option value="Teacher">Teacher / Academic</option>
+                <option value="Homemaker">Homemaker</option>
+                <option value="Business Owner">Business Owner / Entrepreneur</option>
+                <option value="Retired">Retired</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Daily Step Goal</label>
+              <input type="number" id="reg-goal" value="10000" step="1000" required>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="form-btn secondary" id="prev-step-3"><i class="fa-solid fa-arrow-left"></i> Back</button>
+            <button type="submit" class="form-btn success" id="submit-registration"><i class="fa-solid fa-check"></i> Complete & Join HappyFeet!</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast">Steps Synced Successfully!</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
