@@ -1,5 +1,5 @@
 -- ========================================================
--- HAPPYFEET ENTERPRISE SUPABASE DATABASE SCHEMA
+-- WALKVERSE ENTERPRISE SUPABASE DATABASE SCHEMA
 -- PostgreSQL DDL Script with RLS & Auto-Cohort Calculations
 -- ========================================================
 

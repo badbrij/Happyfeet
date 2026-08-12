@@ -22,7 +22,7 @@ class DataStore {
       {
         id: 'usr_1',
         name: 'Brijesh Sharma',
-        email: 'brijesh@happyfeet.com',
+        email: 'brijesh@walkverse.com',
         phone: '+919876543210',
         dob: '1988-06-15',
         age: 38,
@@ -38,7 +38,7 @@ class DataStore {
       {
         id: 'usr_2',
         name: 'Priya Verma',
-        email: 'priya@happyfeet.com',
+        email: 'priya@walkverse.com',
         phone: '+919876543211',
         dob: '1992-09-20',
         age: 33,
@@ -54,7 +54,7 @@ class DataStore {
       {
         id: 'usr_3',
         name: 'Rahul Mehta',
-        email: 'rahul@happyfeet.com',
+        email: 'rahul@walkverse.com',
         phone: '+919876543212',
         dob: '1985-03-10',
         age: 41,
@@ -70,7 +70,7 @@ class DataStore {
       {
         id: 'usr_4',
         name: 'Amit Patel',
-        email: 'amit@happyfeet.com',
+        email: 'amit@walkverse.com',
         phone: '+919876543213',
         dob: '1983-11-05',
         age: 42,
@@ -86,7 +86,7 @@ class DataStore {
       {
         id: 'usr_5',
         name: 'Ananya Rao',
-        email: 'ananya@happyfeet.com',
+        email: 'ananya@walkverse.com',
         phone: '+919876543214',
         dob: '2001-04-18',
         age: 25,
@@ -141,7 +141,7 @@ class DataStore {
       name: 'Sharma Fitness Warriors',
       description: 'Family & friends daily 10k step challenge!',
       ownerId: 'usr_1',
-      inviteCode: 'HAPPY123',
+      inviteCode: 'WALK123',
       groupType: 'Family',
       members: [
         { userId: 'usr_1', role: 'Owner', joinedAt: new Date().toISOString() },

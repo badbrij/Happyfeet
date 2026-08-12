@@ -1,7 +1,7 @@
 {
-  "name": "happyfeet-backend",
+  "name": "walkverse-backend",
   "version": "1.0.0",
-  "description": "HappyFeet Microservices API Engine",
+  "description": "WalkVerse Microservices API Engine",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
