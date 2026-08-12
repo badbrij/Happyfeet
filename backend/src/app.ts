@@ -16,7 +16,7 @@ app.use(express.json());
 
 // Healthcheck Route
 app.get('/health', (_req: Request, res: Response) => {
-  res.json({ status: 'UP', service: 'WalkVerse-Backend', timestamp: new Date().toISOString() });
+  res.json({ status: 'UP', service: 'BadaKadam-Backend', timestamp: new Date().toISOString() });
 });
 
 // API V1 Routes

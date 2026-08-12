@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initTabs();
   initUserSelector();
   initModal();
-  loginUser('brijesh@walkverse.com');
+  loginUser('brijesh@BadaKadam.com');
 
   document.getElementById('sync-steps-btn').addEventListener('click', handleSyncSteps);
   document.getElementById('registration-form').addEventListener('submit', handleRegistrationSubmit);
@@ -109,7 +109,7 @@ async function handleRegistrationSubmit(e) {
     const data = await res.json();
     if (res.ok) {
       document.getElementById('register-modal').classList.remove('active');
-      showToast(`🎉 Account Created! Welcome to WalkVerse, ${name}!`);
+      showToast(`🎉 Account Created! Welcome to BadaKadam, ${name}!`);
 
       authToken = data.token;
       currentUser = data.user;

@@ -1,5 +1,5 @@
 -- ========================================================
--- WALKVERSE ENTERPRISE SUPABASE DATABASE SCHEMA
+-- BadaKadam ENTERPRISE SUPABASE DATABASE SCHEMA
 -- PostgreSQL DDL Script with RLS & Auto-Cohort Calculations
 -- ========================================================
 

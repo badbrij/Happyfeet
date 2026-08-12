@@ -22,7 +22,7 @@ class DataStore {
       {
         id: 'usr_1',
         name: 'Brijesh Sharma',
-        email: 'brijesh@walkverse.com',
+        email: 'brijesh@BadaKadam.com',
         phone: '+919876543210',
         dob: '1988-06-15',
         age: 38,
@@ -38,7 +38,7 @@ class DataStore {
       {
         id: 'usr_2',
         name: 'Priya Verma',
-        email: 'priya@walkverse.com',
+        email: 'priya@BadaKadam.com',
         phone: '+919876543211',
         dob: '1992-09-20',
         age: 33,
@@ -54,7 +54,7 @@ class DataStore {
       {
         id: 'usr_3',
         name: 'Rahul Mehta',
-        email: 'rahul@walkverse.com',
+        email: 'rahul@BadaKadam.com',
         phone: '+919876543212',
         dob: '1985-03-10',
         age: 41,
@@ -70,7 +70,7 @@ class DataStore {
       {
         id: 'usr_4',
         name: 'Amit Patel',
-        email: 'amit@walkverse.com',
+        email: 'amit@BadaKadam.com',
         phone: '+919876543213',
         dob: '1983-11-05',
         age: 42,
@@ -86,7 +86,7 @@ class DataStore {
       {
         id: 'usr_5',
         name: 'Ananya Rao',
-        email: 'ananya@walkverse.com',
+        email: 'ananya@BadaKadam.com',
         phone: '+919876543214',
         dob: '2001-04-18',
         age: 25,
