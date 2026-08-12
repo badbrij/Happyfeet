@@ -27,6 +27,7 @@ export interface HealthProfile {
 export interface User {
   id: string;
   name: string;
+  alias?: string;
   email: string;
   phone: string;
   passwordHash: string;

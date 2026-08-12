@@ -24,9 +24,9 @@
     </nav>
 
     <div class="user-profile-widget">
-      <button class="register-hero-btn" id="open-register-modal-btn">
-        <i class="fa-solid fa-user-plus"></i> Create New Profile
-      </button>
+        <button class="register-hero-btn" id="open-quick-login-modal-btn">
+          <i class="fa-solid fa-user"></i> Login / Signup
+        </button>
 
       <div class="coins-badge">
         <i class="fa-solid fa-coins"></i> <span id="user-coins">1,450</span> WalkCoins
@@ -55,7 +55,7 @@
               <div class="step-goal-text">Daily Goal: <strong id="step-goal-target">10,000</strong> steps (<span id="goal-percent">145%</span> completed)</div>
               
               <button class="sync-action-btn" id="sync-steps-btn">
-                <i class="fa-solid fa-rotate"></i> Sync +1,000 Steps (HealthKit / Google Fit)
+                <i class="fa-solid fa-rotate"></i> Sync (HealthKit / Google Fit)
               </button>
             </div>
             
@@ -157,6 +157,28 @@
     </section>
   </main>
 
+  <!-- QUICK LOGIN MODAL -->
+  <div class="modal-overlay" id="quick-login-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2>Login to BadaKadam</h2>
+          <p style="color: var(--text-muted); font-size: 14px;">Enter your mobile number to login or register.</p>
+        </div>
+        <button class="icon-btn" id="close-quick-login-modal-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="quick-login-form">
+          <div class="form-group">
+            <label>Mobile Number</label>
+            <input type="text" id="ql-phone" placeholder="+919876543210" required>
+          </div>
+          <button type="submit" class="submit-btn" style="width: 100%;"><i class="fa-solid fa-arrow-right-to-bracket"></i> Continue</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- MULTI-STEP USER REGISTRATION MODAL -->
   <div class="modal-overlay" id="register-modal">
     <div class="modal-card">
@@ -172,9 +194,15 @@
         <!-- Step 1: Account Information -->
         <div class="form-step active" id="form-step-1">
           <h3 class="step-heading"><i class="fa-solid fa-user-lock"></i> Basic Details</h3>
-          <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" id="reg-name" placeholder="e.g. Vikramaditya Rao" required>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="reg-name" placeholder="e.g. Vikramaditya Rao" required>
+            </div>
+            <div class="form-group">
+              <label>Alias (Optional)</label>
+              <input type="text" id="reg-alias" placeholder="e.g. Vicky">
+            </div>
           </div>
           <div class="form-row">
             <div class="form-group">

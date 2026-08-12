@@ -9,16 +9,16 @@ const router = Router();
 
 // POST /api/v1/auth/register
 router.post('/register', (req: Request, res: Response) => {
-  const { name, email, phone, password, dob, gender, location, healthProfile } = req.body;
+  const { name, alias, email, phone, password, dob, gender, location, healthProfile } = req.body;
 
-  if (!email || !password || !name || !dob || !gender || !location) {
+  if (!phone || !password || !name || !dob || !gender || !location) {
     return res.status(400).json({ error: 'Missing required registration fields' });
   }
 
-  // Check if email already exists
+  // Check if phone already exists
   for (const [, user] of db.users) {
-    if (user.email === email.toLowerCase()) {
-      return res.status(400).json({ error: 'User with this email already exists' });
+    if (user.phone === phone) {
+      return res.status(400).json({ error: 'User with this mobile number already exists' });
     }
   }
 
@@ -36,6 +36,7 @@ router.post('/register', (req: Request, res: Response) => {
   const newUser: User = {
     id: userId,
     name,
+    alias: alias || undefined,
     email: email.toLowerCase(),
     phone: phone || '',
     passwordHash,
@@ -103,6 +104,35 @@ router.post('/login', (req: Request, res: Response) => {
 
   return res.json({
     message: 'Login successful',
+    token,
+    user: userWithoutPassword,
+  });
+});
+
+// POST /api/v1/auth/quick-login
+router.post('/quick-login', (req: Request, res: Response) => {
+  const { phone } = req.body;
+  if (!phone) {
+    return res.status(400).json({ error: 'Phone number is required' });
+  }
+
+  let foundUser: User | null = null;
+  for (const [, user] of db.users) {
+    if (user.phone === phone) {
+      foundUser = user;
+      break;
+    }
+  }
+
+  if (!foundUser) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  const token = generateToken(foundUser.id);
+  const { passwordHash: _, ...userWithoutPassword } = foundUser;
+
+  return res.json({
+    message: 'Quick login successful',
     token,
     user: userWithoutPassword,
   });

@@ -12,6 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('sync-steps-btn').addEventListener('click', handleSyncSteps);
   document.getElementById('registration-form').addEventListener('submit', handleRegistrationSubmit);
+  
+  const quickLoginForm = document.getElementById('quick-login-form');
+  if (quickLoginForm) {
+    quickLoginForm.addEventListener('submit', handleQuickLogin);
+  }
 });
 
 // Tab Navigation
@@ -39,19 +44,29 @@ function initUserSelector() {
 
 // Multi-step Modal Controls
 function initModal() {
-  const modal = document.getElementById('register-modal');
-  const openBtn = document.getElementById('open-register-modal-btn');
-  const closeBtn = document.getElementById('close-modal-btn');
+  const registerModal = document.getElementById('register-modal');
+  const quickLoginModal = document.getElementById('quick-login-modal');
+  const openQuickLoginBtn = document.getElementById('open-quick-login-modal-btn');
+  const closeRegisterBtn = document.getElementById('close-modal-btn');
+  const closeQuickLoginBtn = document.getElementById('close-quick-login-modal-btn');
 
-  openBtn.addEventListener('click', () => {
-    currentStep = 1;
-    showFormStep(1);
-    modal.classList.add('active');
-  });
+  if (openQuickLoginBtn) {
+    openQuickLoginBtn.addEventListener('click', () => {
+      quickLoginModal.classList.add('active');
+    });
+  }
 
-  closeBtn.addEventListener('click', () => {
-    modal.classList.remove('active');
-  });
+  if (closeQuickLoginBtn) {
+    closeQuickLoginBtn.addEventListener('click', () => {
+      quickLoginModal.classList.remove('active');
+    });
+  }
+
+  if (closeRegisterBtn) {
+    closeRegisterBtn.addEventListener('click', () => {
+      registerModal.classList.remove('active');
+    });
+  }
 
   document.getElementById('next-step-1').addEventListener('click', () => showFormStep(2));
   document.getElementById('next-step-2').addEventListener('click', () => showFormStep(3));
@@ -67,11 +82,66 @@ function showFormStep(step) {
   document.getElementById(`form-step-${step}`).classList.add('active');
 }
 
+// Quick Login Handler
+async function handleQuickLogin(e) {
+  e.preventDefault();
+  const phone = document.getElementById('ql-phone').value;
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/quick-login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      // User found, login successful
+      document.getElementById('quick-login-modal').classList.remove('active');
+      authToken = data.token;
+      currentUser = data.user;
+      const displayName = currentUser.alias || currentUser.name;
+      showToast(`Welcome back, ${displayName}!`);
+      
+      // Select the user in dropdown if they exist there, or just refresh
+      const selector = document.getElementById('user-selector');
+      let found = false;
+      Array.from(selector.options).forEach(opt => {
+        if (opt.value === currentUser.email) {
+          opt.selected = true;
+          found = true;
+        }
+      });
+      if (!found) {
+        const newOpt = document.createElement('option');
+        newOpt.value = currentUser.email;
+        newOpt.text = `${displayName} (${currentUser.location.city})`;
+        newOpt.selected = true;
+        selector.add(newOpt);
+      }
+      refreshAllData();
+    } else if (res.status === 404) {
+      // User not found, prompt registration
+      document.getElementById('quick-login-modal').classList.remove('active');
+      document.getElementById('register-modal').classList.add('active');
+      document.getElementById('reg-phone').value = phone;
+      currentStep = 1;
+      showFormStep(1);
+    } else {
+      showToast(data.error || 'Quick Login Failed');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Failed to connect to backend server for quick login.');
+  }
+}
+
 // Submit Registration Form to Backend REST API
 async function handleRegistrationSubmit(e) {
   e.preventDefault();
 
   const name = document.getElementById('reg-name').value;
+  const alias = document.getElementById('reg-alias').value;
   const email = document.getElementById('reg-email').value;
   const phone = document.getElementById('reg-phone').value;
   const password = document.getElementById('reg-password').value;
@@ -90,6 +160,7 @@ async function handleRegistrationSubmit(e) {
 
   const payload = {
     name,
+    alias,
     email,
     phone,
     password,
@@ -109,7 +180,8 @@ async function handleRegistrationSubmit(e) {
     const data = await res.json();
     if (res.ok) {
       document.getElementById('register-modal').classList.remove('active');
-      showToast(`🎉 Account Created! Welcome to BadaKadam, ${name}!`);
+      const displayName = alias || name;
+      showToast(`🎉 Account Created! Welcome to BadaKadam, ${displayName}!`);
 
       authToken = data.token;
       currentUser = data.user;
@@ -118,7 +190,8 @@ async function handleRegistrationSubmit(e) {
       const selector = document.getElementById('user-selector');
       const newOpt = document.createElement('option');
       newOpt.value = currentUser.email;
-      newOpt.text = `${currentUser.name} (${currentUser.location.city})`;
+      const optName = currentUser.alias || currentUser.name;
+      newOpt.text = `${optName} (${currentUser.location.city})`;
       newOpt.selected = true;
       selector.add(newOpt);
 
@@ -145,7 +218,8 @@ async function loginUser(email) {
     if (res.ok) {
       authToken = data.token;
       currentUser = data.user;
-      showToast(`Active User: ${currentUser.name}`);
+      const displayName = currentUser.alias || currentUser.name;
+      showToast(`Active User: ${displayName}`);
       refreshAllData();
     } else {
       showToast(data.error || 'Login failed');
@@ -253,30 +327,8 @@ async function fetchRankings() {
 }
 
 // Sync Steps Action
-async function handleSyncSteps() {
-  try {
-    const res = await fetch(`${API_BASE}/steps/sync`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authToken}`,
-      },
-      body: JSON.stringify({
-        source: 'AppleHealthKit',
-        steps: [{ count: 1000, distanceMeters: 750, activeMinutes: 10 }],
-      }),
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-      showToast('Successfully synced +1,000 steps!');
-      refreshAllData();
-    } else {
-      showToast(data.error || 'Failed to sync steps');
-    }
-  } catch (err) {
-    console.error(err);
-  }
+function handleSyncSteps() {
+  alert('Please open the BadaKadam mobile app on your smartphone to sync steps. Steps are captured automatically from Apple Health or Google Fit to ensure fair play. Manual entry is not allowed.');
 }
 
 // Fetch Groups
