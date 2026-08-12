@@ -244,6 +244,44 @@
     </div>
   </div>
 
+  <!-- SHARE GROUP MODAL -->
+  <div class="modal-overlay" id="share-group-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2>Invite Friends</h2>
+          <p style="color: var(--text-muted); font-size: 14px;">Invite your friends using the code or link below.</p>
+        </div>
+        <button class="icon-btn" id="close-share-group-modal-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="form-group">
+          <label>Invite Code</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" id="share-invite-code" readonly style="font-weight: bold; text-align: center; font-size: 18px; color: #10B981; background: rgba(16, 185, 129, 0.1);">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Invite Link</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="share-link-input" readonly style="flex-grow: 1;">
+            <button class="sync-action-btn" id="copy-share-link-btn" style="margin-top: 0; white-space: nowrap;">
+              <i class="fa-regular fa-copy"></i> Copy
+            </button>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 8px;">
+          <a id="share-whatsapp-btn" target="_blank" class="submit-btn" style="flex: 1; text-align: center; text-decoration: none; background: #25D366; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+            <i class="fa-brands fa-whatsapp" style="font-size: 18px;"></i> WhatsApp
+          </a>
+          <a id="share-email-btn" class="submit-btn" style="flex: 1; text-align: center; text-decoration: none; background: #3B82F6; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+            <i class="fa-regular fa-envelope" style="font-size: 18px;"></i> Email
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MULTI-STEP USER REGISTRATION MODAL -->
   <div class="modal-overlay" id="register-modal">
     <div class="modal-card">

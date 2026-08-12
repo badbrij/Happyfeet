@@ -27,6 +27,15 @@ document.addEventListener('DOMContentLoaded', () => {
   if (joinGroupForm) {
     joinGroupForm.addEventListener('submit', handleJoinGroup);
   }
+
+  // Check for invite query param
+  const urlParams = new URLSearchParams(window.location.search);
+  const inviteCode = urlParams.get('invite');
+  if (inviteCode) {
+    localStorage.setItem('pending_invite_code', inviteCode);
+    // Clear query parameter from browser address bar
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
 });
 
 // Tab Navigation
@@ -120,6 +129,25 @@ function initModal() {
     });
   }
 
+  const shareGroupModal = document.getElementById('share-group-modal');
+  const closeShareGroupBtn = document.getElementById('close-share-group-modal-btn');
+  if (closeShareGroupBtn) {
+    closeShareGroupBtn.addEventListener('click', () => {
+      shareGroupModal.classList.remove('active');
+    });
+  }
+
+  const copyBtn = document.getElementById('copy-share-link-btn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const linkInput = document.getElementById('share-link-input');
+      linkInput.select();
+      linkInput.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(linkInput.value);
+      showToast('Link copied to clipboard!');
+    });
+  }
+
   document.getElementById('next-step-1').addEventListener('click', () => showFormStep(2));
   document.getElementById('next-step-2').addEventListener('click', () => showFormStep(3));
   document.getElementById('prev-step-2').addEventListener('click', () => showFormStep(1));
@@ -173,6 +201,7 @@ async function handleQuickLogin(e) {
       }
       updateAuthUI();
       refreshAllData();
+      checkPendingInvite();
     } else if (res.status === 404) {
       // User not found, prompt registration
       document.getElementById('quick-login-modal').classList.remove('active');
@@ -250,6 +279,7 @@ async function handleRegistrationSubmit(e) {
 
       updateAuthUI();
       refreshAllData();
+      checkPendingInvite();
     } else {
       alert(`❌ Registration Failed: ${data.error}`);
     }
@@ -350,6 +380,7 @@ async function loginUser(email) {
       showToast(`Active User: ${displayName}`);
       updateAuthUI();
       refreshAllData();
+      checkPendingInvite();
     } else {
       showToast(data.error || 'Login failed');
     }
@@ -482,9 +513,14 @@ async function fetchGroups() {
               <div class="progress-bar-fill" style="width: ${Math.min(100, Math.round((g.currentSteps / g.targetSteps) * 100))}%;"></div>
             </div>
           </div>
-          <div style="text-align: right;">
-            <span class="rank-badge" style="margin-bottom: 8px;">Invite Code: ${g.inviteCode}</span>
-            <div style="font-size: 13px; color: var(--text-muted);">${g.members.length} Members Active</div>
+          <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;">
+            <div>
+              <span class="rank-badge" style="margin-bottom: 8px; display: inline-block;">Invite Code: ${g.inviteCode}</span>
+              <div style="font-size: 13px; color: var(--text-muted);">${g.members.length} Members Active</div>
+            </div>
+            <button class="sync-action-btn share-grp-btn" onclick="openShareModal('${g.name}', '${g.inviteCode}')" style="margin-top: 8px; padding: 6px 12px; font-size: 12px; background: rgba(59,130,246,0.2); color: #60A5FA; border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <i class="fa-solid fa-share-nodes"></i> Share Invite
+            </button>
           </div>
         </div>
       `).join('');
@@ -586,3 +622,46 @@ function showToast(message) {
     toast.style.display = 'none';
   }, 3000);
 }
+
+// Check pending invite and auto join
+function checkPendingInvite() {
+  const pendingInvite = localStorage.getItem('pending_invite_code');
+  if (pendingInvite && currentUser) {
+    localStorage.removeItem('pending_invite_code');
+    // Switch to groups tab
+    const groupsTab = document.querySelector('[data-tab="groups-view"]');
+    if (groupsTab) {
+      groupsTab.click();
+    }
+    
+    setTimeout(() => {
+      const joinModal = document.getElementById('join-group-modal');
+      if (joinModal) {
+        document.getElementById('join-grp-code').value = pendingInvite;
+        joinModal.classList.add('active');
+      }
+    }, 500);
+  }
+}
+
+// Open Share Group Modal
+window.openShareModal = function(groupName, inviteCode) {
+  const shareModal = document.getElementById('share-group-modal');
+  if (!shareModal) return;
+
+  const inviteLink = `${window.location.origin}/?invite=${inviteCode}`;
+  
+  document.getElementById('share-invite-code').value = inviteCode;
+  document.getElementById('share-link-input').value = inviteLink;
+
+  // Setup WhatsApp link
+  const waText = encodeURIComponent(`Join my BadaKadam walking group "${groupName}"! Use invite code: ${inviteCode}.\n\nClick here to join directly: ${inviteLink}`);
+  document.getElementById('share-whatsapp-btn').href = `https://api.whatsapp.com/send?text=${waText}`;
+
+  // Setup Email link
+  const emailSubject = encodeURIComponent(`Join my BadaKadam Walking Group!`);
+  const emailBody = encodeURIComponent(`Hey,\n\nJoin my BadaKadam walking group "${groupName}"!\n\nInvite Code: ${inviteCode}\nClick here to join directly: ${inviteLink}\n\nDownload BadaKadam and let's start walking together!`);
+  document.getElementById('share-email-btn').href = `mailto:?subject=${emailSubject}&body=${emailBody}`;
+
+  shareModal.classList.add('active');
+};
