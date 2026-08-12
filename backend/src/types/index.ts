@@ -77,6 +77,7 @@ export interface Group {
   members: { userId: string; role: 'Owner' | 'Admin' | 'Member'; joinedAt: string }[];
   targetSteps?: number;
   currentSteps?: number;
+  allowedPhones?: string[];
   createdAt: string;
 }
 

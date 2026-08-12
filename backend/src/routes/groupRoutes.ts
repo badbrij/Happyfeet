@@ -7,7 +7,7 @@ const router = Router();
 
 // POST /api/v1/groups - Create a group
 router.post('/', authMiddleware, (req: AuthRequest, res: Response) => {
-  const { name, description, groupType, targetSteps } = req.body;
+  const { name, description, groupType, targetSteps, allowedPhones } = req.body;
   const userId = req.userId!;
 
   if (!name) return res.status(400).json({ error: 'Group name is required' });
@@ -25,6 +25,7 @@ router.post('/', authMiddleware, (req: AuthRequest, res: Response) => {
     members: [{ userId, role: 'Owner', joinedAt: new Date().toISOString() }],
     targetSteps: targetSteps || 1000000,
     currentSteps: 0,
+    allowedPhones: allowedPhones || [],
     createdAt: new Date().toISOString(),
   };
 
@@ -66,6 +67,16 @@ router.post('/join', authMiddleware, (req: AuthRequest, res: Response) => {
 
   if (targetGroup.members.some((m) => m.userId === userId)) {
     return res.status(400).json({ error: 'Already a member of this group' });
+  }
+
+  const user = db.users.get(userId);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  // Enforce whitelist check if allowedPhones is populated
+  if (targetGroup.allowedPhones && targetGroup.allowedPhones.length > 0) {
+    if (!targetGroup.allowedPhones.includes(user.phone)) {
+      return res.status(403).json({ error: 'Your mobile number is not authorized to join this group.' });
+    }
   }
 
   targetGroup.members.push({ userId, role: 'Member', joinedAt: new Date().toISOString() });

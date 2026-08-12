@@ -129,9 +129,14 @@
           <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 4px;">Social Groups & Challenges</h2>
           <p style="color: var(--text-muted);">Family, office, and neighborhood walking circles.</p>
         </div>
-        <button class="sync-action-btn" id="create-group-btn" style="margin-top: 0;">
-          <i class="fa-solid fa-plus"></i> Create New Group
-        </button>
+        <div style="display: flex; gap: 12px;">
+          <button class="sync-action-btn" id="join-group-btn" style="margin-top: 0; background: #374151; color: white;">
+            <i class="fa-solid fa-right-to-bracket"></i> Join Group
+          </button>
+          <button class="sync-action-btn" id="create-group-btn" style="margin-top: 0;">
+            <i class="fa-solid fa-plus"></i> Create New Group
+          </button>
+        </div>
       </div>
 
       <div id="groups-container">
@@ -174,6 +179,66 @@
             <input type="text" id="ql-phone" placeholder="+919876543210" required>
           </div>
           <button type="submit" class="submit-btn" style="width: 100%;"><i class="fa-solid fa-arrow-right-to-bracket"></i> Continue</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE GROUP MODAL -->
+  <div class="modal-overlay" id="create-group-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2>Create a New Group</h2>
+          <p style="color: var(--text-muted); font-size: 14px;">Start a challenge with friends or colleagues.</p>
+        </div>
+        <button class="icon-btn" id="close-create-group-modal-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="create-group-form">
+          <div class="form-group">
+            <label>Group Name</label>
+            <input type="text" id="grp-name" placeholder="e.g. Weekend Warriors" required>
+          </div>
+          <div class="form-group">
+            <label>Group Type</label>
+            <select id="grp-type">
+              <option value="Friends">Friends & Family</option>
+              <option value="Corporate">Corporate / Office</option>
+              <option value="Community">Community / Neighborhood</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Target Steps (Monthly Goal)</label>
+            <input type="number" id="grp-target" value="1000000" required>
+          </div>
+          <div class="form-group">
+            <label>Allowed Mobile Numbers (comma-separated, optional)</label>
+            <input type="text" id="grp-allowed-phones" placeholder="e.g. +919876543211, +919876543212">
+          </div>
+          <button type="submit" class="submit-btn" style="width: 100%;"><i class="fa-solid fa-users"></i> Create Group</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOIN GROUP MODAL -->
+  <div class="modal-overlay" id="join-group-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2>Join a Group</h2>
+          <p style="color: var(--text-muted); font-size: 14px;">Enter an invite code to join a group.</p>
+        </div>
+        <button class="icon-btn" id="close-join-group-modal-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="join-group-form">
+          <div class="form-group">
+            <label>Invite Code</label>
+            <input type="text" id="join-grp-code" placeholder="e.g. ABCDEF" required>
+          </div>
+          <button type="submit" class="submit-btn" style="width: 100%;"><i class="fa-solid fa-right-to-bracket"></i> Join Group</button>
         </form>
       </div>
     </div>

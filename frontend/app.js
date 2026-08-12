@@ -17,6 +17,16 @@ document.addEventListener('DOMContentLoaded', () => {
   if (quickLoginForm) {
     quickLoginForm.addEventListener('submit', handleQuickLogin);
   }
+
+  const createGroupForm = document.getElementById('create-group-form');
+  if (createGroupForm) {
+    createGroupForm.addEventListener('submit', handleCreateGroup);
+  }
+
+  const joinGroupForm = document.getElementById('join-group-form');
+  if (joinGroupForm) {
+    joinGroupForm.addEventListener('submit', handleJoinGroup);
+  }
 });
 
 // Tab Navigation
@@ -65,6 +75,48 @@ function initModal() {
   if (closeRegisterBtn) {
     closeRegisterBtn.addEventListener('click', () => {
       registerModal.classList.remove('active');
+    });
+  }
+
+  const createGroupModal = document.getElementById('create-group-modal');
+  const openCreateGroupBtn = document.getElementById('create-group-btn');
+  const closeCreateGroupBtn = document.getElementById('close-create-group-modal-btn');
+
+  if (openCreateGroupBtn) {
+    openCreateGroupBtn.addEventListener('click', () => {
+      if (!currentUser) {
+        showToast('Please login to create a group');
+        document.getElementById('quick-login-modal').classList.add('active');
+        return;
+      }
+      createGroupModal.classList.add('active');
+    });
+  }
+
+  if (closeCreateGroupBtn) {
+    closeCreateGroupBtn.addEventListener('click', () => {
+      createGroupModal.classList.remove('active');
+    });
+  }
+
+  const joinGroupModal = document.getElementById('join-group-modal');
+  const openJoinGroupBtn = document.getElementById('join-group-btn');
+  const closeJoinGroupBtn = document.getElementById('close-join-group-modal-btn');
+
+  if (openJoinGroupBtn) {
+    openJoinGroupBtn.addEventListener('click', () => {
+      if (!currentUser) {
+        showToast('Please login to join a group');
+        document.getElementById('quick-login-modal').classList.add('active');
+        return;
+      }
+      joinGroupModal.classList.add('active');
+    });
+  }
+
+  if (closeJoinGroupBtn) {
+    closeJoinGroupBtn.addEventListener('click', () => {
+      joinGroupModal.classList.remove('active');
     });
   }
 
@@ -119,6 +171,7 @@ async function handleQuickLogin(e) {
         newOpt.selected = true;
         selector.add(newOpt);
       }
+      updateAuthUI();
       refreshAllData();
     } else if (res.status === 404) {
       // User not found, prompt registration
@@ -195,6 +248,7 @@ async function handleRegistrationSubmit(e) {
       newOpt.selected = true;
       selector.add(newOpt);
 
+      updateAuthUI();
       refreshAllData();
     } else {
       alert(`❌ Registration Failed: ${data.error}`);
@@ -202,6 +256,80 @@ async function handleRegistrationSubmit(e) {
   } catch (err) {
     console.error(err);
     alert('Failed to connect to backend server for registration.');
+  }
+}
+
+// Handle Group Creation
+async function handleCreateGroup(e) {
+  e.preventDefault();
+  if (!authToken) {
+    showToast('Please login first');
+    return;
+  }
+
+  const name = document.getElementById('grp-name').value;
+  const groupType = document.getElementById('grp-type').value;
+  const targetSteps = parseInt(document.getElementById('grp-target').value, 10);
+  const allowedPhonesVal = document.getElementById('grp-allowed-phones').value;
+  const allowedPhones = allowedPhonesVal ? allowedPhonesVal.split(',').map(p => p.trim()).filter(p => p !== '') : [];
+
+  try {
+    const res = await fetch(`${API_BASE}/groups`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+      body: JSON.stringify({ name, groupType, targetSteps, allowedPhones }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      showToast('Group Created Successfully!');
+      document.getElementById('create-group-modal').classList.remove('active');
+      document.getElementById('create-group-form').reset();
+      refreshAllData(); // Refresh groups
+    } else {
+      showToast(data.error || 'Failed to create group');
+    }
+  } catch (err) {
+    console.error(err);
+    showToast('Failed to connect to server');
+  }
+}
+
+// Handle Join Group
+async function handleJoinGroup(e) {
+  e.preventDefault();
+  if (!authToken) {
+    showToast('Please login first');
+    return;
+  }
+
+  const inviteCode = document.getElementById('join-grp-code').value;
+
+  try {
+    const res = await fetch(`${API_BASE}/groups/join`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+      body: JSON.stringify({ inviteCode }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      showToast('Successfully joined the group!');
+      document.getElementById('join-group-modal').classList.remove('active');
+      document.getElementById('join-group-form').reset();
+      refreshAllData(); // Refresh groups
+    } else {
+      showToast(data.error || 'Failed to join group');
+    }
+  } catch (err) {
+    console.error(err);
+    showToast('Failed to connect to server');
   }
 }
 
@@ -220,6 +348,7 @@ async function loginUser(email) {
       currentUser = data.user;
       const displayName = currentUser.alias || currentUser.name;
       showToast(`Active User: ${displayName}`);
+      updateAuthUI();
       refreshAllData();
     } else {
       showToast(data.error || 'Login failed');
@@ -363,6 +492,35 @@ async function fetchGroups() {
   } catch (err) {
     console.error(err);
   }
+}
+
+// Update Auth UI Buttons
+function updateAuthUI() {
+  const authBtn = document.getElementById('open-quick-login-modal-btn');
+  if (authBtn) {
+    if (currentUser) {
+      authBtn.innerHTML = '<i class="fa-solid fa-right-from-bracket"></i> Sign Out';
+      authBtn.onclick = handleSignOut;
+    } else {
+      authBtn.innerHTML = '<i class="fa-solid fa-user"></i> Login / Signup';
+      authBtn.onclick = () => {
+        document.getElementById('quick-login-modal').classList.add('active');
+      };
+    }
+  }
+}
+
+function handleSignOut() {
+  authToken = '';
+  currentUser = null;
+  updateAuthUI();
+  
+  // Clear dashboard or show a state that requires login
+  document.getElementById('user-coins').innerText = '0';
+  document.getElementById('marketplace-coins').innerText = '0';
+  document.getElementById('rankings-container').innerHTML = '<p style="color: white">Please login to see rankings.</p>';
+  document.getElementById('groups-container').innerHTML = '<p style="color: white">Please login to see groups.</p>';
+  showToast('You have been signed out.');
 }
 
 // Fetch Marketplace Rewards
