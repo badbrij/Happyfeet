@@ -6,6 +6,74 @@
   <title>BadaKadam - Enterprise Wellness & Social Walking Platform</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Animated Avatar Styles */
+    @keyframes zoomHead {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.1) rotate(3deg); }
+    }
+    @keyframes floatAnim {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    @keyframes glanceAnim {
+      0%, 100% { transform: rotate(0deg); }
+      30% { transform: rotate(-5deg); }
+      70% { transform: rotate(5deg); }
+    }
+    @keyframes runAnim {
+      0%, 100% { transform: skewX(0deg); }
+      50% { transform: skewX(-3deg) scaleX(1.03); }
+    }
+    @keyframes hopAnim {
+      0%, 100% { transform: translateY(0) scaleY(1); }
+      50% { transform: translateY(-6px) scaleY(0.95); }
+    }
+
+    .zoom-head { animation: zoomHead 3s ease-in-out infinite; }
+    .float-anim { animation: floatAnim 2.5s ease-in-out infinite; }
+    .glance-anim { animation: glanceAnim 4s ease-in-out infinite; }
+    .run-anim { animation: runAnim 1.8s ease-in-out infinite; }
+    .hop-anim { animation: hopAnim 1.5s ease-in-out infinite; }
+
+    .avatar-option:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+      border-color: var(--accent-cyan) !important;
+      transform: scale(1.05);
+    }
+    .avatar-option.active {
+      background: rgba(6, 182, 212, 0.15) !important;
+      border-color: var(--accent-cyan) !important;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+    }
+
+    .close-up-view {
+      font-size: 85px !important;
+      transform: translateY(12px) scale(1.6) !important;
+    }
+    
+    /* Layout styling for User profile widget & leaderboards */
+    .avatar-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #1F2937;
+      flex-shrink: 0;
+    }
+    .avatar-circle-render {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+  </style>
 </head>
 <body>
 
@@ -30,6 +98,11 @@
 
       <div class="coins-badge">
         <i class="fa-solid fa-coins"></i> <span id="user-coins">1,450</span> WalkCoins
+      </div>
+
+      <!-- PROFILE PICTURE WIDGET -->
+      <div id="header-user-avatar" class="avatar-circle" style="display: none; margin-right: 8px;">
+        <div id="header-avatar-render" class="avatar-circle-render">👤</div>
       </div>
 
       <select id="user-selector" class="profile-select">
@@ -297,6 +370,57 @@
         <!-- Step 1: Account Information -->
         <div class="form-step active" id="form-step-1">
           <h3 class="step-heading"><i class="fa-solid fa-user-lock"></i> Basic Details</h3>
+          
+          <!-- PROFILE PICTURE & AVATAR SECTION -->
+          <div class="avatar-setup-container" style="display: flex; gap: 16px; align-items: center; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 16px; border-radius: 12px;">
+            <div class="avatar-preview-wrapper" style="position: relative; width: 90px; height: 90px; border-radius: 50%; overflow: hidden; border: 3px solid var(--accent-cyan); display: flex; align-items: center; justify-content: center; background: #1F2937; box-shadow: 0 0 15px rgba(6,182,212,0.3); flex-shrink: 0;">
+              <div id="avatar-preview-render" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 55px; transition: all 0.3s ease;">👤</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1;">
+              <label style="font-weight: 700; font-size: 14px; color: white; margin-bottom: 0;">Select Profile Avatar or Upload Picture</label>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="sync-action-btn" id="upload-avatar-trigger" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: var(--accent-cyan); color: #0f172a; cursor: pointer; border-radius: 6px;">
+                  <i class="fa-solid fa-upload"></i> Upload Photo
+                </button>
+                <button type="button" class="sync-action-btn" id="choose-avatar-trigger" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: #374151; cursor: pointer; border-radius: 6px;">
+                  <i class="fa-solid fa-face-smile-wink"></i> Choose Avatar
+                </button>
+                <button type="button" class="sync-action-btn" id="sync-google-avatar" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: rgba(219,68,55,0.15); color: #F87171; border: 1px solid rgba(219,68,55,0.3); cursor: pointer; border-radius: 6px;">
+                  <i class="fa-brands fa-google"></i> Google
+                </button>
+                <button type="button" class="sync-action-btn" id="sync-whatsapp-avatar" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: rgba(37,211,102,0.15); color: #4ADE80; border: 1px solid rgba(37,211,102,0.3); cursor: pointer; border-radius: 6px;">
+                  <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                </button>
+              </div>
+              <input type="file" id="reg-avatar-file" accept="image/*" style="display: none;">
+              <input type="hidden" id="reg-avatar-data" value="">
+            </div>
+          </div>
+
+          <!-- Expanded Avatar Selection Grid -->
+          <div id="avatar-selection-grid" style="display: none; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+            <div class="avatar-option" data-avatar="Bull" style="cursor: pointer; padding: 12px; text-align: center; border-radius: 10px; background: rgba(255,255,255,0.05); border: 2px solid transparent; transition: all 0.2s;">
+              <div class="avatar-option-emoji zoom-head" style="font-size: 40px; display: inline-block;">🐂</div>
+              <div style="font-size: 11px; margin-top: 4px; color: var(--text-muted); font-weight: 500;">Bull</div>
+            </div>
+            <div class="avatar-option" data-avatar="Eagle" style="cursor: pointer; padding: 12px; text-align: center; border-radius: 10px; background: rgba(255,255,255,0.05); border: 2px solid transparent; transition: all 0.2s;">
+              <div class="avatar-option-emoji float-anim" style="font-size: 40px; display: inline-block;">🦅</div>
+              <div style="font-size: 11px; margin-top: 4px; color: var(--text-muted); font-weight: 500;">Eagle</div>
+            </div>
+            <div class="avatar-option" data-avatar="Falcon" style="cursor: pointer; padding: 12px; text-align: center; border-radius: 10px; background: rgba(255,255,255,0.05); border: 2px solid transparent; transition: all 0.2s;">
+              <div class="avatar-option-emoji glance-anim" style="font-size: 40px; display: inline-block;">🦉</div>
+              <div style="font-size: 11px; margin-top: 4px; color: var(--text-muted); font-weight: 500;">Falcon</div>
+            </div>
+            <div class="avatar-option" data-avatar="Cheetah" style="cursor: pointer; padding: 12px; text-align: center; border-radius: 10px; background: rgba(255,255,255,0.05); border: 2px solid transparent; transition: all 0.2s;">
+              <div class="avatar-option-emoji run-anim" style="font-size: 40px; display: inline-block;">🐆</div>
+              <div style="font-size: 11px; margin-top: 4px; color: var(--text-muted); font-weight: 500;">Cheetah</div>
+            </div>
+            <div class="avatar-option" data-avatar="Rabbit" style="cursor: pointer; padding: 12px; text-align: center; border-radius: 10px; background: rgba(255,255,255,0.05); border: 2px solid transparent; transition: all 0.2s;">
+              <div class="avatar-option-emoji hop-anim" style="font-size: 40px; display: inline-block;">🐇</div>
+              <div style="font-size: 11px; margin-top: 4px; color: var(--text-muted); font-weight: 500;">Rabbit</div>
+            </div>
+          </div>
+
           <div class="form-row">
             <div class="form-group">
               <label>Full Name</label>

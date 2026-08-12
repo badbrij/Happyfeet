@@ -34,6 +34,7 @@ class DataStore {
         walkCoins: 1450,
         currentStreak: 21,
         lifetimeSteps: 624500,
+        profilePic: 'Cheetah',
       },
       {
         id: 'usr_2',
@@ -50,6 +51,7 @@ class DataStore {
         walkCoins: 2100,
         currentStreak: 34,
         lifetimeSteps: 890000,
+        profilePic: 'Rabbit',
       },
       {
         id: 'usr_3',
@@ -66,6 +68,7 @@ class DataStore {
         walkCoins: 980,
         currentStreak: 12,
         lifetimeSteps: 412000,
+        profilePic: 'Bull',
       },
       {
         id: 'usr_4',
@@ -82,6 +85,7 @@ class DataStore {
         walkCoins: 3400,
         currentStreak: 45,
         lifetimeSteps: 1250000,
+        profilePic: 'Eagle',
       },
       {
         id: 'usr_5',
@@ -98,6 +102,7 @@ class DataStore {
         walkCoins: 620,
         currentStreak: 7,
         lifetimeSteps: 180000,
+        profilePic: 'Falcon',
       }
     ];
 

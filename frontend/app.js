@@ -36,6 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Clear query parameter from browser address bar
     window.history.replaceState({}, document.title, window.location.pathname);
   }
+
+  initAvatarSetup();
 });
 
 // Tab Navigation
@@ -240,9 +242,12 @@ async function handleRegistrationSubmit(e) {
   const occupation = document.getElementById('reg-occupation').value;
   const dailyStepGoal = Number(document.getElementById('reg-goal').value);
 
+  const profilePic = document.getElementById('reg-avatar-data').value;
+
   const payload = {
     name,
     alias,
+    profilePic,
     email,
     phone,
     password,
@@ -544,6 +549,18 @@ function updateAuthUI() {
       };
     }
   }
+
+  // Render header avatar
+  const headerAvatar = document.getElementById('header-user-avatar');
+  if (headerAvatar) {
+    if (currentUser) {
+      headerAvatar.style.display = 'flex';
+      const container = document.getElementById('header-avatar-render');
+      container.innerHTML = getAvatarHTML(currentUser.profilePic, '32px', '22px');
+    } else {
+      headerAvatar.style.display = 'none';
+    }
+  }
 }
 
 function handleSignOut() {
@@ -621,6 +638,112 @@ function showToast(message) {
   setTimeout(() => {
     toast.style.display = 'none';
   }, 3000);
+}
+
+// Avatar rendering helper
+function getAvatarHTML(profilePic, size = '32px', fontSize = '22px') {
+  if (!profilePic) {
+    return `<div class="avatar-circle-render" style="font-size: ${fontSize};">👤</div>`;
+  }
+  
+  // Check if it's one of the preselected avatars
+  const avatarMap = {
+    'Bull': { emoji: '🐂', class: 'zoom-head' },
+    'Eagle': { emoji: '🦅', class: 'float-anim' },
+    'Falcon': { emoji: '🦉', class: 'glance-anim' },
+    'Cheetah': { emoji: '🐆', class: 'run-anim' },
+    'Rabbit': { emoji: '🐇', class: 'hop-anim' }
+  };
+  
+  if (avatarMap[profilePic]) {
+    const data = avatarMap[profilePic];
+    // Return standard emoji wrapped in dynamic container for zooming close-up
+    return `<div class="avatar-option-emoji ${data.class} close-up-view" style="font-size: calc(${size} * 2.5); line-height: ${size}; transform: translateY(calc(${size} * 0.15)) scale(1.6);">${data.emoji}</div>`;
+  }
+  
+  // Otherwise it's a URL or base64 data
+  return `<img src="${profilePic}" style="width: 100%; height: 100%; object-fit: cover;">`;
+}
+
+// Initialize avatar handlers
+function initAvatarSetup() {
+  const fileInput = document.getElementById('reg-avatar-file');
+  const uploadTrigger = document.getElementById('upload-avatar-trigger');
+  const chooseTrigger = document.getElementById('choose-avatar-trigger');
+  const grid = document.getElementById('avatar-selection-grid');
+  const previewRender = document.getElementById('avatar-preview-render');
+  const avatarDataInput = document.getElementById('reg-avatar-data');
+
+  if (uploadTrigger && fileInput) {
+    uploadTrigger.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const base64Data = event.target.result;
+          previewRender.innerHTML = `<img src="${base64Data}" style="width:100%; height:100%; object-fit:cover;">`;
+          previewRender.className = "avatar-circle-render"; // reset close-up transform
+          avatarDataInput.value = base64Data;
+          
+          document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('active'));
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  if (chooseTrigger && grid) {
+    chooseTrigger.addEventListener('click', () => {
+      grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
+    });
+  }
+
+  const avatarOptions = document.querySelectorAll('.avatar-option');
+  avatarOptions.forEach(opt => {
+    opt.addEventListener('click', () => {
+      avatarOptions.forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+
+      const avatarName = opt.getAttribute('data-avatar');
+      avatarDataInput.value = avatarName;
+
+      previewRender.innerHTML = getAvatarHTML(avatarName, '90px', '55px');
+      previewRender.className = "avatar-circle-render";
+    });
+  });
+
+  // Simulated Sync Buttons
+  const syncGoogle = document.getElementById('sync-google-avatar');
+  const syncWhatsapp = document.getElementById('sync-whatsapp-avatar');
+
+  if (syncGoogle) {
+    syncGoogle.addEventListener('click', () => {
+      showToast('Syncing with Google Account...');
+      setTimeout(() => {
+        const mockGoogleAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=GoogleUser${Date.now()}`;
+        previewRender.innerHTML = `<img src="${mockGoogleAvatar}" style="width:100%; height:100%; object-fit:cover;">`;
+        previewRender.className = "avatar-circle-render";
+        avatarDataInput.value = mockGoogleAvatar;
+        document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('active'));
+        showToast('Successfully synced Google avatar!');
+      }, 1000);
+    });
+  }
+
+  if (syncWhatsapp) {
+    syncWhatsapp.addEventListener('click', () => {
+      showToast('Syncing with WhatsApp Profile...');
+      setTimeout(() => {
+        const mockWhatsappAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=WhatsAppUser${Date.now()}`;
+        previewRender.innerHTML = `<img src="${mockWhatsappAvatar}" style="width:100%; height:100%; object-fit:cover;">`;
+        previewRender.className = "avatar-circle-render";
+        avatarDataInput.value = mockWhatsappAvatar;
+        document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('active'));
+        showToast('Successfully synced WhatsApp avatar!');
+      }, 1000);
+    });
+  }
 }
 
 // Check pending invite and auto join

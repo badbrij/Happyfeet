@@ -9,7 +9,7 @@ const router = Router();
 
 // POST /api/v1/auth/register
 router.post('/register', (req: Request, res: Response) => {
-  const { name, alias, email, phone, password, dob, gender, location, healthProfile } = req.body;
+  const { name, alias, profilePic, email, phone, password, dob, gender, location, healthProfile } = req.body;
 
   if (!phone || !password || !name || !dob || !gender || !location) {
     return res.status(400).json({ error: 'Missing required registration fields' });
@@ -37,6 +37,7 @@ router.post('/register', (req: Request, res: Response) => {
     id: userId,
     name,
     alias: alias || undefined,
+    profilePic: profilePic || undefined,
     email: email.toLowerCase(),
     phone: phone || '',
     passwordHash,

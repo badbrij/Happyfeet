@@ -28,6 +28,7 @@ export interface User {
   id: string;
   name: string;
   alias?: string;
+  profilePic?: string;
   email: string;
   phone: string;
   passwordHash: string;
