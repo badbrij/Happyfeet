@@ -165,8 +165,34 @@ function initModal() {
     });
   }
 
-  document.getElementById('next-step-1').addEventListener('click', () => showFormStep(2));
-  document.getElementById('next-step-2').addEventListener('click', () => showFormStep(3));
+  document.getElementById('next-step-1').addEventListener('click', () => {
+    const name = document.getElementById('reg-name').value;
+    const email = document.getElementById('reg-email').value;
+    const phone = document.getElementById('reg-phone').value;
+    const password = document.getElementById('reg-password').value;
+
+    if (!name || !email || !phone || !password) {
+      showToast('⚠️ Please fill out all basic details.');
+      return;
+    }
+    showFormStep(2);
+  });
+
+  document.getElementById('next-step-2').addEventListener('click', () => {
+    const dob = document.getElementById('reg-dob').value;
+    const gender = document.getElementById('reg-gender').value;
+    const country = document.getElementById('reg-country').value;
+    const state = document.getElementById('reg-state').value;
+    const city = document.getElementById('reg-city').value;
+    const locality = document.getElementById('reg-locality').value;
+
+    if (!dob || !gender || !country || !state || !city || !locality) {
+      showToast('⚠️ Please fill out all location details.');
+      return;
+    }
+    showFormStep(3);
+  });
+
   document.getElementById('prev-step-2').addEventListener('click', () => showFormStep(1));
   document.getElementById('prev-step-3').addEventListener('click', () => showFormStep(2));
 }
