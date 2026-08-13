@@ -1,7 +1,16 @@
--- SQL Schema for BadaKadam Platform
+-- Clean Up Existing Tables (Drop to avoid schema conflicts)
+DROP TABLE IF EXISTS group_members CASCADE;
+DROP TABLE IF EXISTS daily_steps CASCADE;
+DROP TABLE IF EXISTS daily_summaries CASCADE;
+DROP TABLE IF EXISTS step_logs CASCADE;
+DROP TABLE IF EXISTS groups CASCADE;
+DROP TABLE IF EXISTS rewards_marketplace CASCADE;
+DROP TABLE IF EXISTS rewards CASCADE;
+DROP TABLE IF EXISTS health_profiles CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
 -- 1. Users Table
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE users (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     alias TEXT,
@@ -33,7 +42,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- 2. Groups Table
-CREATE TABLE IF NOT EXISTS groups (
+CREATE TABLE groups (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT,
@@ -47,7 +56,7 @@ CREATE TABLE IF NOT EXISTS groups (
 );
 
 -- 3. Group Members Junction Table
-CREATE TABLE IF NOT EXISTS group_members (
+CREATE TABLE group_members (
     group_id TEXT REFERENCES groups(id) ON DELETE CASCADE,
     user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
     role TEXT NOT NULL, -- 'Owner', 'Admin', 'Member'
@@ -55,8 +64,8 @@ CREATE TABLE IF NOT EXISTS group_members (
     PRIMARY KEY (group_id, user_id)
 );
 
--- 4. Step Logs Table (raw daily sync items)
-CREATE TABLE IF NOT EXISTS step_logs (
+-- 4. Step Logs Table
+CREATE TABLE step_logs (
     id TEXT PRIMARY KEY,
     user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
     timestamp TIMESTAMPTZ NOT NULL,
@@ -65,13 +74,13 @@ CREATE TABLE IF NOT EXISTS step_logs (
     distance_meters REAL NOT NULL,
     calories REAL NOT NULL,
     active_minutes REAL NOT NULL,
-    source TEXT NOT NULL, -- 'AppleHealthKit' | 'GoogleHealthConnect' | 'Manual'
+    source TEXT NOT NULL,
     is_flagged BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 5. Daily Summaries Table (cached steps per user per day for fast ranking)
-CREATE TABLE IF NOT EXISTS daily_summaries (
+-- 5. Daily Summaries Table
+CREATE TABLE daily_summaries (
     user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
     date DATE NOT NULL,
     total_steps INTEGER NOT NULL,
@@ -82,8 +91,8 @@ CREATE TABLE IF NOT EXISTS daily_summaries (
     PRIMARY KEY (user_id, date)
 );
 
--- 6. Rewards Table (Marketplace Items)
-CREATE TABLE IF NOT EXISTS rewards (
+-- 6. Rewards Table
+CREATE TABLE rewards (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
     brand TEXT NOT NULL,
@@ -93,3 +102,11 @@ CREATE TABLE IF NOT EXISTS rewards (
     image_url TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Disable Row Level Security (RLS) for Development & Demo
+ALTER TABLE users DISABLE ROW LEVEL SECURITY;
+ALTER TABLE groups DISABLE ROW LEVEL SECURITY;
+ALTER TABLE group_members DISABLE ROW LEVEL SECURITY;
+ALTER TABLE step_logs DISABLE ROW LEVEL SECURITY;
+ALTER TABLE daily_summaries DISABLE ROW LEVEL SECURITY;
+ALTER TABLE rewards DISABLE ROW LEVEL SECURITY;
