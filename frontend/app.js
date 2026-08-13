@@ -656,6 +656,9 @@ async function fetchGroups() {
           </div>
         </div>
       `).join('');
+      
+      // Compile and list top 5 group walkers in switcher
+      compileTopWalkers(data.groups);
     }
   } catch (err) {
     console.error(err);
@@ -1048,5 +1051,65 @@ async function fetchWalletHistory() {
     }
   } catch (err) {
     console.error('Error fetching wallet ledger history:', err);
+  }
+}
+
+// Compile Top 5 Walkers from Groups and Battles
+async function compileTopWalkers(groups) {
+  if (!groups || groups.length === 0) return;
+
+  try {
+    // Fetch leaderboards in parallel
+    const promises = groups.map(g => 
+      fetch(`${API_BASE}/groups/${g.id}/leaderboard`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      }).then(res => {
+        if (!res.ok) throw new Error('Failed to load group leaderboard');
+        return res.json();
+      })
+    );
+
+    const leaderboards = await Promise.all(promises);
+
+    const allMembers = [];
+    leaderboards.forEach(lb => {
+      if (lb && lb.leaderboard) {
+        allMembers.push(...lb.leaderboard);
+      }
+    });
+
+    const uniqueWalkers = [];
+    const seenEmails = new Set();
+
+    // Prevent active user from appearing in top performers switcher list
+    if (currentUser) {
+      seenEmails.add(currentUser.email);
+    }
+
+    allMembers.forEach(m => {
+      const key = m.email || m.name;
+      if (key && !seenEmails.has(key)) {
+        seenEmails.add(key);
+        uniqueWalkers.push(m);
+      }
+    });
+
+    // Sort descending by steps today
+    uniqueWalkers.sort((a, b) => b.todaySteps - a.todaySteps);
+
+    const top5 = uniqueWalkers.slice(0, 5);
+
+    const walkersGroup = document.getElementById('user-top-walkers-group');
+    if (walkersGroup) {
+      if (top5.length === 0) {
+        walkersGroup.innerHTML = '<option disabled>No other walkers in your groups</option>';
+      } else {
+        walkersGroup.innerHTML = top5.map(w => `
+          <option value="${w.email || w.name}">${w.name} (${w.todaySteps.toLocaleString()} steps)</option>
+        `).join('');
+      }
+    }
+  } catch (err) {
+    console.error('Error compiling top group walkers:', err);
   }
 }

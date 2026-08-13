@@ -215,7 +215,7 @@ router.get('/:id/leaderboard', authMiddleware, async (req: AuthRequest, res: Res
 
     const { data: members, error: membersError } = await supabase
       .from('group_members')
-      .select('user_id, role, users(name, alias, current_streak, profile_pic)')
+      .select('user_id, role, users(name, alias, email, current_streak, profile_pic)')
       .eq('group_id', id);
 
     if (membersError) {
@@ -239,6 +239,7 @@ router.get('/:id/leaderboard', authMiddleware, async (req: AuthRequest, res: Res
       memberRankings.push({
         userId: m.user_id,
         name: u.alias || u.name, // Support Alias
+        email: u.email,
         profilePic: u.profile_pic || null,
         role: m.role,
         todaySteps: todaySummary?.total_steps || 0,
