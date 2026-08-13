@@ -314,14 +314,16 @@ async function handleRegistrationSubmit(e) {
       authToken = data.token;
       currentUser = data.user;
 
-      // Add to user selector dropdown
-      const selector = document.getElementById('user-selector');
-      const newOpt = document.createElement('option');
-      newOpt.value = currentUser.email;
-      const optName = currentUser.alias || currentUser.name;
-      newOpt.text = `${optName} (${currentUser.location.city})`;
-      newOpt.selected = true;
-      selector.add(newOpt);
+      // Add to user selector dropdown under registered accounts group
+      const regGroup = document.getElementById('user-registered-group');
+      if (regGroup) {
+        const newOpt = document.createElement('option');
+        newOpt.value = currentUser.email;
+        const optName = currentUser.alias || currentUser.name;
+        newOpt.text = `${optName} (${currentUser.location.city})`;
+        newOpt.selected = true;
+        regGroup.appendChild(newOpt);
+      }
 
       updateAuthUI();
       refreshAllData();

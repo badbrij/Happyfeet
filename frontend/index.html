@@ -108,11 +108,16 @@
         </div>
 
         <select id="user-selector" class="profile-select">
-          <option value="brijesh@BadaKadam.com">Brijesh Sharma (Hyderabad)</option>
-          <option value="priya@BadaKadam.com">Priya Verma (Hyderabad)</option>
-          <option value="rahul@BadaKadam.com">Rahul Mehta (Hyderabad)</option>
-          <option value="amit@BadaKadam.com">Amit Patel (Mumbai)</option>
-          <option value="ananya@BadaKadam.com">Ananya Rao (Bangalore)</option>
+          <optgroup label="Demo Profiles">
+            <option value="brijesh@BadaKadam.com">Brijesh Sharma (Hyderabad)</option>
+            <option value="priya@BadaKadam.com">Priya Verma (Hyderabad)</option>
+            <option value="rahul@BadaKadam.com">Rahul Mehta (Hyderabad)</option>
+            <option value="amit@BadaKadam.com">Amit Patel (Mumbai)</option>
+            <option value="ananya@BadaKadam.com">Ananya Rao (Bangalore)</option>
+          </optgroup>
+          <optgroup label="Registered Profiles" id="user-registered-group">
+            <!-- Dynamically populated -->
+          </optgroup>
         </select>
       </div>
       <div id="member-since-display" style="font-size: 11px; color: var(--text-muted); display: none; font-weight: 500; margin-right: 8px;">Member since: August 2026</div>
