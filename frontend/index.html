@@ -247,8 +247,21 @@
         </div>
       </div>
 
-      <div class="rewards-grid" id="rewards-container">
-        <!-- Rendered dynamically by JavaScript -->
+      <div style="display: grid; grid-template-columns: 1fr 360px; gap: 28px; align-items: start;">
+        <div class="rewards-grid" id="rewards-container" style="margin-top: 0;">
+          <!-- Rendered dynamically by JavaScript -->
+        </div>
+
+        <!-- Wallet History card -->
+        <div class="glass-card" style="padding: 20px;">
+          <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-clock-rotate-left" style="color: var(--accent-amber);"></i> Wallet Activity History
+          </h3>
+          <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 16px; line-height: 1.4;">Historical auditing log of all coins earned, streaks, and coupon redemptions.</p>
+          <div id="wallet-history-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto; padding-right: 4px;">
+            <!-- Loaded dynamically by JavaScript -->
+          </div>
+        </div>
       </div>
     </section>
   </main>

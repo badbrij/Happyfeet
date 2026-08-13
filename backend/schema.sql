@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS group_members CASCADE;
 DROP TABLE IF EXISTS daily_steps CASCADE;
 DROP TABLE IF EXISTS daily_summaries CASCADE;
 DROP TABLE IF EXISTS step_logs CASCADE;
+DROP TABLE IF EXISTS coin_transactions CASCADE;
 DROP TABLE IF EXISTS groups CASCADE;
 DROP TABLE IF EXISTS rewards_marketplace CASCADE;
 DROP TABLE IF EXISTS rewards CASCADE;
@@ -103,6 +104,16 @@ CREATE TABLE rewards (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 7. Wallet Coin Transactions Table
+CREATE TABLE coin_transactions (
+    id TEXT PRIMARY KEY,
+    user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+    amount INTEGER NOT NULL,
+    transaction_type TEXT NOT NULL, -- 'Signup', 'GoalMet', 'Redemption', 'StreakBonus'
+    description TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Disable Row Level Security (RLS) for Development & Demo
 ALTER TABLE users DISABLE ROW LEVEL SECURITY;
 ALTER TABLE groups DISABLE ROW LEVEL SECURITY;
@@ -110,3 +121,4 @@ ALTER TABLE group_members DISABLE ROW LEVEL SECURITY;
 ALTER TABLE step_logs DISABLE ROW LEVEL SECURITY;
 ALTER TABLE daily_summaries DISABLE ROW LEVEL SECURITY;
 ALTER TABLE rewards DISABLE ROW LEVEL SECURITY;
+ALTER TABLE coin_transactions DISABLE ROW LEVEL SECURITY;

@@ -157,6 +157,15 @@ router.post('/sync', authMiddleware, async (req: AuthRequest, res: Response) => 
     // Check if goal was met just now to reward coins
     if (goalMet && (!todaySummary || !todaySummary.goal_met)) {
       newWalkCoins += 20; // 20 WalkCoins per goal met
+      
+      // Log transaction
+      await supabase.from('coin_transactions').insert([{
+        id: `tx_goal_${userId}_${Date.now()}`,
+        user_id: userId,
+        amount: 20,
+        transaction_type: 'GoalMet',
+        description: 'Daily Step Goal Met',
+      }]);
     }
 
     const { error: userUpdateError } = await supabase

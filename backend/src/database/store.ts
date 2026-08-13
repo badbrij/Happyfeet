@@ -245,6 +245,31 @@ export async function seedDatabase() {
     await supabase.from('rewards').insert(seededRewards);
     console.log('✅ Seeded Rewards catalog.');
 
+    // Seed Coin Transactions history
+    const transactions = seededUsers.map(u => ({
+      id: `tx_signup_${u.id}`,
+      user_id: u.id,
+      amount: 100,
+      transaction_type: 'Signup',
+      description: 'Signup Welcome Bonus',
+      created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+    }));
+
+    transactions.push(
+      { id: 'tx_goal_1', user_id: 'usr_1', amount: 20, transaction_type: 'GoalMet', description: 'Daily Step Goal Met', created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 'tx_goal_2', user_id: 'usr_1', amount: 20, transaction_type: 'GoalMet', description: 'Daily Step Goal Met', created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 'tx_streak_1', user_id: 'usr_1', amount: 50, transaction_type: 'StreakBonus', description: '7-Day Consistent Streak Bonus', created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 'tx_challenge_1', user_id: 'usr_1', amount: 1500, transaction_type: 'StreakBonus', description: 'Office Battle Challenge Grand Prize', created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 'tx_redeem_1', user_id: 'usr_1', amount: -250, transaction_type: 'Redemption', description: 'Redeemed Swiggy Free Delivery Pack', created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString() },
+      
+      { id: 'tx_goal_3', user_id: 'usr_2', amount: 20, transaction_type: 'GoalMet', description: 'Daily Step Goal Met', created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 'tx_challenge_2', user_id: 'usr_2', amount: 2500, transaction_type: 'StreakBonus', description: 'BadaKadam Launch Milestone Reward', created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 'tx_redeem_2', user_id: 'usr_2', amount: -500, transaction_type: 'Redemption', description: 'Redeemed Amazon ₹250 Gift Voucher', created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() }
+    );
+
+    await supabase.from('coin_transactions').insert(transactions);
+    console.log('✅ Seeded Coin Transactions ledger.');
+
     console.log('🎉 Database seeding complete!');
   } catch (err) {
     console.error('❌ Unexpected seeding error:', err);

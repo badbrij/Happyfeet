@@ -416,6 +416,7 @@ async function refreshAllData() {
   await fetchRankings();
   await fetchGroups();
   await fetchMarketplace();
+  await fetchWalletHistory();
 }
 
 // Fetch Today's Steps
@@ -751,6 +752,12 @@ function handleSignOut() {
   document.getElementById('marketplace-coins').innerText = '0';
   document.getElementById('rankings-container').innerHTML = '<p style="color: white">Please login to see rankings.</p>';
   document.getElementById('groups-container').innerHTML = '<p style="color: white">Please login to see groups.</p>';
+  
+  const historyContainer = document.getElementById('wallet-history-container');
+  if (historyContainer) {
+    historyContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 13px;">Please login to see wallet activity.</p>';
+  }
+  
   showToast('You have been signed out.');
 }
 
@@ -966,3 +973,52 @@ window.openShareModal = function(groupName, inviteCode) {
 
   shareModal.classList.add('active');
 };
+
+// Fetch Wallet Transaction History
+async function fetchWalletHistory() {
+  if (!authToken) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/rewards/wallet/history`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      const container = document.getElementById('wallet-history-container');
+      if (container) {
+        if (!data.history || data.history.length === 0) {
+          container.innerHTML = '<p style="color: var(--text-muted); font-size: 13px; text-align: center; margin-top: 10px;">No transaction history yet.</p>';
+          return;
+        }
+
+        container.innerHTML = data.history.map(tx => {
+          const dateStr = new Date(tx.createdAt).toLocaleDateString('en-US', {
+            day: 'numeric',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+
+          const isPositive = tx.amount > 0;
+          const colorClass = isPositive ? '#10B981' : '#EF4444';
+          const amountSign = isPositive ? `+${tx.amount}` : `${tx.amount}`;
+
+          return `
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 12px 14px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 12px; font-weight: 700; color: white;">${tx.description}</span>
+                <span style="font-size: 10px; color: var(--text-muted);"><i class="fa-regular fa-clock"></i> ${dateStr}</span>
+              </div>
+              <div style="font-size: 13px; font-weight: 800; color: ${colorClass}; white-space: nowrap;">
+                ${amountSign}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching wallet ledger history:', err);
+  }
+}

@@ -98,6 +98,15 @@ router.post('/redeem', authMiddleware, async (req: AuthRequest, res: Response) =
       return res.status(500).json({ error: 'Failed to complete transaction' });
     }
 
+    // Log the redemption transaction
+    await supabase.from('coin_transactions').insert([{
+      id: `tx_redeem_${userId}_${Date.now()}`,
+      user_id: userId,
+      amount: -reward.cost_walk_coins,
+      transaction_type: 'Redemption',
+      description: `Redeemed ${reward.brand} ${reward.title}`,
+    }]);
+
     const couponCode = `BK-${reward.brand.toUpperCase()}-${Math.floor(100000 + Math.random() * 900000)}`;
 
     return res.json({
@@ -113,6 +122,37 @@ router.post('/redeem', authMiddleware, async (req: AuthRequest, res: Response) =
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Server error during redemption' });
+  }
+});
+
+// GET /api/v1/rewards/wallet/history
+router.get('/wallet/history', authMiddleware, async (req: AuthRequest, res: Response) => {
+  const userId = req.userId!;
+
+  try {
+    const { data: txs, error } = await supabase
+      .from('coin_transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Failed to fetch wallet history' });
+    }
+
+    const formattedHistory = (txs || []).map(tx => ({
+      id: tx.id,
+      amount: tx.amount,
+      transactionType: tx.transaction_type,
+      description: tx.description,
+      createdAt: tx.created_at
+    }));
+
+    return res.json({ history: formattedHistory });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Server error fetching wallet history' });
   }
 });
 

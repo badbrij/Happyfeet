@@ -88,6 +88,15 @@ router.post('/register', async (req: Request, res: Response) => {
       return res.status(500).json({ error: 'Failed to create user profile' });
     }
 
+    // Log the Signup Welcome Bonus transaction
+    await supabase.from('coin_transactions').insert([{
+      id: `tx_signup_${userId}_${Date.now()}`,
+      user_id: userId,
+      amount: 100,
+      transaction_type: 'Signup',
+      description: 'Signup Welcome Bonus',
+    }]);
+
     const token = generateToken(userId);
     const formattedUser = formatDBUser(newUser);
     const { passwordHash: _, ...userWithoutPassword } = formattedUser;
