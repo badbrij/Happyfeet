@@ -139,6 +139,21 @@ function initModal() {
     });
   }
 
+  const guideModal = document.getElementById('walkcoins-guide-modal');
+  const showGuideBtn = document.getElementById('show-coins-guide-btn');
+  const closeGuideBtn = document.getElementById('close-walkcoins-guide-modal-btn');
+  if (showGuideBtn && guideModal) {
+    showGuideBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      guideModal.classList.add('active');
+    });
+  }
+  if (closeGuideBtn && guideModal) {
+    closeGuideBtn.addEventListener('click', () => {
+      guideModal.classList.remove('active');
+    });
+  }
+
   const copyBtn = document.getElementById('copy-share-link-btn');
   if (copyBtn) {
     copyBtn.addEventListener('click', () => {
@@ -439,52 +454,117 @@ async function fetchRankings() {
       document.getElementById('ai-message-text').innerText = `"${data.aiInsight.message}"`;
       document.getElementById('ai-nudge-text').innerText = `"${data.aiInsight.nudge}"`;
 
+      const formatRank = (rank, total) => {
+        let prefix = '';
+        if (rank === 1) prefix = '🥇 ';
+        else if (rank === 2) prefix = '🥈 ';
+        else if (rank === 3) prefix = '🥉 ';
+        return `<strong style="color: ${rank <= 3 ? '#F59E0B' : '#10B981'};">${prefix}Rank #${rank} of ${total}</strong>`;
+      };
+
       // Quick Rank Summary
       const quickContainer = document.getElementById('quick-rank-summary');
       quickContainer.innerHTML = `
-        <div style="display:flex; justify-content:space-between; font-size:14px;">
+        <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom: 8px;">
           <span>Category (${data.rankings.sameAgeAndGender.category}):</span>
-          <strong style="color:#10B981;">Rank #${data.rankings.sameAgeAndGender.rank} of ${data.rankings.sameAgeAndGender.total}</strong>
+          ${formatRank(data.rankings.sameAgeAndGender.rank, data.rankings.sameAgeAndGender.total)}
         </div>
-        <div style="display:flex; justify-content:space-between; font-size:14px;">
+        <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom: 8px;">
           <span>Locality (${data.rankings.locality.name}):</span>
-          <strong style="color:#06B6D4;">Rank #${data.rankings.locality.rank} of ${data.rankings.locality.total}</strong>
+          ${formatRank(data.rankings.locality.rank, data.rankings.locality.total)}
         </div>
         <div style="display:flex; justify-content:space-between; font-size:14px;">
           <span>City (${data.rankings.city.name}):</span>
-          <strong style="color:#8B5CF6;">Rank #${data.rankings.city.rank} of ${data.rankings.city.total}</strong>
+          ${formatRank(data.rankings.city.rank, data.rankings.city.total)}
         </div>
       `;
+
+      const getMedalHTML = (rank) => {
+        if (rank === 1) return '<span style="font-size: 20px; margin-right: 4px;">🥇</span>';
+        if (rank === 2) return '<span style="font-size: 20px; margin-right: 4px;">🥈</span>';
+        if (rank === 3) return '<span style="font-size: 20px; margin-right: 4px;">🥉</span>';
+        return '';
+      };
+
+      const getTileClass = (rank) => {
+        if (rank === 1) return 'gold-rank';
+        if (rank === 2) return 'silver-rank';
+        if (rank === 3) return 'bronze-rank';
+        return '';
+      };
 
       // Full Rankings Universe Grid
       const container = document.getElementById('rankings-container');
       container.innerHTML = `
-        <div class="rank-tile">
+        <div class="rank-tile ${getTileClass(data.rankings.sameAgeAndGender.rank)}">
           <div class="rank-tile-title">Same Age + Same Gender (${data.rankings.sameAgeAndGender.category})</div>
-          <div class="rank-number">Rank #${data.rankings.sameAgeAndGender.rank}</div>
+          <div class="rank-number" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+            ${getMedalHTML(data.rankings.sameAgeAndGender.rank)}Rank #${data.rankings.sameAgeAndGender.rank}
+          </div>
           <div class="rank-badge">Out of ${data.rankings.sameAgeAndGender.total} walkers</div>
         </div>
-        <div class="rank-tile">
+        <div class="rank-tile ${getTileClass(data.rankings.locality.rank)}">
           <div class="rank-tile-title">Locality (${data.rankings.locality.name})</div>
-          <div class="rank-number">Rank #${data.rankings.locality.rank}</div>
+          <div class="rank-number" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+            ${getMedalHTML(data.rankings.locality.rank)}Rank #${data.rankings.locality.rank}
+          </div>
           <div class="rank-badge">Out of ${data.rankings.locality.total} walkers</div>
         </div>
-        <div class="rank-tile">
+        <div class="rank-tile ${getTileClass(data.rankings.city.rank)}">
           <div class="rank-tile-title">City (${data.rankings.city.name})</div>
-          <div class="rank-number">Rank #${data.rankings.city.rank}</div>
+          <div class="rank-number" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+            ${getMedalHTML(data.rankings.city.rank)}Rank #${data.rankings.city.rank}
+          </div>
           <div class="rank-badge">Out of ${data.rankings.city.total} walkers</div>
         </div>
-        <div class="rank-tile">
+        <div class="rank-tile ${getTileClass(data.rankings.global.rank)}">
           <div class="rank-tile-title">Global Standings</div>
-          <div class="rank-number">Rank #${data.rankings.global.rank}</div>
-          <div class="rank-badge">Worldwide Ranking</div>
+          <div class="rank-number" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+            ${getMedalHTML(data.rankings.global.rank)}Rank #${data.rankings.global.rank}
+          </div>
+          <div class="rank-badge">Out of ${data.rankings.global.total} worldwide</div>
         </div>
         <div class="rank-tile">
           <div class="rank-tile-title">Overall Fitness Cohort</div>
-          <div class="rank-number">${data.fitnessPercentile}</div>
+          <div class="rank-number" style="color: #F59E0B;">${data.fitnessPercentile}</div>
           <div class="rank-badge" style="background:rgba(245,158,11,0.2); color:#F59E0B;">Top Performing Tier</div>
         </div>
       `;
+
+      // Render Achievements & Milestones (Cult.fit Inspired)
+      if (currentUser) {
+        const todaySteps = data.userStepsToday || 0;
+        const streak = currentUser.currentStreak || 1;
+        const lifetime = currentUser.lifetimeSteps || 0;
+
+        const milestones = [
+          { name: 'Early Bird', desc: 'Walk 10,000 steps today', emoji: '🌅', unlocked: todaySteps >= 10000, prog: `${todaySteps.toLocaleString()} / 10,000`, anim: 'zoom-head' },
+          { name: 'Streak Starter', desc: 'Reach a 7-day streak', emoji: '🔥', unlocked: streak >= 7, prog: `${streak} / 7 days`, anim: 'hop-anim' },
+          { name: 'Consistency Master', desc: 'Reach a 30-day streak', emoji: '👑', unlocked: streak >= 30, prog: `${streak} / 30 days`, anim: 'glance-anim' },
+          { name: 'Centurion', desc: 'Reach 100k lifetime steps', emoji: '💯', unlocked: lifetime >= 100000, prog: `${lifetime.toLocaleString()} / 100,000`, anim: 'float-anim' },
+          { name: 'Millionaire Walk', desc: 'Reach 1M lifetime steps', emoji: '🌌', unlocked: lifetime >= 1000000, prog: `${lifetime.toLocaleString()} / 1,000,000`, anim: 'run-anim' }
+        ];
+
+        const badgesContainer = document.getElementById('badges-container');
+        if (badgesContainer) {
+          badgesContainer.innerHTML = milestones.map(m => {
+            const stateClass = m.unlocked ? 'badge-unlocked' : 'badge-locked';
+            return `
+              <div class="badge-card ${stateClass}" style="position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 16px; border-radius: 12px; transition: all 0.3s ease;">
+                <div class="avatar-circle-render ${m.unlocked ? m.anim : ''}" style="font-size: 40px; margin-bottom: 8px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03); border-radius: 50%;">
+                  ${m.emoji}
+                </div>
+                <h4 style="font-size: 13px; font-weight: 700; color: white; margin-bottom: 4px;">${m.name}</h4>
+                <p style="font-size: 11px; color: var(--text-muted); line-height: 1.3; height: 32px; margin-bottom: 8px; margin-top: 0;">${m.desc}</p>
+                <div style="font-size: 11px; font-weight: 700; color: ${m.unlocked ? 'var(--accent-cyan)' : 'var(--text-muted)'}; background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 20px; width: fit-content; margin: 0 auto;">
+                  ${m.prog}
+                </div>
+                ${m.unlocked ? `<span style="position: absolute; top: 6px; right: 6px; font-size: 8px; padding: 1px 4px; background: rgba(16,185,129,0.2); color: #34D399; border-radius: 4px; font-weight: 700;">UNLOCKED</span>` : ''}
+              </div>
+            `;
+          }).join('');
+        }
+      }
     }
   } catch (err) {
     console.error(err);
@@ -507,25 +587,43 @@ async function fetchGroups() {
     if (res.ok) {
       const container = document.getElementById('groups-container');
       container.innerHTML = data.groups.map((g) => `
-        <div class="glass-card group-item">
-          <div>
-            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">${g.name}</h3>
-            <p style="color: var(--text-muted); font-size: 13px;">${g.description}</p>
-            <div style="margin-top: 12px; font-size: 13px; color: var(--accent-cyan); font-weight: 600;">
-              Collective Target: ${g.currentSteps.toLocaleString()} / ${g.targetSteps.toLocaleString()} steps
+        <div class="glass-card group-item" id="group-card-${g.id}" style="display: flex; flex-direction: column; gap: 16px; padding: 20px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">${g.name}</h3>
+              <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 8px;">${g.description}</p>
+              <div style="font-size: 13px; color: var(--accent-cyan); font-weight: 600;">
+                Collective Target: ${g.currentSteps.toLocaleString()} / ${g.targetSteps.toLocaleString()} steps
+              </div>
+              <div class="progress-bar-bg" style="margin-top: 6px; width: 250px;">
+                <div class="progress-bar-fill" style="width: ${Math.min(100, Math.round((g.currentSteps / g.targetSteps) * 100))}%;"></div>
+              </div>
             </div>
-            <div class="progress-bar-bg">
-              <div class="progress-bar-fill" style="width: ${Math.min(100, Math.round((g.currentSteps / g.targetSteps) * 100))}%;"></div>
+            <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;">
+              <div>
+                <span class="rank-badge" style="margin-bottom: 8px; display: inline-block;">Invite Code: ${g.inviteCode}</span>
+                <div style="font-size: 13px; color: var(--text-muted);">${g.members.length} Members Active</div>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 8px;">
+                <button class="sync-action-btn" onclick="toggleGroupLeaderboard('${g.id}')" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: rgba(6,182,212,0.15); color: var(--accent-cyan); border: 1px solid rgba(6,182,212,0.3); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid fa-ranking-star"></i> View Battle
+                </button>
+                <button class="sync-action-btn share-grp-btn" onclick="openShareModal('${g.name}', '${g.inviteCode}')" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: rgba(59,130,246,0.2); color: #60A5FA; border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid fa-share-nodes"></i> Share
+                </button>
+              </div>
             </div>
           </div>
-          <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;">
-            <div>
-              <span class="rank-badge" style="margin-bottom: 8px; display: inline-block;">Invite Code: ${g.inviteCode}</span>
-              <div style="font-size: 13px; color: var(--text-muted);">${g.members.length} Members Active</div>
+          
+          <!-- Collapsible Leaderboard section -->
+          <div id="group-leaderboard-${g.id}" class="group-leaderboard-container" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px; margin-top: 8px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <h4 style="font-size: 14px; font-weight: 700; color: white;"><i class="fa-solid fa-fire" style="color: #EF4444;"></i> Live Battle Leaderboard</h4>
+              <span style="font-size: 12px; color: var(--text-muted);" id="group-total-steps-${g.id}">Total group steps today: 0</span>
             </div>
-            <button class="sync-action-btn share-grp-btn" onclick="openShareModal('${g.name}', '${g.inviteCode}')" style="margin-top: 8px; padding: 6px 12px; font-size: 12px; background: rgba(59,130,246,0.2); color: #60A5FA; border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-              <i class="fa-solid fa-share-nodes"></i> Share Invite
-            </button>
+            <div class="leaderboard-list" id="group-leaderboard-list-${g.id}" style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Loaded dynamically via API -->
+            </div>
           </div>
         </div>
       `).join('');
@@ -534,6 +632,73 @@ async function fetchGroups() {
     console.error(err);
   }
 }
+
+// Collapsible Group Leaderboard Handler
+window.toggleGroupLeaderboard = async function(groupId) {
+  const container = document.getElementById(`group-leaderboard-${groupId}`);
+  if (!container) return;
+
+  if (container.style.display === 'block') {
+    container.style.display = 'none';
+    return;
+  }
+
+  // Fetch the leaderboard data from backend
+  try {
+    const res = await fetch(`${API_BASE}/groups/${groupId}/leaderboard`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      document.getElementById(`group-total-steps-${groupId}`).innerText = `Total group steps today: ${data.groupTotalSteps.toLocaleString()}`;
+      
+      const listContainer = document.getElementById(`group-leaderboard-list-${groupId}`);
+      const totalMembers = data.leaderboard.length;
+      
+      listContainer.innerHTML = data.leaderboard.map((m, index) => {
+        const rank = index + 1;
+        let medal = '';
+        if (rank === 1) medal = '🥇 ';
+        else if (rank === 2) medal = '🥈 ';
+        else if (rank === 3) medal = '🥉 ';
+        else medal = `#${rank} `;
+
+        const isCurrentUser = currentUser && (currentUser.name === m.name || currentUser.alias === m.name);
+        const highlightStyle = isCurrentUser ? 'background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.25);' : 'background: rgba(255,255,255,0.02);';
+
+        const avatarHTML = getAvatarHTML(m.profilePic, '28px', '18px');
+
+        return `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 8px; ${highlightStyle}">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-weight: 800; font-size: 14px; color: ${rank <= 3 ? '#F59E0B' : 'var(--text-muted)'}; min-width: 28px;">${medal}</span>
+              <div class="avatar-circle" style="width: 28px; height: 28px; border-color: ${isCurrentUser ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.1)'};">
+                ${avatarHTML}
+              </div>
+              <div>
+                <span style="font-size: 13px; font-weight: 700; color: white;">${m.name}</span>
+                ${m.role !== 'Member' ? `<span style="font-size: 10px; padding: 1px 4px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-left: 6px; color: var(--text-muted);">${m.role}</span>` : ''}
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <span style="font-size: 12px; color: #F59E0B;"><i class="fa-solid fa-fire"></i> ${m.streak}d</span>
+              <span style="font-size: 13px; font-weight: 800; color: white;">${m.todaySteps.toLocaleString()} <span style="font-size: 11px; font-weight: 500; color: var(--text-muted);">steps</span></span>
+              <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">(Rank ${rank} of ${totalMembers})</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.style.display = 'block';
+    } else {
+      showToast(data.error || 'Failed to load leaderboard');
+    }
+  } catch (err) {
+    console.error(err);
+    showToast('Failed to connect to server');
+  }
+};
 
 // Update Auth UI Buttons
 function updateAuthUI() {
@@ -559,6 +724,19 @@ function updateAuthUI() {
       container.innerHTML = getAvatarHTML(currentUser.profilePic, '32px', '22px');
     } else {
       headerAvatar.style.display = 'none';
+    }
+  }
+
+  // Render "Member since" date
+  const memberSince = document.getElementById('member-since-display');
+  if (memberSince) {
+    if (currentUser) {
+      memberSince.style.display = 'block';
+      const createdDate = currentUser.createdAt ? new Date(currentUser.createdAt) : new Date();
+      const formatted = createdDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      memberSince.innerText = `Member since: ${formatted}`;
+    } else {
+      memberSince.style.display = 'none';
     }
   }
 }

@@ -91,27 +91,31 @@
       <button class="nav-btn" data-tab="rewards-view"><i class="fa-solid fa-gift"></i> Marketplace</button>
     </nav>
 
-    <div class="user-profile-widget">
+    <div class="user-profile-widget" style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
         <button class="register-hero-btn" id="open-quick-login-modal-btn">
           <i class="fa-solid fa-user"></i> Login / Signup
         </button>
 
-      <div class="coins-badge">
-        <i class="fa-solid fa-coins"></i> <span id="user-coins">1,450</span> WalkCoins
-      </div>
+        <div class="coins-badge" style="display: flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-coins"></i> <span><strong id="user-coins">1,450</strong> WalkCoins</span>
+          <i class="fa-solid fa-circle-question" id="show-coins-guide-btn" style="cursor: pointer; font-size: 14px; color: var(--accent-cyan);" title="How to earn WalkCoins?"></i>
+        </div>
 
-      <!-- PROFILE PICTURE WIDGET -->
-      <div id="header-user-avatar" class="avatar-circle" style="display: none; margin-right: 8px;">
-        <div id="header-avatar-render" class="avatar-circle-render">👤</div>
-      </div>
+        <!-- PROFILE PICTURE WIDGET -->
+        <div id="header-user-avatar" class="avatar-circle" style="display: none; margin-right: 8px;">
+          <div id="header-avatar-render" class="avatar-circle-render">👤</div>
+        </div>
 
-      <select id="user-selector" class="profile-select">
-        <option value="brijesh@BadaKadam.com">Brijesh Sharma (Hyderabad)</option>
-        <option value="priya@BadaKadam.com">Priya Verma (Hyderabad)</option>
-        <option value="rahul@BadaKadam.com">Rahul Mehta (Hyderabad)</option>
-        <option value="amit@BadaKadam.com">Amit Patel (Mumbai)</option>
-        <option value="ananya@BadaKadam.com">Ananya Rao (Bangalore)</option>
-      </select>
+        <select id="user-selector" class="profile-select">
+          <option value="brijesh@BadaKadam.com">Brijesh Sharma (Hyderabad)</option>
+          <option value="priya@BadaKadam.com">Priya Verma (Hyderabad)</option>
+          <option value="rahul@BadaKadam.com">Rahul Mehta (Hyderabad)</option>
+          <option value="amit@BadaKadam.com">Amit Patel (Mumbai)</option>
+          <option value="ananya@BadaKadam.com">Ananya Rao (Bangalore)</option>
+        </select>
+      </div>
+      <div id="member-since-display" style="font-size: 11px; color: var(--text-muted); display: none; font-weight: 500; margin-right: 8px;">Member since: August 2026</div>
     </div>
   </header>
 
@@ -190,8 +194,22 @@
       <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 8px;">My Rankings Universe</h2>
       <p style="color: var(--text-muted); margin-bottom: 24px;">Demographic & Geographic fair competition layers where everyone has a chance to win.</p>
 
-      <div class="rankings-grid" id="rankings-container">
+      <div class="rankings-grid" id="rankings-container" style="margin-bottom: 32px;">
         <!-- Rendered dynamically by JavaScript -->
+      </div>
+
+      <!-- Achievements & Milestones Panel -->
+      <div class="glass-card" style="padding: 24px; background: rgba(17, 24, 39, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px;">
+        <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 4px; color: white; display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-medal" style="color: var(--accent-cyan);"></i> Achievements & Milestones
+        </h3>
+        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">
+          Cult.fit-inspired consistency milestones. Keep walking, build streaks, and unlock new badges!
+        </p>
+        
+        <div class="badges-grid" id="badges-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+          <!-- Loaded dynamically by JavaScript -->
+        </div>
       </div>
     </section>
 
@@ -537,6 +555,42 @@
           </div>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- WALKCOINS GUIDE MODAL -->
+  <div class="modal-overlay" id="walkcoins-guide-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2>How to Earn WalkCoins</h2>
+          <p style="color: var(--text-muted); font-size: 14px;">BadaKadam wellness rewards program rules.</p>
+        </div>
+        <button class="icon-btn" id="close-walkcoins-guide-modal-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 10px; border-left: 4px solid var(--accent-cyan);">
+          <h3 style="font-size: 14px; font-weight: 700; color: white; margin-bottom: 4px;"><i class="fa-solid fa-rocket" style="color: var(--accent-cyan);"></i> Signup Welcome Bonus</h3>
+          <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin: 0;">Get <strong>100 WalkCoins</strong> instantly when you create a BadaKadam profile.</p>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 10px; border-left: 4px solid #10B981;">
+          <h3 style="font-size: 14px; font-weight: 700; color: white; margin-bottom: 4px;"><i class="fa-solid fa-calendar-check" style="color: #10B981;"></i> Daily Goal Hit</h3>
+          <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin: 0;">Earn <strong>20 WalkCoins</strong> every day you reach your customized daily step goal.</p>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 10px; border-left: 4px solid #F59E0B;">
+          <h3 style="font-size: 14px; font-weight: 700; color: white; margin-bottom: 4px;"><i class="fa-solid fa-fire-flame-curved" style="color: #F59E0B;"></i> Consistency Streak Milestones</h3>
+          <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin-bottom: 6px;">Maintain your walking streak to unlock huge bonuses:</p>
+          <ul style="font-size: 12px; color: var(--text-muted); margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 2px;">
+            <li>🔥 <strong>7-Day Streak</strong>: +50 WalkCoins</li>
+            <li>👑 <strong>15-Day Streak</strong>: +100 WalkCoins</li>
+            <li>👑 <strong>30-Day Streak</strong>: +250 WalkCoins</li>
+          </ul>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 10px; border-left: 4px solid #EC4899;">
+          <h3 style="font-size: 14px; font-weight: 700; color: white; margin-bottom: 4px;"><i class="fa-solid fa-users" style="color: #EC4899;"></i> Group Challenge Target</h3>
+          <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin: 0;">Earn <strong>150 WalkCoins</strong> when your social group meets its overall target step goal.</p>
+        </div>
+      </div>
     </div>
   </div>
 
