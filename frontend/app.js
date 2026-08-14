@@ -37,6 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
+  initViewportSwitcher();
+  initDailyChallenge();
   initAvatarSetup();
 });
 
@@ -456,14 +458,30 @@ async function fetchTodayActivity() {
     const data = await res.json();
 
     if (res.ok) {
-      document.getElementById('step-count-display').innerText = data.summary.totalSteps.toLocaleString();
-      document.getElementById('step-goal-target').innerText = data.dailyGoal.toLocaleString();
-      document.getElementById('goal-percent').innerText = `${data.completionPercentage}%`;
-      document.getElementById('calories-display').innerText = data.summary.totalCalories;
+      const steps = data.summary.totalSteps;
+      const goal = data.dailyGoal;
+      const percent = data.completionPercentage;
+
+      document.getElementById('step-count-display').innerText = steps.toLocaleString();
+      document.getElementById('step-goal-target').innerText = goal.toLocaleString();
+      document.getElementById('goal-percent').innerText = `${percent}%`;
+      document.getElementById('calories-display').innerText = `${data.summary.totalCalories} kcal`;
       document.getElementById('distance-display').innerText = `${(data.summary.totalDistanceMeters / 1000).toFixed(1)} km`;
-      document.getElementById('streak-display').innerText = `${data.streakDays} Days`;
+      document.getElementById('streak-display').innerText = `${data.streakDays}`;
       document.getElementById('user-coins').innerText = currentUser.walkCoins.toLocaleString();
       document.getElementById('marketplace-coins').innerText = currentUser.walkCoins.toLocaleString();
+      document.getElementById('dashboard-coins-display').innerText = currentUser.walkCoins.toLocaleString();
+
+      // Circular Ring offset animation
+      const ringFill = document.getElementById('step-ring-fill');
+      if (ringFill) {
+        const circumference = 502.6; // 2 * pi * 80
+        const offset = circumference - Math.min(1.0, percent / 100) * circumference;
+        ringFill.style.strokeDashoffset = offset;
+      }
+
+      // Update Daily Challenge progress if active
+      updateChallengeProgress(steps);
     }
   } catch (err) {
     console.error(err);
@@ -482,6 +500,17 @@ async function fetchRankings() {
       // AI Insight Update
       document.getElementById('ai-message-text').innerText = `"${data.aiInsight.message}"`;
       document.getElementById('ai-nudge-text').innerText = `"${data.aiInsight.nudge}"`;
+
+      // Update Premium City stats on dashboard
+      const cityRank = data.rankings.city.rank;
+      const cityTotal = data.rankings.city.total;
+      const cityName = data.rankings.city.name;
+      
+      document.getElementById('relative-rank-display').innerText = `#${cityRank}`;
+      document.getElementById('city-rank-headline').innerText = `${cityName} Rank #${cityRank}`;
+      document.getElementById('city-trend-display').innerText = `Up ${15 - (cityRank % 4)} positions today`;
+      document.getElementById('city-tier-display').innerText = `Top ${data.fitnessPercentile}`;
+      document.getElementById('city-total-walkers').innerText = `${cityTotal.toLocaleString()} users`;
 
       const formatRank = (rank, total) => {
         let prefix = '';
@@ -573,6 +602,12 @@ async function fetchRankings() {
           { name: 'Centurion', desc: 'Reach 100k lifetime steps', emoji: '💯', unlocked: lifetime >= 100000, prog: `${lifetime.toLocaleString()} / 100,000`, anim: 'float-anim' },
           { name: 'Millionaire Walk', desc: 'Reach 1M lifetime steps', emoji: '🌌', unlocked: lifetime >= 1000000, prog: `${lifetime.toLocaleString()} / 1,000,000`, anim: 'run-anim' }
         ];
+
+        const unlockedCount = milestones.filter(m => m.unlocked).length;
+        const badgesCountEl = document.getElementById('dashboard-badges-count');
+        if (badgesCountEl) {
+          badgesCountEl.innerText = `${unlockedCount} / 5 Badges`;
+        }
 
         const badgesContainer = document.getElementById('badges-container');
         if (badgesContainer) {
@@ -1113,3 +1148,201 @@ async function compileTopWalkers(groups) {
     console.error('Error compiling top group walkers:', err);
   }
 }
+
+// Device Viewport switcher & emulator controller
+let currentViewportMode = 'web';
+
+function initViewportSwitcher() {
+  const switchWebBtn = document.getElementById('switch-web-btn');
+  const switchMobileBtn = document.getElementById('switch-mobile-btn');
+  
+  if (switchWebBtn && switchMobileBtn) {
+    switchWebBtn.addEventListener('click', () => setViewportMode('web'));
+    switchMobileBtn.addEventListener('click', () => setViewportMode('mobile'));
+  }
+
+  // Update clock on mobile status bar
+  setInterval(() => {
+    const timeEl = document.getElementById('mobile-time');
+    if (timeEl) {
+      const now = new Date();
+      timeEl.innerText = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+  }, 1000);
+}
+
+function setViewportMode(mode) {
+  if (currentViewportMode === mode) return;
+  currentViewportMode = mode;
+
+  const wrapper = document.getElementById('viewport-wrapper');
+  const webBtn = document.getElementById('switch-web-btn');
+  const mobileBtn = document.getElementById('switch-mobile-btn');
+  const header = document.getElementById('app-header');
+  const main = document.getElementById('app-main');
+
+  if (mode === 'mobile') {
+    wrapper.classList.remove('view-mode-web');
+    wrapper.classList.add('view-mode-mobile');
+    webBtn.classList.remove('active');
+    mobileBtn.classList.add('active');
+
+    // Reparent header and main to mobile screen content
+    document.getElementById('mobile-screen').appendChild(header);
+    document.getElementById('mobile-screen').appendChild(main);
+  } else {
+    wrapper.classList.remove('view-mode-mobile');
+    wrapper.classList.add('view-mode-web');
+    mobileBtn.classList.remove('active');
+    webBtn.classList.add('active');
+
+    // Reparent header and main back to web container
+    document.getElementById('web-container').appendChild(header);
+    document.getElementById('web-container').appendChild(main);
+  }
+}
+
+// Interactive Daily Challenge Logic
+let challengeActive = false;
+let challengeStartSteps = 0;
+const CHALLENGE_TARGET_DIFFERENCE = 2000;
+
+function initDailyChallenge() {
+  const startBtn = document.getElementById('start-challenge-btn');
+  if (startBtn) {
+    startBtn.addEventListener('click', handleChallengeClick);
+  }
+
+  // Load from local storage
+  const active = localStorage.getItem('challenge_active') === 'true';
+  const completed = localStorage.getItem('challenge_completed') === 'true';
+  
+  if (completed) {
+    setChallengeCompletedState();
+  } else if (active) {
+    challengeActive = true;
+    challengeStartSteps = parseInt(localStorage.getItem('challenge_start_steps') || '0', 10);
+    setChallengeActiveState();
+  }
+}
+
+function handleChallengeClick() {
+  if (challengeActive) {
+    // Act as steps sync trigger
+    handleSyncSteps();
+    return;
+  }
+
+  // Activate challenge
+  const stepsText = document.getElementById('step-count-display').innerText.replace(/,/g, '');
+  const currentSteps = parseInt(stepsText || '0', 10);
+  
+  challengeActive = true;
+  challengeStartSteps = currentSteps;
+  localStorage.setItem('challenge_active', 'true');
+  localStorage.setItem('challenge_start_steps', currentSteps.toString());
+  localStorage.setItem('challenge_completed', 'false');
+
+  setChallengeActiveState();
+  updateChallengeProgress(currentSteps);
+  
+  // Show toast feedback
+  showToast('Daily Challenge Activated! Walk 2,000 steps and tap sync to complete!');
+}
+
+function setChallengeActiveState() {
+  const statusBadge = document.getElementById('challenge-status-badge');
+  const textEl = document.getElementById('challenge-text');
+  const startBtn = document.getElementById('start-challenge-btn');
+  const progContainer = document.getElementById('challenge-progress-container');
+
+  if (statusBadge) {
+    statusBadge.innerText = 'Active';
+    statusBadge.className = 'challenge-active-badge';
+  }
+  if (textEl) {
+    textEl.innerText = `Walk 2,000 more steps today (Target: ${(challengeStartSteps + CHALLENGE_TARGET_DIFFERENCE).toLocaleString()} steps)`;
+  }
+  if (startBtn) {
+    startBtn.innerText = 'Sync Steps to Verify';
+    startBtn.style.background = 'linear-gradient(135deg, var(--primary-emerald), #059669)';
+  }
+  if (progContainer) {
+    progContainer.style.display = 'block';
+  }
+}
+
+function setChallengeCompletedState() {
+  const statusBadge = document.getElementById('challenge-status-badge');
+  const startBtn = document.getElementById('start-challenge-btn');
+  const textEl = document.getElementById('challenge-text');
+  const progContainer = document.getElementById('challenge-progress-container');
+
+  if (statusBadge) {
+    statusBadge.innerText = 'Completed';
+    statusBadge.className = 'challenge-success-badge';
+  }
+  if (textEl) {
+    textEl.innerText = 'Congratulations! You completed today\'s step challenge.';
+  }
+  if (startBtn) {
+    startBtn.innerText = 'Completed ✅';
+    startBtn.disabled = true;
+    startBtn.style.background = 'rgba(255,255,255,0.05)';
+    startBtn.style.color = 'var(--text-muted)';
+    startBtn.style.borderColor = 'transparent';
+    startBtn.style.boxShadow = 'none';
+  }
+  if (progContainer) {
+    progContainer.style.display = 'none';
+  }
+}
+
+async function updateChallengeProgress(currentSteps) {
+  if (!challengeActive) return;
+
+  const diff = currentSteps - challengeStartSteps;
+  const target = CHALLENGE_TARGET_DIFFERENCE;
+  const progressText = document.getElementById('challenge-progress-text');
+  const progressFill = document.getElementById('challenge-progress-fill');
+
+  if (progressText) {
+    progressText.innerText = `${Math.max(0, diff).toLocaleString()} / ${target.toLocaleString()} steps`;
+  }
+  if (progressFill) {
+    const percent = Math.min(100, Math.max(0, (diff / target) * 100));
+    progressFill.style.width = `${percent}%`;
+  }
+
+  if (diff >= target) {
+    // Challenge success!
+    challengeActive = false;
+    localStorage.setItem('challenge_active', 'false');
+    localStorage.setItem('challenge_completed', 'true');
+    setChallengeCompletedState();
+    
+    // Reward WalkCoins
+    try {
+      const res = await fetch(`${API_BASE}/rewards/challenge/complete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        currentUser.walkCoins = data.newBalance;
+        document.getElementById('user-coins').innerText = currentUser.walkCoins.toLocaleString();
+        document.getElementById('marketplace-coins').innerText = currentUser.walkCoins.toLocaleString();
+        document.getElementById('dashboard-coins-display').innerText = currentUser.walkCoins.toLocaleString();
+        
+        showToast('🎉 Challenge Completed! +50 WalkCoins added to your wallet!');
+        await fetchWalletHistory();
+      }
+    } catch (err) {
+      console.error('Error rewarding challenge coins:', err);
+    }
+  }
+}
+

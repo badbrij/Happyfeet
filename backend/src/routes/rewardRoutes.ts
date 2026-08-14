@@ -156,4 +156,47 @@ router.get('/wallet/history', authMiddleware, async (req: AuthRequest, res: Resp
   }
 });
 
+// POST /api/v1/rewards/challenge/complete
+router.post('/challenge/complete', authMiddleware, async (req: AuthRequest, res: Response) => {
+  const userId = req.userId!;
+
+  try {
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('walk_coins')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (userError || !user) return res.status(404).json({ error: 'User not found' });
+
+    const newBalance = user.walk_coins + 50;
+
+    // Update in database
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ walk_coins: newBalance })
+      .eq('id', userId);
+
+    if (updateError) {
+      console.error(updateError);
+      return res.status(500).json({ error: 'Failed to update coins balance' });
+    }
+
+    // Insert transaction audit
+    await supabase.from('coin_transactions').insert([{
+      id: `tx_chall_${userId}_${Date.now()}`,
+      user_id: userId,
+      amount: 50,
+      transaction_type: 'ChallengeCompletion',
+      description: 'Daily step challenge met (+50 Coins)',
+    }]);
+
+    return res.json({ success: true, newBalance });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Server error completing challenge' });
+  }
+});
+
 export default router;
+

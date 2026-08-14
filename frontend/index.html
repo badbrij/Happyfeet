@@ -77,202 +77,344 @@
 </head>
 <body>
 
-  <!-- Header & Navigation -->
-  <header>
-    <div class="logo-container">
-      <i class="fa-solid fa-shoe-prints logo-icon"></i>
-      <span class="logo-text">BadaKadam</span>
-    </div>
+  <!-- 1. Top Developer Viewport Switcher Bar -->
+  <div class="viewport-switcher-bar">
+    <button class="switcher-btn active" id="switch-web-btn">
+      <i class="fa-solid fa-desktop"></i> Web Layout
+    </button>
+    <button class="switcher-btn" id="switch-mobile-btn">
+      <i class="fa-solid fa-mobile-screen-button"></i> Mobile Layout
+    </button>
+  </div>
 
-    <nav class="nav-tabs">
-      <button class="nav-btn active" data-tab="dashboard-view"><i class="fa-solid fa-chart-pie"></i> Dashboard</button>
-      <button class="nav-btn" data-tab="rankings-view"><i class="fa-solid fa-trophy"></i> Rankings Universe</button>
-      <button class="nav-btn" data-tab="groups-view"><i class="fa-solid fa-users"></i> Groups & Battles</button>
-      <button class="nav-btn" data-tab="rewards-view"><i class="fa-solid fa-gift"></i> Marketplace</button>
-    </nav>
-
-    <div class="user-profile-widget" style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <button class="register-hero-btn" id="open-quick-login-modal-btn">
-          <i class="fa-solid fa-user"></i> Login / Signup
-        </button>
-
-        <div class="coins-badge" style="display: flex; align-items: center; gap: 6px;">
-          <i class="fa-solid fa-coins"></i> <span><strong id="user-coins">1,450</strong> WalkCoins</span>
-          <i class="fa-solid fa-circle-question" id="show-coins-guide-btn" style="cursor: pointer; font-size: 14px; color: var(--accent-cyan);" title="How to earn WalkCoins?"></i>
+  <!-- 2. Viewport Wrapper -->
+  <div class="app-viewport-wrapper view-mode-web" id="viewport-wrapper">
+    
+    <!-- Desktop Container (Header & Main reside here by default) -->
+    <div class="web-layout-container" id="web-container">
+      
+      <!-- Header & Navigation -->
+      <header id="app-header">
+        <div class="logo-container">
+          <i class="fa-solid fa-shoe-prints logo-icon"></i>
+          <span class="logo-text">BadaKadam</span>
         </div>
 
-        <!-- PROFILE PICTURE WIDGET -->
-        <div id="header-user-avatar" class="avatar-circle" style="display: none; margin-right: 8px;">
-          <div id="header-avatar-render" class="avatar-circle-render">👤</div>
+        <nav class="nav-tabs">
+          <button class="nav-btn active" data-tab="dashboard-view"><i class="fa-solid fa-chart-pie"></i> Dashboard</button>
+          <button class="nav-btn" data-tab="rankings-view"><i class="fa-solid fa-trophy"></i> Rankings Universe</button>
+          <button class="nav-btn" data-tab="groups-view"><i class="fa-solid fa-users"></i> Groups & Battles</button>
+          <button class="nav-btn" data-tab="rewards-view"><i class="fa-solid fa-gift"></i> Marketplace</button>
+        </nav>
+
+        <div class="user-profile-widget" style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button class="register-hero-btn" id="open-quick-login-modal-btn">
+              <i class="fa-solid fa-user"></i> Login / Signup
+            </button>
+
+            <div class="coins-badge" style="display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-coins"></i> <span><strong id="user-coins">1,450</strong> WalkCoins</span>
+              <i class="fa-solid fa-circle-question" id="show-coins-guide-btn" style="cursor: pointer; font-size: 14px; color: var(--accent-cyan);" title="How to earn WalkCoins?"></i>
+            </div>
+
+            <!-- PROFILE PICTURE WIDGET -->
+            <div id="header-user-avatar" class="avatar-circle" style="display: none; margin-right: 8px;">
+              <div id="header-avatar-render" class="avatar-circle-render">👤</div>
+            </div>
+
+            <select id="user-selector" class="profile-select">
+              <optgroup label="Demo Profiles">
+                <option value="brijesh@BadaKadam.com">Brijesh Sharma (Hyderabad)</option>
+                <option value="priya@BadaKadam.com">Priya Verma (Hyderabad)</option>
+                <option value="rahul@BadaKadam.com">Rahul Mehta (Hyderabad)</option>
+                <option value="amit@BadaKadam.com">Amit Patel (Mumbai)</option>
+                <option value="ananya@BadaKadam.com">Ananya Rao (Bangalore)</option>
+              </optgroup>
+              <optgroup label="Registered Profiles" id="user-registered-group">
+                <!-- Dynamically populated -->
+              </optgroup>
+              <optgroup label="Top 5 Group Walkers" id="user-top-walkers-group">
+                <!-- Dynamically populated from user's groups -->
+              </optgroup>
+            </select>
+          </div>
+          <div id="member-since-display" style="font-size: 11px; color: var(--text-muted); display: none; font-weight: 500; margin-right: 8px;">Member since: August 2026</div>
         </div>
+      </header>
 
-        <select id="user-selector" class="profile-select">
-          <optgroup label="Demo Profiles">
-            <option value="brijesh@BadaKadam.com">Brijesh Sharma (Hyderabad)</option>
-            <option value="priya@BadaKadam.com">Priya Verma (Hyderabad)</option>
-            <option value="rahul@BadaKadam.com">Rahul Mehta (Hyderabad)</option>
-            <option value="amit@BadaKadam.com">Amit Patel (Mumbai)</option>
-            <option value="ananya@BadaKadam.com">Ananya Rao (Bangalore)</option>
-          </optgroup>
-          <optgroup label="Registered Profiles" id="user-registered-group">
-            <!-- Dynamically populated -->
-          </optgroup>
-          <optgroup label="Top 5 Group Walkers" id="user-top-walkers-group">
-            <!-- Dynamically populated from user's groups -->
-          </optgroup>
-        </select>
-      </div>
-      <div id="member-since-display" style="font-size: 11px; color: var(--text-muted); display: none; font-weight: 500; margin-right: 8px;">Member since: August 2026</div>
-    </div>
-  </header>
-
-  <main>
-    <!-- View 1: Main Dashboard -->
-    <section id="dashboard-view" class="view-panel active">
-      <div class="dashboard-grid">
-        <div class="left-column">
-          <!-- Step Hero Card -->
-          <div class="glass-card hero-step-card">
-            <div class="step-info-main">
-              <h2>Today's Activity</h2>
-              <div class="step-counter" id="step-count-display">14,521</div>
-              <div class="step-goal-text">Daily Goal: <strong id="step-goal-target">10,000</strong> steps (<span id="goal-percent">145%</span> completed)</div>
+      <main id="app-main">
+        <!-- View 1: Main Dashboard -->
+        <section id="dashboard-view" class="view-panel active">
+          <div class="dashboard-grid">
+            <div class="left-column" style="display: flex; flex-direction: column; gap: 24px;">
               
-              <button class="sync-action-btn" id="sync-steps-btn">
-                <i class="fa-solid fa-rotate"></i> Sync (HealthKit / Google Fit)
+              <!-- Premium Redesigned Steps Progress Hero Card -->
+              <div class="glass-card premium-dashboard-hero">
+                <h2 style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Today's Activity Meter</h2>
+                
+                <!-- Circular Activity Meter -->
+                <div class="step-progress-circle-container">
+                  <svg class="step-progress-svg" viewBox="0 0 180 180">
+                    <defs>
+                      <linearGradient id="step-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#10B981" />
+                        <stop offset="100%" stop-color="#06B6D4" />
+                      </linearGradient>
+                    </defs>
+                    <circle class="step-progress-circle-bg" cx="90" cy="90" r="80" />
+                    <circle class="step-progress-circle-fill" id="step-ring-fill" cx="90" cy="90" r="80" />
+                  </svg>
+                  <div class="step-circle-inner-text">
+                    <div class="step-circle-val" id="step-count-display">14,521</div>
+                    <div class="step-circle-label">Steps</div>
+                  </div>
+                </div>
+
+                <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">
+                  Daily Goal: <strong id="step-goal-target" style="color: white;">10,000</strong> steps (<span id="goal-percent" style="color: var(--primary-emerald); font-weight: 700;">145%</span> completed)
+                </div>
+
+                <div style="display: flex; gap: 24px; align-items: center; background: rgba(255,255,255,0.03); padding: 8px 20px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 16px;">
+                  <span style="font-size: 13px; font-weight: 700; color: #EF4444;"><i class="fa-solid fa-fire"></i> <span id="streak-display">21</span> Day Streak</span>
+                  <span style="width: 1px; height: 12px; background: rgba(255,255,255,0.15);"></span>
+                  <span style="font-size: 13px; font-weight: 700; color: #F59E0B;"><i class="fa-solid fa-trophy"></i> Rank <span id="relative-rank-display">#48</span></span>
+                </div>
+
+                <button class="sync-action-btn" id="sync-steps-btn" style="margin-top: 0; padding: 10px 20px; font-size: 13px; border-radius: 10px;">
+                  <i class="fa-solid fa-rotate"></i> Sync (HealthKit / Google Fit)
+                </button>
+              </div>
+
+              <!-- Premium 4-Card Stats Grid -->
+              <div class="premium-stats-grid">
+                <div class="stat-card-premium">
+                  <div class="stat-card-icon" style="background: rgba(239,68,68,0.15); color: #EF4444;">
+                    <i class="fa-solid fa-fire-flame-curved"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Calories</div>
+                    <div style="font-size: 16px; font-weight: 800; color: white;" id="calories-display">581 kcal</div>
+                  </div>
+                </div>
+                
+                <div class="stat-card-premium">
+                  <div class="stat-card-icon" style="background: rgba(6,182,212,0.15); color: var(--accent-cyan);">
+                    <i class="fa-solid fa-route"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Distance</div>
+                    <div style="font-size: 16px; font-weight: 800; color: white;" id="distance-display">12.4 km</div>
+                  </div>
+                </div>
+
+                <div class="stat-card-premium">
+                  <div class="stat-card-icon" style="background: rgba(245,158,11,0.15); color: var(--accent-amber);">
+                    <i class="fa-solid fa-coins"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">WalkCoins</div>
+                    <div style="font-size: 16px; font-weight: 800; color: white;"><span id="dashboard-coins-display">1,450</span> Coins</div>
+                  </div>
+                </div>
+
+                <div class="stat-card-premium">
+                  <div class="stat-card-icon" style="background: rgba(139,92,246,0.15); color: #A78BFA;">
+                    <i class="fa-solid fa-medal"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Achievements</div>
+                    <div style="font-size: 16px; font-weight: 800; color: white;" id="dashboard-badges-count">2 Badges</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Interactive Challenge Card -->
+              <div class="glass-card challenge-card-premium">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                  <div>
+                    <h3 style="font-size: 16px; font-weight: 700; color: white; display: flex; align-items: center; gap: 8px;">
+                      <i class="fa-solid fa-bullseye" style="color: var(--accent-amber);"></i> Daily Challenge
+                    </h3>
+                  </div>
+                  <span class="challenge-active-badge" id="challenge-status-badge">Available</span>
+                </div>
+                
+                <p style="font-size: 13px; color: var(--text-main); margin-bottom: 8px; font-weight: 600;" id="challenge-text">
+                  Walk 2,000 more steps today.
+                </p>
+                <div style="font-size: 12px; color: var(--accent-amber); font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 4px;">
+                  <i class="fa-solid fa-coins"></i> Reward: 50 WalkCoins
+                </div>
+
+                <!-- Challenge active progress bar -->
+                <div id="challenge-progress-container" style="display: none; margin-bottom: 16px;">
+                  <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
+                    <span style="color: var(--text-muted);">Active Challenge Progress:</span>
+                    <span style="font-weight: 700; color: white;" id="challenge-progress-text">0 / 2,000 steps</span>
+                  </div>
+                  <div class="progress-bar-bg" style="margin-top: 0; height: 6px;">
+                    <div class="progress-bar-fill" id="challenge-progress-fill" style="width: 0%; background: linear-gradient(to right, #F59E0B, #EF4444);"></div>
+                  </div>
+                </div>
+
+                <button class="sync-action-btn" id="start-challenge-btn" style="margin-top: 0; width: 100%; justify-content: center; background: linear-gradient(135deg, var(--accent-cyan), #0284C7); box-shadow: 0 4px 14px rgba(6, 182, 212, 0.25);">
+                  Start Challenge
+                </button>
+              </div>
+
+            </div>
+
+            <!-- Right Column (Highlights & Status) -->
+            <div class="right-column" style="display: flex; flex-direction: column; gap: 24px;">
+              
+              <!-- City Leaderboard Card -->
+              <div class="glass-card">
+                <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-map-location-dot" style="color: var(--accent-cyan);"></i> City Leaderboard Standings
+                </h3>
+                
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 12px; text-align: center; margin-bottom: 16px;">
+                  <div style="font-size: 24px; font-weight: 800; color: white; margin-bottom: 4px;" id="city-rank-headline">Hyderabad Rank #48</div>
+                  <div style="font-size: 13px; color: #10B981; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                    <i class="fa-solid fa-arrow-trend-up"></i> <span id="city-trend-display">Up 12 positions today</span>
+                  </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 8px 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
+                    <span style="color: var(--text-muted);">Performance Tier:</span>
+                    <strong style="color: #F59E0B;" id="city-tier-display">Top 5% of walkers</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 8px 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
+                    <span style="color: var(--text-muted);">Active Walks in City:</span>
+                    <strong style="color: white;" id="city-total-walkers">12,420 users</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Coach Insight Card -->
+              <div class="glass-card ai-card" style="margin-bottom: 0;">
+                <div class="ai-header">
+                  <i class="fa-solid fa-brain-circuit"></i> AI Wellness Coach Insight
+                </div>
+                <div class="ai-message" id="ai-message-text" style="font-style: italic;">
+                  "You walked more than 83% of Males aged 35-44 in Hyderabad today."
+                </div>
+                <div class="ai-nudge" id="ai-nudge-text" style="margin-top: 8px; line-height: 1.4;">
+                  "Walk 1,200 more steps to enter Hyderabad Top 10%!"
+                </div>
+              </div>
+
+              <!-- Anti-Cheat and verification status -->
+              <div class="glass-card" style="padding: 16px;">
+                <h3 style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Anti-Cheat Status</h3>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <span style="font-size: 13px; font-weight: 600;">Fraud Score:</span>
+                  <span class="rank-badge" style="background: rgba(16,185,129,0.2); color: #10B981; font-size: 11px;">0 / 100 (Verified Clean)</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- View 2: My Rankings Universe -->
+        <section id="rankings-view" class="view-panel">
+          <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 8px;">My Rankings Universe</h2>
+          <p style="color: var(--text-muted); margin-bottom: 24px;">Demographic & Geographic fair competition layers where everyone has a chance to win.</p>
+
+          <div class="rankings-grid" id="rankings-container" style="margin-bottom: 32px;">
+            <!-- Rendered dynamically by JavaScript -->
+          </div>
+
+          <!-- Achievements & Milestones Panel -->
+          <div class="glass-card" style="padding: 24px; background: rgba(17, 24, 39, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px;">
+            <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 4px; color: white; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-medal" style="color: var(--accent-cyan);"></i> Achievements & Milestones
+            </h3>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">
+              Cult.fit-inspired consistency milestones. Keep walking, build streaks, and unlock new badges!
+            </p>
+            
+            <div class="badges-grid" id="badges-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+              <!-- Loaded dynamically by JavaScript -->
+            </div>
+          </div>
+        </section>
+
+        <!-- View 3: Groups & Battles -->
+        <section id="groups-view" class="view-panel">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 4px;">Social Groups & Challenges</h2>
+              <p style="color: var(--text-muted);">Family, office, and neighborhood walking circles.</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <button class="sync-action-btn" id="join-group-btn" style="margin-top: 0; background: #374151; color: white;">
+                <i class="fa-solid fa-right-to-bracket"></i> Join Group
+              </button>
+              <button class="sync-action-btn" id="create-group-btn" style="margin-top: 0;">
+                <i class="fa-solid fa-plus"></i> Create New Group
               </button>
             </div>
-            
-            <div class="stats-mini-grid" style="display: flex; gap: 24px; text-align: center;">
-              <div>
-                <i class="fa-solid fa-fire" style="color: #F59E0B; font-size: 20px;"></i>
-                <div style="font-weight: 800; font-size: 22px; margin-top: 4px;" id="calories-display">581</div>
-                <div style="font-size: 12px; color: var(--text-muted);">Calories</div>
+          </div>
+
+          <div id="groups-container">
+            <!-- Rendered dynamically by JavaScript -->
+          </div>
+        </section>
+
+        <!-- View 4: Marketplace -->
+        <section id="rewards-view" class="view-panel">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div>
+              <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 4px;">WalkCoins Marketplace</h2>
+              <p style="color: var(--text-muted);">Redeem your steps for real-world rewards and vouchers.</p>
+            </div>
+            <div class="coins-badge" style="font-size: 16px;">
+              <i class="fa-solid fa-coins"></i> Balance: <span id="marketplace-coins">1,450</span> WalkCoins
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 360px; gap: 28px; align-items: start;">
+            <div class="rewards-grid" id="rewards-container" style="margin-top: 0;">
+              <!-- Rendered dynamically by JavaScript -->
+            </div>
+
+            <!-- Wallet History card -->
+            <div class="glass-card" style="padding: 20px;">
+              <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-clock-rotate-left" style="color: var(--accent-amber);"></i> Wallet Activity History
+              </h3>
+              <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 16px; line-height: 1.4;">Historical auditing log of all coins earned, streaks, and coupon redemptions.</p>
+              <div id="wallet-history-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto; padding-right: 4px;">
+                <!-- Loaded dynamically by JavaScript -->
               </div>
-              <div>
-                <i class="fa-solid fa-route" style="color: #06B6D4; font-size: 20px;"></i>
-                <div style="font-weight: 800; font-size: 22px; margin-top: 4px;" id="distance-display">12.4 km</div>
-                <div style="font-size: 12px; color: var(--text-muted);">Distance</div>
-              </div>
-              <div>
-                <i class="fa-solid fa-bolt" style="color: #10B981; font-size: 20px;"></i>
-                <div style="font-weight: 800; font-size: 22px; margin-top: 4px;" id="streak-display">21 Days</div>
-                <div style="font-size: 12px; color: var(--text-muted);">Streak</div>
-              </div>
             </div>
           </div>
+        </section>
+      </main>
 
-          <!-- AI Insight Card -->
-          <div class="glass-card ai-card">
-            <div class="ai-header">
-              <i class="fa-solid fa-brain-circuit"></i> AI Wellness Coach Insight
-            </div>
-            <div class="ai-message" id="ai-message-text">
-              "You walked more than 83% of Males aged 35-44 in Hyderabad today."
-            </div>
-            <div class="ai-nudge" id="ai-nudge-text">
-              "Take a quick 15-minute walk at 6 PM to maintain your 21-day streak and enter the top 10%!"
-            </div>
-          </div>
-        </div>
+    </div>
 
-        <!-- Right Column (Highlights & Status) -->
-        <div class="right-column">
-          <div class="glass-card">
-            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px;">Top Rank Summary</h3>
-            <div id="quick-rank-summary" style="display: flex; flex-direction: column; gap: 14px;">
-              <!-- Dynamic items populated by JS -->
-            </div>
-          </div>
-
-          <div class="glass-card" style="margin-top: 20px;">
-            <h3 style="font-size: 15px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">Anti-Cheat Status</h3>
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span style="font-size: 14px; font-weight: 600;">Fraud Score:</span>
-              <span class="rank-badge" style="background: rgba(16,185,129,0.2); color: #10B981;">0 / 100 (Verified Clean)</span>
-            </div>
-          </div>
+    <!-- Phone Emulator Layout Frame Mockup -->
+    <div class="mobile-phone-frame">
+      <div class="mobile-phone-notch"></div>
+      <div class="mobile-phone-status-bar">
+        <span id="mobile-time">18:30</span>
+        <div style="display: flex; gap: 6px;">
+          <i class="fa-solid fa-signal"></i>
+          <i class="fa-solid fa-wifi"></i>
+          <i class="fa-solid fa-battery-three-quarters" style="color: #10B981;"></i>
         </div>
       </div>
-    </section>
-
-    <!-- View 2: My Rankings Universe -->
-    <section id="rankings-view" class="view-panel">
-      <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 8px;">My Rankings Universe</h2>
-      <p style="color: var(--text-muted); margin-bottom: 24px;">Demographic & Geographic fair competition layers where everyone has a chance to win.</p>
-
-      <div class="rankings-grid" id="rankings-container" style="margin-bottom: 32px;">
-        <!-- Rendered dynamically by JavaScript -->
+      <div class="mobile-phone-screen-content" id="mobile-screen">
+        <!-- Re-parented header & main will be mounted here in mobile view mode -->
       </div>
+    </div>
 
-      <!-- Achievements & Milestones Panel -->
-      <div class="glass-card" style="padding: 24px; background: rgba(17, 24, 39, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px;">
-        <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 4px; color: white; display: flex; align-items: center; gap: 8px;">
-          <i class="fa-solid fa-medal" style="color: var(--accent-cyan);"></i> Achievements & Milestones
-        </h3>
-        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">
-          Cult.fit-inspired consistency milestones. Keep walking, build streaks, and unlock new badges!
-        </p>
-        
-        <div class="badges-grid" id="badges-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
-          <!-- Loaded dynamically by JavaScript -->
-        </div>
-      </div>
-    </section>
-
-    <!-- View 3: Social Groups -->
-    <section id="groups-view" class="view-panel">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-        <div>
-          <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 4px;">Social Groups & Challenges</h2>
-          <p style="color: var(--text-muted);">Family, office, and neighborhood walking circles.</p>
-        </div>
-        <div style="display: flex; gap: 12px;">
-          <button class="sync-action-btn" id="join-group-btn" style="margin-top: 0; background: #374151; color: white;">
-            <i class="fa-solid fa-right-to-bracket"></i> Join Group
-          </button>
-          <button class="sync-action-btn" id="create-group-btn" style="margin-top: 0;">
-            <i class="fa-solid fa-plus"></i> Create New Group
-          </button>
-        </div>
-      </div>
-
-      <div id="groups-container">
-        <!-- Rendered dynamically by JavaScript -->
-      </div>
-    </section>
-
-    <!-- View 4: Marketplace -->
-    <section id="rewards-view" class="view-panel">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-        <div>
-          <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 4px;">WalkCoins Marketplace</h2>
-          <p style="color: var(--text-muted);">Redeem your steps for real-world rewards and vouchers.</p>
-        </div>
-        <div class="coins-badge" style="font-size: 16px;">
-          <i class="fa-solid fa-coins"></i> Balance: <span id="marketplace-coins">1,450</span> WalkCoins
-        </div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 360px; gap: 28px; align-items: start;">
-        <div class="rewards-grid" id="rewards-container" style="margin-top: 0;">
-          <!-- Rendered dynamically by JavaScript -->
-        </div>
-
-        <!-- Wallet History card -->
-        <div class="glass-card" style="padding: 20px;">
-          <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-clock-rotate-left" style="color: var(--accent-amber);"></i> Wallet Activity History
-          </h3>
-          <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 16px; line-height: 1.4;">Historical auditing log of all coins earned, streaks, and coupon redemptions.</p>
-          <div id="wallet-history-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto; padding-right: 4px;">
-            <!-- Loaded dynamically by JavaScript -->
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
+  </div>
 
   <!-- QUICK LOGIN MODAL -->
   <div class="modal-overlay" id="quick-login-modal">
