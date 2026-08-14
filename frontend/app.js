@@ -171,9 +171,9 @@ function initModal() {
     const name = document.getElementById('reg-name').value;
     const email = document.getElementById('reg-email').value;
     const phone = document.getElementById('reg-phone').value;
-    const password = document.getElementById('reg-password').value;
+    const password = 'Password123!';
 
-    if (!name || !email || !phone || !password) {
+    if (!name || !email || !phone) {
       showToast('⚠️ Please fill out all basic details.');
       return;
     }
@@ -271,7 +271,7 @@ async function handleRegistrationSubmit(e) {
   const alias = document.getElementById('reg-alias').value;
   const email = document.getElementById('reg-email').value;
   const phone = document.getElementById('reg-phone').value;
-  const password = document.getElementById('reg-password').value;
+  const password = 'Password123!';
 
   const dob = document.getElementById('reg-dob').value;
   const gender = document.getElementById('reg-gender').value;
