@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initTabs();
   initUserSelector();
   initModal();
+  initLocationSelectors();
   loginUser('brijesh@badakadam.com');
 
   document.getElementById('sync-steps-btn').addEventListener('click', handleSyncSteps);
@@ -301,6 +302,11 @@ async function handleRegistrationSubmit(e) {
   const dailyStepGoal = Number(document.getElementById('reg-goal').value);
 
   const profilePic = document.getElementById('reg-avatar-data').value;
+
+  if (dailyStepGoal <= 0) {
+    showToast('⚠️ Daily step goal must be a positive number.');
+    return;
+  }
 
   const payload = {
     name,
@@ -1441,5 +1447,44 @@ async function updateChallengeProgress(currentSteps) {
       console.error('Error rewarding challenge coins:', err);
     }
   }
+}
+
+// Indian state-city mapping data
+const IndianLocations = {
+  "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool", "Rajahmundry", "Tirupati", "Kakinada"],
+  "Bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Purnia", "Darbhanga"],
+  "Delhi (NCT)": ["New Delhi", "Delhi", "Dwarka", "Rohini"],
+  "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Junagadh", "Gandhinagar"],
+  "Haryana": ["Faridabad", "Gurgaon", "Panipat", "Ambala", "Yamunanagar", "Rohtak"],
+  "Karnataka": ["Bangalore", "Hubli-Dharwad", "Mysore", "Kalaburagi", "Mangalore", "Belgaum", "Davanagere", "Bellary", "Shimoga"],
+  "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Kollam", "Thrissur", "Alappuzha"],
+  "Madhya Pradesh": ["Indore", "Bhopal", "Jabalpur", "Gwalior", "Ujjain", "Sagar", "Dewas"],
+  "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Thane", "Pimpri-Chinchwad", "Nashik", "Kalyan-Dombivli", "Vasai-Virar", "Aurangabad", "Navi Mumbai", "Solapur"],
+  "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali"],
+  "Rajasthan": ["Jaipur", "Jodhpur", "Kota", "Bikaner", "Ajmer", "Udaipur", "Bhilwara", "Alwar"],
+  "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tiruppur", "Erode", "Vellore"],
+  "Telangana": ["Hyderabad", "Secunderabad", "Warangal", "Nizamabad", "Karimnagar", "Ramagundam"],
+  "Uttar Pradesh": ["Lucknow", "Kanpur", "Ghaziabad", "Agra", "Meerut", "Varanasi", "Prayagraj", "Bareilly", "Aligarh", "Moradabad", "Noida"],
+  "West Bengal": ["Kolkata", "Howrah", "Darjeeling", "Siliguri", "Asansol", "Durgapur", "Bardhaman"]
+};
+
+// Initialize State and City dropdown linkages
+function initLocationSelectors() {
+  const stateSelect = document.getElementById('reg-state');
+  const citySelect = document.getElementById('reg-city');
+  if (!stateSelect || !citySelect) return;
+
+  stateSelect.addEventListener('change', (e) => {
+    const selectedState = e.target.value;
+    const cities = IndianLocations[selectedState] || [];
+    
+    citySelect.innerHTML = '<option value="" disabled selected>Select City</option>';
+    cities.forEach(city => {
+      const opt = document.createElement('option');
+      opt.value = city;
+      opt.textContent = city;
+      citySelect.appendChild(opt);
+    });
+  });
 }
 

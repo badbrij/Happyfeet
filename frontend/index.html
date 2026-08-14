@@ -643,17 +643,36 @@
           <div class="form-row">
             <div class="form-group">
               <label>Country</label>
-              <input type="text" id="reg-country" placeholder="e.g. India" required>
+              <input type="text" id="reg-country" value="India" readonly style="background: rgba(255,255,255,0.02); opacity: 0.8;" required>
             </div>
             <div class="form-group">
               <label>State</label>
-              <input type="text" id="reg-state" placeholder="e.g. Telangana" required>
+              <select id="reg-state" required>
+                <option value="" disabled selected>Select State</option>
+                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                <option value="Bihar">Bihar</option>
+                <option value="Delhi (NCT)">Delhi (NCT)</option>
+                <option value="Gujarat">Gujarat</option>
+                <option value="Haryana">Haryana</option>
+                <option value="Karnataka">Karnataka</option>
+                <option value="Kerala">Kerala</option>
+                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                <option value="Maharashtra">Maharashtra</option>
+                <option value="Punjab">Punjab</option>
+                <option value="Rajasthan">Rajasthan</option>
+                <option value="Tamil Nadu">Tamil Nadu</option>
+                <option value="Telangana">Telangana</option>
+                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                <option value="West Bengal">West Bengal</option>
+              </select>
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
               <label>City</label>
-              <input type="text" id="reg-city" placeholder="e.g. Hyderabad" required>
+              <select id="reg-city" required>
+                <option value="" disabled selected>Select State First</option>
+              </select>
             </div>
             <div class="form-group">
               <label>Locality / Neighborhood</label>
@@ -696,7 +715,7 @@
             </div>
             <div class="form-group">
               <label>Daily Step Goal</label>
-              <input type="number" id="reg-goal" placeholder="e.g. 10000" step="1000" required>
+              <input type="number" id="reg-goal" placeholder="e.g. 10000" step="1000" min="1" required>
             </div>
           </div>
 

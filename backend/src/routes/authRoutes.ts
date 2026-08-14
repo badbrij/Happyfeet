@@ -72,6 +72,12 @@ router.post('/register', async (req: Request, res: Response) => {
     
     const heightCm = healthProfile?.heightCm || 170;
     const weightKg = healthProfile?.weightKg || 70;
+    const dailyStepGoal = healthProfile?.dailyStepGoal || 10000;
+    
+    if (dailyStepGoal <= 0) {
+      return res.status(400).json({ error: 'Daily step goal must be a positive number' });
+    }
+    
     const { bmi, category: bmiCategory } = calculateBMI(heightCm, weightKg);
 
     const newUser = {
@@ -96,7 +102,7 @@ router.post('/register', async (req: Request, res: Response) => {
       bmi,
       bmi_category: bmiCategory,
       occupation: healthProfile?.occupation || 'Other',
-      daily_step_goal: healthProfile?.dailyStepGoal || 10000,
+      daily_step_goal: dailyStepGoal,
       fitness_tier: 'Beginner (0-5k)',
       fraud_score: 0,
       walk_coins: 100, // Signup bonus

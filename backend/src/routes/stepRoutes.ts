@@ -154,17 +154,35 @@ router.post('/sync', authMiddleware, async (req: AuthRequest, res: Response) => 
     let newWalkCoins = user.walk_coins;
     let streakCount = user.current_streak;
 
-    // Check if goal was met just now to reward coins
-    if (goalMet && (!todaySummary || !todaySummary.goal_met)) {
-      newWalkCoins += 20; // 20 WalkCoins per goal met
+    // Calculate daily step goal coins with dynamic 10% bonus for every additional 50% over and above daily goal
+    const getCoinsForSteps = (steps: number, goal: number): number => {
+      if (steps < goal) return 0;
+      const pct = (steps / goal) * 100;
+      const baseline = 20;
+      const overGoalPercent = Math.max(0, pct - 100);
+      const increments = Math.floor(overGoalPercent / 50);
+      const bonusMultiplier = increments * 0.10;
+      const bonusCoins = baseline * bonusMultiplier;
+      return Math.round(baseline + bonusCoins);
+    };
+
+    const oldSteps = todaySummary ? todaySummary.total_steps : 0;
+    const oldCoins = getCoinsForSteps(oldSteps, user.daily_step_goal);
+    const newCoins = getCoinsForSteps(updatedSteps, user.daily_step_goal);
+    const coinsToReward = newCoins - oldCoins;
+
+    if (coinsToReward > 0) {
+      newWalkCoins += coinsToReward;
       
       // Log transaction
       await supabase.from('coin_transactions').insert([{
         id: `tx_goal_${userId}_${Date.now()}`,
         user_id: userId,
-        amount: 20,
+        amount: coinsToReward,
         transaction_type: 'GoalMet',
-        description: 'Daily Step Goal Met',
+        description: oldCoins > 0 
+          ? `Overachievement Bonus Update (+${coinsToReward})` 
+          : `Daily Step Goal Met (+${coinsToReward}${newCoins > 20 ? ` incl. ${Math.round((newCoins - 20)/2)*10}% bonus` : ''})`,
       }]);
     }
 
