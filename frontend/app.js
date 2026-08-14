@@ -191,13 +191,36 @@ function initModal() {
     const gender = document.getElementById('reg-gender').value;
     const country = document.getElementById('reg-country').value;
     const state = document.getElementById('reg-state').value;
-    const city = document.getElementById('reg-city').value;
+    let city = document.getElementById('reg-city').value;
     const locality = document.getElementById('reg-locality').value;
 
     if (!dob || !gender || !country || !state || !city || !locality) {
       showToast('⚠️ Please fill out all location details.');
       return;
     }
+
+    if (city === 'Other') {
+      const cityManual = document.getElementById('reg-city-manual').value.trim();
+      if (!cityManual) {
+        showToast('⚠️ Please enter your city name.');
+        return;
+      }
+      city = cityManual;
+    }
+
+    // Age validation
+    const dobDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - dobDate.getFullYear();
+    const m = today.getMonth() - dobDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+      age--;
+    }
+    if (age < 15) {
+      showToast('⚠️ You must be at least 15 years old to join BadaKadam.');
+      return;
+    }
+
     showFormStep(3);
   });
 
@@ -293,7 +316,7 @@ async function handleRegistrationSubmit(e) {
   const gender = document.getElementById('reg-gender').value;
   const country = document.getElementById('reg-country').value;
   const state = document.getElementById('reg-state').value;
-  const city = document.getElementById('reg-city').value;
+  let city = document.getElementById('reg-city').value;
   const locality = document.getElementById('reg-locality').value;
 
   const heightCm = Number(document.getElementById('reg-height').value);
@@ -302,6 +325,27 @@ async function handleRegistrationSubmit(e) {
   const dailyStepGoal = Number(document.getElementById('reg-goal').value);
 
   const profilePic = document.getElementById('reg-avatar-data').value;
+
+  if (city === 'Other') {
+    city = document.getElementById('reg-city-manual').value.trim();
+    if (!city) {
+      showToast('⚠️ Please enter your city name.');
+      return;
+    }
+  }
+
+  // Age validation
+  const dobDate = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - dobDate.getFullYear();
+  const m = today.getMonth() - dobDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+    age--;
+  }
+  if (age < 15) {
+    showToast('⚠️ You must be at least 15 years old to join BadaKadam.');
+    return;
+  }
 
   if (dailyStepGoal <= 0) {
     showToast('⚠️ Daily step goal must be a positive number.');
@@ -1493,6 +1537,7 @@ const IndianLocations = {
 function initLocationSelectors() {
   const stateSelect = document.getElementById('reg-state');
   const citySelect = document.getElementById('reg-city');
+  const manualInput = document.getElementById('reg-city-manual');
   if (!stateSelect || !citySelect) return;
 
   stateSelect.addEventListener('change', (e) => {
@@ -1506,6 +1551,32 @@ function initLocationSelectors() {
       opt.textContent = city;
       citySelect.appendChild(opt);
     });
+
+    // Append manual other option
+    const optOther = document.createElement('option');
+    optOther.value = 'Other';
+    optOther.textContent = 'Others (Enter Manually)';
+    citySelect.appendChild(optOther);
+
+    if (manualInput) {
+      manualInput.style.display = 'none';
+      manualInput.removeAttribute('required');
+      manualInput.value = '';
+    }
+  });
+
+  citySelect.addEventListener('change', (e) => {
+    if (manualInput) {
+      if (e.target.value === 'Other') {
+        manualInput.style.display = 'block';
+        manualInput.setAttribute('required', 'true');
+        manualInput.focus();
+      } else {
+        manualInput.style.display = 'none';
+        manualInput.removeAttribute('required');
+        manualInput.value = '';
+      }
+    }
   });
 }
 

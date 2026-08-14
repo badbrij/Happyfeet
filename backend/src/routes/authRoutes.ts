@@ -68,6 +68,9 @@ router.post('/register', async (req: Request, res: Response) => {
     const passwordHash = bcrypt.hashSync(password, salt);
 
     const age = calculateAge(dob);
+    if (age < 15) {
+      return res.status(400).json({ error: 'You must be at least 15 years old to register' });
+    }
     const ageGroup = getAgeGroup(age);
     
     const heightCm = healthProfile?.heightCm || 170;
