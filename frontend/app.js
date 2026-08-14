@@ -1228,18 +1228,20 @@ function setViewportMode(mode) {
     webBtn.classList.remove('active');
     mobileBtn.classList.add('active');
 
-    // Reparent header and main to mobile screen content
+    // Reparent header, main, and modals to mobile screen content
     document.getElementById('mobile-screen').appendChild(header);
     document.getElementById('mobile-screen').appendChild(main);
+    document.getElementById('mobile-screen').appendChild(document.getElementById('app-modals'));
   } else {
     wrapper.classList.remove('view-mode-mobile');
     wrapper.classList.add('view-mode-web');
     mobileBtn.classList.remove('active');
     webBtn.classList.add('active');
 
-    // Reparent header and main back to web container
+    // Reparent header, main back to web container and modals back to body
     document.getElementById('web-container').appendChild(header);
     document.getElementById('web-container').appendChild(main);
+    document.body.appendChild(document.getElementById('app-modals'));
   }
 }
 
