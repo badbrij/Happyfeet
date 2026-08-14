@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initTabs();
   initUserSelector();
   initModal();
-  loginUser('brijesh@BadaKadam.com');
+  loginUser('brijesh@badakadam.com');
 
   document.getElementById('sync-steps-btn').addEventListener('click', handleSyncSteps);
   document.getElementById('registration-form').addEventListener('submit', handleRegistrationSubmit);
@@ -1234,20 +1234,22 @@ function setViewportMode(mode) {
     webBtn.classList.remove('active');
     mobileBtn.classList.add('active');
 
-    // Reparent header, main, and modals to mobile screen content
+    // Reparent header, main, modals, and toast to mobile screen content
     document.getElementById('mobile-screen').appendChild(header);
     document.getElementById('mobile-screen').appendChild(main);
     document.getElementById('mobile-screen').appendChild(document.getElementById('app-modals'));
+    document.getElementById('mobile-screen').appendChild(document.getElementById('toast'));
   } else {
     wrapper.classList.remove('view-mode-mobile');
     wrapper.classList.add('view-mode-web');
     mobileBtn.classList.remove('active');
     webBtn.classList.add('active');
 
-    // Reparent header, main back to web container and modals back to body
+    // Reparent header, main back to web container, modals and toast back to body
     document.getElementById('web-container').appendChild(header);
     document.getElementById('web-container').appendChild(main);
     document.body.appendChild(document.getElementById('app-modals'));
+    document.body.appendChild(document.getElementById('toast'));
   }
 }
 

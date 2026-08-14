@@ -19,13 +19,22 @@ export async function seedDatabase() {
     const salt = bcrypt.genSaltSync(10);
     const defaultPasswordHash = bcrypt.hashSync('Password123!', salt);
 
+    // Clean up existing demo records first to ensure consistent updates of demo values
+    const demoIds = ['usr_1', 'usr_2', 'usr_3', 'usr_4', 'usr_5'];
+    await supabase.from('daily_summaries').delete().in('user_id', demoIds);
+    const txIds = ['tx_goal_1', 'tx_goal_2', 'tx_streak_1', 'tx_challenge_1', 'tx_redeem_1', 'tx_goal_3', 'tx_challenge_2', 'tx_redeem_2'];
+    await supabase.from('coin_transactions').delete().in('id', txIds);
+    await supabase.from('coin_transactions').delete().in('user_id', demoIds);
+    await supabase.from('group_members').delete().in('user_id', demoIds);
+    await supabase.from('users').delete().in('id', demoIds);
+
     // Mock Users
     const seededUsers = [
       {
         id: 'usr_1',
         name: 'Brijesh Sharma',
         alias: 'Brij',
-        email: 'brijesh@BadaKadam.com',
+        email: 'brijesh@badakadam.com',
         phone: '+919876543210',
         password_hash: defaultPasswordHash,
         dob: '1988-06-15',
@@ -44,7 +53,7 @@ export async function seedDatabase() {
         daily_step_goal: 10000,
         fitness_tier: 'Advanced (10k-15k)',
         fraud_score: 0,
-        walk_coins: 1450,
+        walk_coins: 1050,
         current_streak: 21,
         lifetime_steps: 624500,
         profile_pic: 'Cheetah',
@@ -53,7 +62,7 @@ export async function seedDatabase() {
         id: 'usr_2',
         name: 'Priya Verma',
         alias: 'Priya',
-        email: 'priya@BadaKadam.com',
+        email: 'priya@badakadam.com',
         phone: '+919876543211',
         password_hash: defaultPasswordHash,
         dob: '1992-09-20',
@@ -72,7 +81,7 @@ export async function seedDatabase() {
         daily_step_goal: 12000,
         fitness_tier: 'Advanced (10k-15k)',
         fraud_score: 0,
-        walk_coins: 2100,
+        walk_coins: 1800,
         current_streak: 34,
         lifetime_steps: 890000,
         profile_pic: 'Rabbit',
@@ -81,7 +90,7 @@ export async function seedDatabase() {
         id: 'usr_3',
         name: 'Rahul Mehta',
         alias: 'Rahul',
-        email: 'rahul@BadaKadam.com',
+        email: 'rahul@badakadam.com',
         phone: '+919876543212',
         password_hash: defaultPasswordHash,
         dob: '1985-03-10',
@@ -100,7 +109,7 @@ export async function seedDatabase() {
         daily_step_goal: 10000,
         fitness_tier: 'Moderate (5k-10k)',
         fraud_score: 5,
-        walk_coins: 980,
+        walk_coins: 1450,
         current_streak: 12,
         lifetime_steps: 412000,
         profile_pic: 'Bull',
@@ -109,7 +118,7 @@ export async function seedDatabase() {
         id: 'usr_4',
         name: 'Amit Patel',
         alias: 'Amit',
-        email: 'amit@BadaKadam.com',
+        email: 'amit@badakadam.com',
         phone: '+919876543213',
         password_hash: defaultPasswordHash,
         dob: '1983-11-05',
@@ -125,10 +134,10 @@ export async function seedDatabase() {
         bmi: 23.1,
         bmi_category: 'Normal',
         occupation: 'Entrepreneur',
-        daily_step_goal: 15000,
+        daily_step_goal: 10000,
         fitness_tier: 'Elite (15k+)',
         fraud_score: 0,
-        walk_coins: 3400,
+        walk_coins: 275,
         current_streak: 45,
         lifetime_steps: 1250000,
         profile_pic: 'Eagle',
@@ -137,7 +146,7 @@ export async function seedDatabase() {
         id: 'usr_5',
         name: 'Ananya Rao',
         alias: 'Ananya',
-        email: 'ananya@BadaKadam.com',
+        email: 'ananya@badakadam.com',
         phone: '+919876543214',
         password_hash: defaultPasswordHash,
         dob: '2001-04-18',
@@ -156,7 +165,7 @@ export async function seedDatabase() {
         daily_step_goal: 8000,
         fitness_tier: 'Moderate (5k-10k)',
         fraud_score: 0,
-        walk_coins: 620,
+        walk_coins: 800,
         current_streak: 7,
         lifetime_steps: 180000,
         profile_pic: 'Falcon',
@@ -192,8 +201,17 @@ export async function seedDatabase() {
           const dateStr = d.toISOString().split('T')[0];
 
           let steps = 8000 + Math.floor(Math.random() * 6000);
-          if (u.id === 'usr_4') steps = 16000 + Math.floor(Math.random() * 3000);
-          if (u.id === 'usr_1' && i === 0) steps = 14521; // Match OCR doc
+          if (i === 0) {
+            // Precise steps for today to showcase different profiles
+            if (u.id === 'usr_1') steps = 10500; // Brijesh
+            if (u.id === 'usr_2') steps = 18000; // Priya
+            if (u.id === 'usr_3') steps = 14521; // Rahul
+            if (u.id === 'usr_4') steps = 2750;  // Amit
+            if (u.id === 'usr_5') steps = 8000;  // Ananya
+          } else {
+            // Random historical steps
+            if (u.id === 'usr_4') steps = 2000 + Math.floor(Math.random() * 2000);
+          }
 
           summaries.push({
             user_id: u.id,

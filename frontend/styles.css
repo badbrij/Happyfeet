@@ -1077,4 +1077,25 @@ input:focus, select:focus {
   text-transform: uppercase;
 }
 
+.challenge-inactive-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.app-viewport-wrapper.view-mode-mobile #toast {
+  position: absolute !important;
+  bottom: 24px !important;
+  right: 16px !important;
+  left: 16px !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+}
+
 
