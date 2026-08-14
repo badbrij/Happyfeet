@@ -7,6 +7,19 @@ import { formatDBUser } from '../utils/userFormatter';
 
 const router = Router();
 
+export function normalizePhone(phone: string): string {
+  if (!phone) return '';
+  let cleaned = phone.replace(/[\s\-\(\)]/g, '');
+  cleaned = cleaned.replace(/[^0-9+]/g, '');
+  if (cleaned.length === 10 && /^\d+$/.test(cleaned)) {
+    cleaned = '+91' + cleaned;
+  }
+  if (cleaned.length === 12 && cleaned.startsWith('91') && /^\d+$/.test(cleaned)) {
+    cleaned = '+' + cleaned;
+  }
+  return cleaned;
+}
+
 // POST /api/v1/auth/register
 router.post('/register', async (req: Request, res: Response) => {
   const { name, alias, profilePic, email, phone, password, dob, gender, location, healthProfile } = req.body;
@@ -15,12 +28,14 @@ router.post('/register', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Missing required registration fields' });
   }
 
+  const normalizedPhone = normalizePhone(phone);
+
   try {
     // Check if phone already exists
     const { data: existingUserByPhone } = await supabase
       .from('users')
       .select('id')
-      .eq('phone', phone)
+      .eq('phone', normalizedPhone)
       .maybeSingle();
 
     if (existingUserByPhone) {
@@ -55,7 +70,7 @@ router.post('/register', async (req: Request, res: Response) => {
       alias: alias || null,
       profile_pic: profilePic || null,
       email: email.toLowerCase(),
-      phone,
+      phone: normalizedPhone,
       password_hash: passwordHash,
       dob,
       age,
@@ -156,11 +171,13 @@ router.post('/quick-login', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Phone number is required' });
   }
 
+  const normalizedPhone = normalizePhone(phone);
+
   try {
     const { data: user, error } = await supabase
       .from('users')
       .select('*')
-      .eq('phone', phone)
+      .eq('phone', normalizedPhone)
       .maybeSingle();
 
     if (error || !user) {

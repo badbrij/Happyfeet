@@ -331,7 +331,16 @@ async function handleRegistrationSubmit(e) {
       refreshAllData();
       checkPendingInvite();
     } else {
-      alert(`❌ Registration Failed: ${data.error}`);
+      if (data.error && (data.error.includes('mobile number') || data.error.includes('phone') || data.error.includes('already exists'))) {
+        const signin = confirm("This mobile number is already registered! Would you like to Sign In instead?");
+        if (signin) {
+          document.getElementById('register-modal').classList.remove('active');
+          document.getElementById('quick-login-modal').classList.add('active');
+          document.getElementById('ql-phone').value = phone;
+        }
+      } else {
+        alert(`❌ Registration Failed: ${data.error}`);
+      }
     }
   } catch (err) {
     console.error(err);
