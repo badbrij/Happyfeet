@@ -818,12 +818,12 @@ input:focus, select:focus {
 
 .app-viewport-wrapper.view-mode-mobile .header-scroll-row {
   display: flex !important;
+  flex-wrap: wrap !important;
   align-items: center !important;
+  justify-content: space-between !important;
   gap: 8px !important;
   width: 100% !important;
-  overflow-x: auto !important;
-  white-space: nowrap !important;
-  padding: 4px 0 !important;
+  overflow: visible !important;
 }
 
 .app-viewport-wrapper.view-mode-mobile .header-scroll-row::-webkit-scrollbar {
@@ -831,6 +831,7 @@ input:focus, select:focus {
 }
 
 .app-viewport-wrapper.view-mode-mobile .coins-badge {
+  order: 1 !important;
   flex-shrink: 0 !important;
   font-size: 11px !important;
   padding: 6px 10px !important;
@@ -839,16 +840,30 @@ input:focus, select:focus {
   border-radius: 16px !important;
 }
 
+.app-viewport-wrapper.view-mode-mobile #user-selector {
+  order: 2 !important;
+  flex-grow: 1 !important;
+  width: 0 !important;
+  min-width: 140px !important;
+  padding: 6px 10px !important;
+  font-size: 11px !important;
+  border-radius: 16px !important;
+  box-sizing: border-box !important;
+}
+
 .app-viewport-wrapper.view-mode-mobile .nav-tabs {
+  order: 3 !important;
   display: flex !important;
   flex-direction: row !important;
   gap: 6px !important;
-  padding: 0 !important;
+  padding: 4px 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
   border: none !important;
   flex-shrink: 0 !important;
-  width: auto !important;
+  width: 100% !important;
+  overflow-x: auto !important;
+  white-space: nowrap !important;
 }
 
 .app-viewport-wrapper.view-mode-mobile .nav-btn {
@@ -856,15 +871,6 @@ input:focus, select:focus {
   font-size: 11px !important;
   border-radius: 20px !important;
   flex-shrink: 0 !important;
-}
-
-.app-viewport-wrapper.view-mode-mobile #user-selector {
-  flex-shrink: 0 !important;
-  width: auto !important;
-  min-width: 130px !important;
-  padding: 6px 10px !important;
-  font-size: 11px !important;
-  border-radius: 16px !important;
 }
 
 .app-viewport-wrapper.view-mode-mobile #member-since-display {
@@ -975,13 +981,13 @@ input:focus, select:focus {
 }
 .step-progress-circle-fill {
   fill: none;
-  stroke: url(#step-grad);
+  stroke: url(#gold-grad);
   stroke-width: 12;
   stroke-dasharray: 502.6;
   stroke-dashoffset: 502.6;
   stroke-linecap: round;
   transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
-  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.5));
+  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.6)) drop-shadow(0 0 3px rgba(239, 68, 68, 0.3));
 }
 .step-circle-inner-text {
   position: absolute;

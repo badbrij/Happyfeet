@@ -458,6 +458,7 @@ async function refreshAllData() {
   await fetchGroups();
   await fetchMarketplace();
   await fetchWalletHistory();
+  initDailyChallenge();
 }
 
 // Fetch Today's Steps
@@ -1259,19 +1260,29 @@ const CHALLENGE_TARGET_DIFFERENCE = 2000;
 function initDailyChallenge() {
   const startBtn = document.getElementById('start-challenge-btn');
   if (startBtn) {
-    startBtn.addEventListener('click', handleChallengeClick);
+    startBtn.onclick = handleChallengeClick;
   }
 
-  // Load from local storage
-  const active = localStorage.getItem('challenge_active') === 'true';
-  const completed = localStorage.getItem('challenge_completed') === 'true';
+  // Load from user-specific local storage keys
+  const prefix = currentUser ? currentUser.id : 'guest';
+  const active = localStorage.getItem(`challenge_active_${prefix}`) === 'true';
+  const completed = localStorage.getItem(`challenge_completed_${prefix}`) === 'true';
   
   if (completed) {
     setChallengeCompletedState();
   } else if (active) {
     challengeActive = true;
-    challengeStartSteps = parseInt(localStorage.getItem('challenge_start_steps') || '0', 10);
+    challengeStartSteps = parseInt(localStorage.getItem(`challenge_start_steps_${prefix}`) || '0', 10);
     setChallengeActiveState();
+    
+    // Auto-check and update progress using current DOM steps
+    const stepsText = document.getElementById('step-count-display').innerText.replace(/,/g, '');
+    const currentSteps = parseInt(stepsText || '0', 10);
+    updateChallengeProgress(currentSteps);
+  } else {
+    challengeActive = false;
+    challengeStartSteps = 0;
+    setChallengeInactiveState();
   }
 }
 
@@ -1282,21 +1293,49 @@ function handleChallengeClick() {
     return;
   }
 
-  // Activate challenge
+  // Activate challenge for current user
   const stepsText = document.getElementById('step-count-display').innerText.replace(/,/g, '');
   const currentSteps = parseInt(stepsText || '0', 10);
   
   challengeActive = true;
   challengeStartSteps = currentSteps;
-  localStorage.setItem('challenge_active', 'true');
-  localStorage.setItem('challenge_start_steps', currentSteps.toString());
-  localStorage.setItem('challenge_completed', 'false');
+  
+  const prefix = currentUser ? currentUser.id : 'guest';
+  localStorage.setItem(`challenge_active_${prefix}`, 'true');
+  localStorage.setItem(`challenge_start_steps_${prefix}`, currentSteps.toString());
+  localStorage.setItem(`challenge_completed_${prefix}`, 'false');
 
   setChallengeActiveState();
   updateChallengeProgress(currentSteps);
   
   // Show toast feedback
   showToast('Daily Challenge Activated! Walk 2,000 steps and tap sync to complete!');
+}
+
+function setChallengeInactiveState() {
+  const statusBadge = document.getElementById('challenge-status-badge');
+  const textEl = document.getElementById('challenge-text');
+  const startBtn = document.getElementById('start-challenge-btn');
+  const progContainer = document.getElementById('challenge-progress-container');
+
+  if (statusBadge) {
+    statusBadge.innerText = 'Inactive';
+    statusBadge.className = 'challenge-inactive-badge';
+  }
+  if (textEl) {
+    textEl.innerText = 'Walk 2,000 steps today to earn a WalkCoins bonus!';
+  }
+  if (startBtn) {
+    startBtn.innerText = 'Start Challenge';
+    startBtn.disabled = false;
+    startBtn.style.background = '';
+    startBtn.style.color = '';
+    startBtn.style.borderColor = '';
+    startBtn.style.boxShadow = '';
+  }
+  if (progContainer) {
+    progContainer.style.display = 'none';
+  }
 }
 
 function setChallengeActiveState() {
@@ -1366,8 +1405,9 @@ async function updateChallengeProgress(currentSteps) {
   if (diff >= target) {
     // Challenge success!
     challengeActive = false;
-    localStorage.setItem('challenge_active', 'false');
-    localStorage.setItem('challenge_completed', 'true');
+    const prefix = currentUser ? currentUser.id : 'guest';
+    localStorage.setItem(`challenge_active_${prefix}`, 'false');
+    localStorage.setItem(`challenge_completed_${prefix}`, 'true');
     setChallengeCompletedState();
     
     // Reward WalkCoins
