@@ -584,9 +584,6 @@
                 <button type="button" class="sync-action-btn" id="camera-avatar-trigger" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: var(--primary-emerald); color: white; cursor: pointer; border-radius: 6px;">
                   <i class="fa-solid fa-camera"></i> Take Photo
                 </button>
-                <button type="button" class="sync-action-btn" id="choose-avatar-trigger" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: #374151; cursor: pointer; border-radius: 6px;">
-                  <i class="fa-solid fa-face-smile-wink"></i> Choose Avatar
-                </button>
               </div>
               <input type="file" id="reg-avatar-file" accept="image/*" style="display: none;">
               <input type="file" id="reg-avatar-camera" accept="image/*" capture="user" style="display: none;">
@@ -594,29 +591,7 @@
             </div>
           </div>
 
-          <!-- Expanded Avatar Selection Grid -->
-          <div id="avatar-selection-grid" style="display: none; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-            <div class="avatar-option" data-avatar="Bull" style="cursor: pointer; padding: 12px; text-align: center; border-radius: 10px; background: rgba(255,255,255,0.05); border: 2px solid transparent; transition: all 0.2s;">
-              <div class="avatar-option-emoji zoom-head" style="font-size: 40px; display: inline-block;">🐂</div>
-              <div style="font-size: 11px; margin-top: 4px; color: var(--text-muted); font-weight: 500;">Bull</div>
-            </div>
-            <div class="avatar-option" data-avatar="Eagle" style="cursor: pointer; padding: 12px; text-align: center; border-radius: 10px; background: rgba(255,255,255,0.05); border: 2px solid transparent; transition: all 0.2s;">
-              <div class="avatar-option-emoji float-anim" style="font-size: 40px; display: inline-block;">🦅</div>
-              <div style="font-size: 11px; margin-top: 4px; color: var(--text-muted); font-weight: 500;">Eagle</div>
-            </div>
-            <div class="avatar-option" data-avatar="Falcon" style="cursor: pointer; padding: 12px; text-align: center; border-radius: 10px; background: rgba(255,255,255,0.05); border: 2px solid transparent; transition: all 0.2s;">
-              <div class="avatar-option-emoji glance-anim" style="font-size: 40px; display: inline-block;">🦉</div>
-              <div style="font-size: 11px; margin-top: 4px; color: var(--text-muted); font-weight: 500;">Falcon</div>
-            </div>
-            <div class="avatar-option" data-avatar="Cheetah" style="cursor: pointer; padding: 12px; text-align: center; border-radius: 10px; background: rgba(255,255,255,0.05); border: 2px solid transparent; transition: all 0.2s;">
-              <div class="avatar-option-emoji run-anim" style="font-size: 40px; display: inline-block;">🐆</div>
-              <div style="font-size: 11px; margin-top: 4px; color: var(--text-muted); font-weight: 500;">Cheetah</div>
-            </div>
-            <div class="avatar-option" data-avatar="Rabbit" style="cursor: pointer; padding: 12px; text-align: center; border-radius: 10px; background: rgba(255,255,255,0.05); border: 2px solid transparent; transition: all 0.2s;">
-              <div class="avatar-option-emoji hop-anim" style="font-size: 40px; display: inline-block;">🐇</div>
-              <div style="font-size: 11px; margin-top: 4px; color: var(--text-muted); font-weight: 500;">Rabbit</div>
-            </div>
-          </div>
+
 
           <div class="form-row">
             <div class="form-group">

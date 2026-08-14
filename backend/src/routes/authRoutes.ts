@@ -7,6 +7,12 @@ import { formatDBUser } from '../utils/userFormatter';
 
 const router = Router();
 
+export function isValidPhoneNumber(phone: string): boolean {
+  if (!phone) return false;
+  const cleaned = phone.replace(/[\s\-\(\)]/g, '');
+  return /^\+?\d{10,12}$/.test(cleaned);
+}
+
 export function normalizePhone(phone: string): string {
   if (!phone) return '';
   let cleaned = phone.replace(/[\s\-\(\)]/g, '');
@@ -26,6 +32,10 @@ router.post('/register', async (req: Request, res: Response) => {
 
   if (!phone || !password || !name || !dob || !gender || !location) {
     return res.status(400).json({ error: 'Missing required registration fields' });
+  }
+
+  if (!isValidPhoneNumber(phone)) {
+    return res.status(400).json({ error: 'Invalid phone number format (must be 10 or 12 digits)' });
   }
 
   const normalizedPhone = normalizePhone(phone);
@@ -177,6 +187,9 @@ router.post('/quick-login', async (req: Request, res: Response) => {
   if (isEmail) {
     query = query.eq('email', phone.toLowerCase().trim());
   } else {
+    if (!isValidPhoneNumber(phone)) {
+      return res.status(400).json({ error: 'Invalid phone number format (must be 10 or 12 digits)' });
+    }
     const normalizedPhone = normalizePhone(phone);
     query = query.eq('phone', normalizedPhone);
   }

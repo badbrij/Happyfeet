@@ -171,10 +171,15 @@ function initModal() {
     const name = document.getElementById('reg-name').value;
     const email = document.getElementById('reg-email').value;
     const phone = document.getElementById('reg-phone').value;
-    const password = 'Password123!';
+    const cleanPhone = phone.replace(/[-.\s()]/g, '');
+    const phoneRegex = /^\+?\d{10,12}$/;
 
     if (!name || !email || !phone) {
       showToast('⚠️ Please fill out all basic details.');
+      return;
+    }
+    if (!phoneRegex.test(cleanPhone)) {
+      showToast('⚠️ Please enter a valid 10-digit or 12-digit mobile number.');
       return;
     }
     showFormStep(2);
@@ -211,6 +216,16 @@ function showFormStep(step) {
 async function handleQuickLogin(e) {
   e.preventDefault();
   const phone = document.getElementById('ql-phone').value;
+
+  const isEmail = phone.includes('@');
+  if (!isEmail) {
+    const cleanPhone = phone.replace(/[-.\s()]/g, '');
+    const phoneRegex = /^\+?\d{10,12}$/;
+    if (!phoneRegex.test(cleanPhone)) {
+      showToast('⚠️ Please enter a valid 10-digit or 12-digit mobile number or email.');
+      return;
+    }
+  }
 
   try {
     const res = await fetch(`${API_BASE}/auth/quick-login`, {
@@ -772,7 +787,7 @@ window.toggleGroupLeaderboard = async function(groupId) {
         const isCurrentUser = currentUser && (currentUser.name === m.name || currentUser.alias === m.name);
         const highlightStyle = isCurrentUser ? 'background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.25);' : 'background: rgba(255,255,255,0.02);';
 
-        const avatarHTML = getAvatarHTML(m.profilePic, '28px', '18px');
+        const avatarHTML = getAvatarHTML(m.profilePic, '28px', '18px', m.gender);
 
         return `
           <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 8px; ${highlightStyle}">
@@ -826,7 +841,7 @@ function updateAuthUI() {
     if (currentUser) {
       headerAvatar.style.display = 'flex';
       const container = document.getElementById('header-avatar-render');
-      container.innerHTML = getAvatarHTML(currentUser.profilePic, '32px', '22px');
+      container.innerHTML = getAvatarHTML(currentUser.profilePic, '32px', '22px', currentUser.gender);
     } else {
       headerAvatar.style.display = 'none';
     }
@@ -936,12 +951,7 @@ function showToast(message) {
 }
 
 // Avatar rendering helper
-function getAvatarHTML(profilePic, size = '32px', fontSize = '22px') {
-  if (!profilePic) {
-    return `<div class="avatar-circle-render" style="font-size: ${fontSize};">👤</div>`;
-  }
-  
-  // Check if it's one of the preselected avatars
+function getAvatarHTML(profilePic, size = '32px', fontSize = '22px', gender = 'Male') {
   const avatarMap = {
     'Bull': { emoji: '🐂', class: 'zoom-head' },
     'Eagle': { emoji: '🦅', class: 'float-anim' },
@@ -950,14 +960,21 @@ function getAvatarHTML(profilePic, size = '32px', fontSize = '22px') {
     'Rabbit': { emoji: '🐇', class: 'hop-anim' }
   };
   
-  if (avatarMap[profilePic]) {
+  if (profilePic && avatarMap[profilePic]) {
     const data = avatarMap[profilePic];
-    // Return standard emoji wrapped in dynamic container for zooming close-up
     return `<div class="avatar-option-emoji ${data.class} close-up-view" style="font-size: calc(${size} * 2.5); line-height: ${size}; transform: translateY(calc(${size} * 0.15)) scale(1.6);">${data.emoji}</div>`;
   }
   
-  // Otherwise it's a URL or base64 data
-  return `<img src="${profilePic}" style="width: 100%; height: 100%; object-fit: cover;">`;
+  if (profilePic && (profilePic.startsWith('http') || profilePic.startsWith('data:image'))) {
+    return `<img src="${profilePic}" style="width: 100%; height: 100%; object-fit: cover;">`;
+  }
+  
+  // Cutout placeholders based on gender
+  const isFemale = gender && gender.toLowerCase() === 'female';
+  if (isFemale) {
+    return `<div class="avatar-circle-render" style="font-size: ${fontSize}; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(236, 72, 153, 0.15); color: #F472B6; font-weight: 700; border-radius: 50%;">👩</div>`;
+  }
+  return `<div class="avatar-circle-render" style="font-size: ${fontSize}; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); font-weight: 700; border-radius: 50%;">👨</div>`;
 }
 
 // Process uploaded or camera photo: center-crops to a 1:1 passport aspect ratio and resizes to 200x200
@@ -1004,8 +1021,6 @@ function initAvatarSetup() {
   const cameraInput = document.getElementById('reg-avatar-camera');
   const uploadTrigger = document.getElementById('upload-avatar-trigger');
   const cameraTrigger = document.getElementById('camera-avatar-trigger');
-  const chooseTrigger = document.getElementById('choose-avatar-trigger');
-  const grid = document.getElementById('avatar-selection-grid');
   const previewRender = document.getElementById('avatar-preview-render');
   const avatarDataInput = document.getElementById('reg-avatar-data');
 
@@ -1023,25 +1038,17 @@ function initAvatarSetup() {
     };
   }
 
-  if (chooseTrigger && grid) {
-    chooseTrigger.onclick = () => {
-      grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
-    };
+  // Update gender placeholder dynamically
+  const genderSelect = document.getElementById('reg-gender');
+  if (genderSelect) {
+    genderSelect.addEventListener('change', (e) => {
+      if (!avatarDataInput.value || (!avatarDataInput.value.startsWith('data:image') && !avatarDataInput.value.startsWith('http'))) {
+        if (previewRender) {
+          previewRender.innerHTML = getAvatarHTML('', '90px', '55px', e.target.value);
+        }
+      }
+    });
   }
-
-  const avatarOptions = document.querySelectorAll('.avatar-option');
-  avatarOptions.forEach(opt => {
-    opt.onclick = () => {
-      avatarOptions.forEach(o => o.classList.remove('active'));
-      opt.classList.add('active');
-
-      const avatarName = opt.getAttribute('data-avatar');
-      avatarDataInput.value = avatarName;
-
-      previewRender.innerHTML = getAvatarHTML(avatarName, '90px', '55px');
-      previewRender.className = "avatar-circle-render";
-    };
-  });
 }
 
 // Check pending invite and auto join
