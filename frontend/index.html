@@ -95,52 +95,57 @@
       
       <!-- Header & Navigation -->
       <header id="app-header">
-        <div class="logo-container">
-          <i class="fa-solid fa-shoe-prints logo-icon"></i>
-          <span class="logo-text">BadaKadam</span>
-        </div>
-
-        <nav class="nav-tabs">
-          <button class="nav-btn active" data-tab="dashboard-view"><i class="fa-solid fa-chart-pie"></i> Dashboard</button>
-          <button class="nav-btn" data-tab="rankings-view"><i class="fa-solid fa-trophy"></i> Rankings Universe</button>
-          <button class="nav-btn" data-tab="groups-view"><i class="fa-solid fa-users"></i> Groups & Battles</button>
-          <button class="nav-btn" data-tab="rewards-view"><i class="fa-solid fa-gift"></i> Marketplace</button>
-        </nav>
-
-        <div class="user-profile-widget" style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-          <div style="display: flex; align-items: center; gap: 8px;">
+        <div class="header-top-row">
+          <div class="logo-container">
+            <i class="fa-solid fa-shoe-prints logo-icon"></i>
+            <span class="logo-text">BadaKadam</span>
+          </div>
+          
+          <div class="header-actions-right" style="display: flex; align-items: center; gap: 8px;">
+            <!-- PROFILE PICTURE WIDGET (when logged in) -->
+            <div id="header-user-avatar" class="avatar-circle" style="display: none;">
+              <div id="header-avatar-render" class="avatar-circle-render">👤</div>
+            </div>
             <button class="register-hero-btn" id="open-quick-login-modal-btn">
               <i class="fa-solid fa-user"></i> Login / Signup
             </button>
-
-            <div class="coins-badge" style="display: flex; align-items: center; gap: 6px;">
-              <i class="fa-solid fa-coins"></i> <span><strong id="user-coins">1,450</strong> WalkCoins</span>
-              <i class="fa-solid fa-circle-question" id="show-coins-guide-btn" style="cursor: pointer; font-size: 14px; color: var(--accent-cyan);" title="How to earn WalkCoins?"></i>
-            </div>
-
-            <!-- PROFILE PICTURE WIDGET -->
-            <div id="header-user-avatar" class="avatar-circle" style="display: none; margin-right: 8px;">
-              <div id="header-avatar-render" class="avatar-circle-render">👤</div>
-            </div>
-
-            <select id="user-selector" class="profile-select">
-              <optgroup label="Demo Profiles">
-                <option value="brijesh@BadaKadam.com">Brijesh Sharma (Hyderabad)</option>
-                <option value="priya@BadaKadam.com">Priya Verma (Hyderabad)</option>
-                <option value="rahul@BadaKadam.com">Rahul Mehta (Hyderabad)</option>
-                <option value="amit@BadaKadam.com">Amit Patel (Mumbai)</option>
-                <option value="ananya@BadaKadam.com">Ananya Rao (Bangalore)</option>
-              </optgroup>
-              <optgroup label="Registered Profiles" id="user-registered-group">
-                <!-- Dynamically populated -->
-              </optgroup>
-              <optgroup label="Top 5 Group Walkers" id="user-top-walkers-group">
-                <!-- Dynamically populated from user's groups -->
-              </optgroup>
-            </select>
           </div>
-          <div id="member-since-display" style="font-size: 11px; color: var(--text-muted); display: none; font-weight: 500; margin-right: 8px;">Member since: August 2026</div>
         </div>
+
+        <div class="header-scroll-row">
+          <!-- WalkCoins Badge -->
+          <div class="coins-badge" id="header-coins-badge" style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+            <i class="fa-solid fa-coins"></i> <span><strong id="user-coins">1,450</strong> WalkCoins</span>
+            <i class="fa-solid fa-circle-question" id="show-coins-guide-btn" style="cursor: pointer; font-size: 14px; color: var(--accent-cyan);" title="How to earn WalkCoins?"></i>
+          </div>
+
+          <!-- Nav Tabs -->
+          <nav class="nav-tabs">
+            <button class="nav-btn active" data-tab="dashboard-view"><i class="fa-solid fa-chart-pie"></i> Dashboard</button>
+            <button class="nav-btn" data-tab="rankings-view"><i class="fa-solid fa-trophy"></i> Rankings Universe</button>
+            <button class="nav-btn" data-tab="groups-view"><i class="fa-solid fa-users"></i> Groups & Battles</button>
+            <button class="nav-btn" data-tab="rewards-view"><i class="fa-solid fa-gift"></i> Marketplace</button>
+          </nav>
+
+          <!-- Profile Switcher Selector -->
+          <select id="user-selector" class="profile-select" style="flex-shrink: 0;">
+            <optgroup label="Demo Profiles">
+              <option value="brijesh@BadaKadam.com">Brijesh Sharma (Hyderabad)</option>
+              <option value="priya@BadaKadam.com">Priya Verma (Hyderabad)</option>
+              <option value="rahul@BadaKadam.com">Rahul Mehta (Hyderabad)</option>
+              <option value="amit@BadaKadam.com">Amit Patel (Mumbai)</option>
+              <option value="ananya@BadaKadam.com">Ananya Rao (Bangalore)</option>
+            </optgroup>
+            <optgroup label="Registered Profiles" id="user-registered-group">
+              <!-- Dynamically populated -->
+            </optgroup>
+            <optgroup label="Top 5 Group Walkers" id="user-top-walkers-group">
+              <!-- Dynamically populated from user's groups -->
+            </optgroup>
+          </select>
+        </div>
+        
+        <div id="member-since-display" style="font-size: 11px; color: var(--text-muted); display: none; font-weight: 500; text-align: right; padding-right: 8px; margin-top: 4px;">Member since: August 2026</div>
       </header>
 
       <main id="app-main">

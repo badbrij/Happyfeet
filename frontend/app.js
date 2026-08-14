@@ -843,6 +843,12 @@ function updateAuthUI() {
       memberSince.style.display = 'none';
     }
   }
+
+  // Set profile selector value to match currentUser if logged in
+  const selector = document.getElementById('user-selector');
+  if (selector && currentUser) {
+    selector.value = currentUser.email;
+  }
 }
 
 function handleSignOut() {

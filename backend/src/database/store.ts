@@ -15,13 +15,7 @@ export async function seedDatabase() {
       return;
     }
 
-    if (userCount && userCount > 0) {
-      console.log('✅ Database already contains users. Skipping seed.');
-      return;
-    }
-
-    console.log('🌱 Database is empty. Starting seed process...');
-
+    // We check each mock user individually and insert if they do not exist
     const salt = bcrypt.genSaltSync(10);
     const defaultPasswordHash = bcrypt.hashSync('Password123!', salt);
 
@@ -169,50 +163,66 @@ export async function seedDatabase() {
       }
     ];
 
-    // Bulk Seed Users
-    const { error: usersSeedError } = await supabase
-      .from('users')
-      .insert(seededUsers);
-
-    if (usersSeedError) {
-      console.error('Failed to seed users table:', usersSeedError.message);
-      return;
-    }
-    console.log('✅ Seeded Users table.');
-
-    // Seed Daily Summaries for each user
-    const summaries = [];
-    const today = new Date();
     for (const u of seededUsers) {
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split('T')[0];
+      const { data: existingUser, error: checkError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', u.email)
+        .maybeSingle();
 
-        let steps = 8000 + Math.floor(Math.random() * 6000);
-        if (u.id === 'usr_4') steps = 16000 + Math.floor(Math.random() * 3000);
-        if (u.id === 'usr_1' && i === 0) steps = 14521; // Match OCR doc
+      if (checkError) {
+        console.error(`Error checking user ${u.name}:`, checkError.message);
+        continue;
+      }
 
-        summaries.push({
+      if (!existingUser) {
+        console.log(`🌱 Seeding missing demo user: ${u.name}...`);
+        const { error: insertError } = await supabase.from('users').insert([u]);
+        if (insertError) {
+          console.error(`Failed to insert demo user ${u.name}:`, insertError.message);
+          continue;
+        }
+
+        // Seed Daily Summaries for this user
+        const summaries = [];
+        const today = new Date();
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(today);
+          d.setDate(d.getDate() - i);
+          const dateStr = d.toISOString().split('T')[0];
+
+          let steps = 8000 + Math.floor(Math.random() * 6000);
+          if (u.id === 'usr_4') steps = 16000 + Math.floor(Math.random() * 3000);
+          if (u.id === 'usr_1' && i === 0) steps = 14521; // Match OCR doc
+
+          summaries.push({
+            user_id: u.id,
+            date: dateStr,
+            total_steps: steps,
+            total_distance_meters: Math.round(steps * 0.75),
+            total_calories: Math.round(steps * 0.04),
+            total_active_minutes: Math.round(steps / 100),
+            goal_met: steps >= u.daily_step_goal,
+          });
+        }
+        const { error: summariesError } = await supabase.from('daily_summaries').insert(summaries);
+        if (summariesError) {
+          console.error(`Failed to seed summaries for ${u.name}:`, summariesError.message);
+        }
+
+        // Seed Signup Coin Transaction
+        await supabase.from('coin_transactions').insert([{
+          id: `tx_signup_${u.id}`,
           user_id: u.id,
-          date: dateStr,
-          total_steps: steps,
-          total_distance_meters: Math.round(steps * 0.75),
-          total_calories: Math.round(steps * 0.04),
-          total_active_minutes: Math.round(steps / 100),
-          goal_met: steps >= u.daily_step_goal,
-        });
+          amount: 100,
+          transaction_type: 'Signup',
+          description: 'Signup Welcome Bonus',
+          created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        }]);
       }
     }
 
-    const { error: summariesSeedError } = await supabase
-      .from('daily_summaries')
-      .insert(summaries);
-
-    if (summariesSeedError) console.error('Failed to seed daily_summaries:', summariesSeedError.message);
-    else console.log('✅ Seeded Daily Summaries.');
-
-    // Seed Groups
+    // Seed Group & Members if not existing
     const sharmaGroup = {
       id: 'grp_1',
       name: 'Sharma Fitness Warriors',
@@ -224,51 +234,60 @@ export async function seedDatabase() {
       current_steps: 843000,
     };
 
-    await supabase.from('groups').insert([sharmaGroup]);
+    const { data: existingGroup } = await supabase
+      .from('groups')
+      .select('id')
+      .eq('id', sharmaGroup.id)
+      .maybeSingle();
 
-    // Seed Group Members
-    const groupMembers = [
-      { group_id: 'grp_1', user_id: 'usr_1', role: 'Owner' },
-      { group_id: 'grp_1', user_id: 'usr_2', role: 'Admin' },
-      { group_id: 'grp_1', user_id: 'usr_3', role: 'Member' },
-    ];
-    await supabase.from('group_members').insert(groupMembers);
-    console.log('✅ Seeded Sharma Fitness Warriors group & members.');
+    if (!existingGroup) {
+      console.log('🌱 Seeding group grp_1...');
+      await supabase.from('groups').insert([sharmaGroup]);
 
-    // Seed Marketplace Rewards
+      const groupMembers = [
+        { group_id: 'grp_1', user_id: 'usr_1', role: 'Owner' },
+        { group_id: 'grp_1', user_id: 'usr_2', role: 'Admin' },
+        { group_id: 'grp_1', user_id: 'usr_3', role: 'Member' },
+      ];
+      await supabase.from('group_members').insert(groupMembers);
+    }
+
+    // Seed Marketplace Rewards if not existing
     const seededRewards = [
       { id: 'rew_1', title: '₹250 Gift Voucher', brand: 'Amazon', description: 'Applicable on any shopping order', cost_walk_coins: 500, category: 'Voucher', image_url: 'https://img.icons8.com/color/96/amazon.png' },
       { id: 'rew_2', title: 'Free Delivery Pack', brand: 'Swiggy', description: '5 free deliveries on food orders', cost_walk_coins: 250, category: 'Food', image_url: 'https://img.icons8.com/color/96/swiggy.png' },
       { id: 'rew_3', title: '20% Off Fitness Gear', brand: 'Decathlon', description: 'Valid on footwear & sports gear', cost_walk_coins: 400, category: 'Fitness', image_url: 'https://img.icons8.com/color/96/decathlon.png' },
       { id: 'rew_4', title: 'Free Health Checkup', brand: 'Apollo', description: 'Full body diagnostic package', cost_walk_coins: 1000, category: 'Insurance', image_url: 'https://img.icons8.com/color/96/hospital-3.png' },
     ];
-    await supabase.from('rewards').insert(seededRewards);
-    console.log('✅ Seeded Rewards catalog.');
 
-    // Seed Coin Transactions history
-    const transactions = seededUsers.map(u => ({
-      id: `tx_signup_${u.id}`,
-      user_id: u.id,
-      amount: 100,
-      transaction_type: 'Signup',
-      description: 'Signup Welcome Bonus',
-      created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-    }));
+    for (const r of seededRewards) {
+      const { data: existingReward } = await supabase
+        .from('rewards')
+        .select('id')
+        .eq('id', r.id)
+        .maybeSingle();
 
-    transactions.push(
-      { id: 'tx_goal_1', user_id: 'usr_1', amount: 20, transaction_type: 'GoalMet', description: 'Daily Step Goal Met', created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
-      { id: 'tx_goal_2', user_id: 'usr_1', amount: 20, transaction_type: 'GoalMet', description: 'Daily Step Goal Met', created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
-      { id: 'tx_streak_1', user_id: 'usr_1', amount: 50, transaction_type: 'StreakBonus', description: '7-Day Consistent Streak Bonus', created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
-      { id: 'tx_challenge_1', user_id: 'usr_1', amount: 1500, transaction_type: 'StreakBonus', description: 'Office Battle Challenge Grand Prize', created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
-      { id: 'tx_redeem_1', user_id: 'usr_1', amount: -250, transaction_type: 'Redemption', description: 'Redeemed Swiggy Free Delivery Pack', created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString() },
-      
-      { id: 'tx_goal_3', user_id: 'usr_2', amount: 20, transaction_type: 'GoalMet', description: 'Daily Step Goal Met', created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
-      { id: 'tx_challenge_2', user_id: 'usr_2', amount: 2500, transaction_type: 'StreakBonus', description: 'BadaKadam Launch Milestone Reward', created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
-      { id: 'tx_redeem_2', user_id: 'usr_2', amount: -500, transaction_type: 'Redemption', description: 'Redeemed Amazon ₹250 Gift Voucher', created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() }
-    );
+      if (!existingReward) {
+        await supabase.from('rewards').insert([r]);
+      }
+    }
 
-    await supabase.from('coin_transactions').insert(transactions);
-    console.log('✅ Seeded Coin Transactions ledger.');
+    // Seed historical transactions for user 1 and user 2 if they were just seeded
+    const txCheck = await supabase.from('coin_transactions').select('id').eq('id', 'tx_goal_1').maybeSingle();
+    if (!txCheck.data) {
+      const extraTransactions = [
+        { id: 'tx_goal_1', user_id: 'usr_1', amount: 20, transaction_type: 'GoalMet', description: 'Daily Step Goal Met', created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: 'tx_goal_2', user_id: 'usr_1', amount: 20, transaction_type: 'GoalMet', description: 'Daily Step Goal Met', created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: 'tx_streak_1', user_id: 'usr_1', amount: 50, transaction_type: 'StreakBonus', description: '7-Day Consistent Streak Bonus', created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: 'tx_challenge_1', user_id: 'usr_1', amount: 1500, transaction_type: 'StreakBonus', description: 'Office Battle Challenge Grand Prize', created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: 'tx_redeem_1', user_id: 'usr_1', amount: -250, transaction_type: 'Redemption', description: 'Redeemed Swiggy Free Delivery Pack', created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString() },
+        
+        { id: 'tx_goal_3', user_id: 'usr_2', amount: 20, transaction_type: 'GoalMet', description: 'Daily Step Goal Met', created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: 'tx_challenge_2', user_id: 'usr_2', amount: 2500, transaction_type: 'StreakBonus', description: 'BadaKadam Launch Milestone Reward', created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: 'tx_redeem_2', user_id: 'usr_2', amount: -500, transaction_type: 'Redemption', description: 'Redeemed Amazon ₹250 Gift Voucher', created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() }
+      ];
+      await supabase.from('coin_transactions').insert(extraTransactions);
+    }
 
     console.log('🎉 Database seeding complete!');
   } catch (err) {

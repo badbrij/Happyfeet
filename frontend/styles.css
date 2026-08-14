@@ -39,15 +39,31 @@ body {
 /* Header & Nav */
 header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 40px;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 40px;
   background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
   z-index: 100;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.header-scroll-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
 }
 
 .logo-container {
@@ -771,63 +787,68 @@ input:focus, select:focus {
 }
 
 /* Responsive UI Adjustments for Mobile Mode */
+/* Responsive UI Adjustments for Mobile Mode */
 .app-viewport-wrapper.view-mode-mobile header {
-  display: grid !important;
-  grid-template-columns: 1fr auto !important;
-  align-items: center !important;
-  padding: 12px 14px !important;
-  gap: 12px !important;
+  padding: 10px 12px !important;
+  gap: 8px !important;
   position: static !important;
-  border-bottom: 1px solid var(--border-color);
-  width: 100%;
-  box-sizing: border-box;
+  border-bottom: 1px solid var(--border-color) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
-.app-viewport-wrapper.view-mode-mobile .logo-container {
-  grid-column: 1 !important;
-  grid-row: 1 !important;
+.app-viewport-wrapper.view-mode-mobile .header-top-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
 }
 
 .app-viewport-wrapper.view-mode-mobile .logo-text {
   font-size: 18px !important;
 }
 
-.app-viewport-wrapper.view-mode-mobile .user-profile-widget {
-  grid-column: 2 !important;
-  grid-row: 1 !important;
-  align-items: flex-end !important;
-  width: auto !important;
-  margin-top: 0 !important;
+.app-viewport-wrapper.view-mode-mobile .header-actions-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
 }
 
-.app-viewport-wrapper.view-mode-mobile .user-profile-widget > div {
+.app-viewport-wrapper.view-mode-mobile .header-scroll-row {
   display: flex !important;
-  flex-direction: row !important;
   align-items: center !important;
-  justify-content: flex-end !important;
-  gap: 6px !important;
-  width: auto !important;
-  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  width: 100% !important;
+  overflow-x: auto !important;
+  white-space: nowrap !important;
+  padding: 4px 0 !important;
+}
+
+.app-viewport-wrapper.view-mode-mobile .header-scroll-row::-webkit-scrollbar {
+  display: none !important;
+}
+
+.app-viewport-wrapper.view-mode-mobile .coins-badge {
+  flex-shrink: 0 !important;
+  font-size: 11px !important;
+  padding: 6px 10px !important;
+  background: rgba(245, 158, 11, 0.1) !important;
+  border: 1px solid rgba(245, 158, 11, 0.2) !important;
+  border-radius: 16px !important;
 }
 
 .app-viewport-wrapper.view-mode-mobile .nav-tabs {
-  grid-column: 1 / span 2 !important;
-  grid-row: 2 !important;
-  width: 100% !important;
   display: flex !important;
   flex-direction: row !important;
-  overflow-x: auto !important;
-  white-space: nowrap !important;
   gap: 6px !important;
-  padding: 4px 0 !important;
+  padding: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
   border: none !important;
-  box-sizing: border-box;
-}
-
-.app-viewport-wrapper.view-mode-mobile .nav-tabs::-webkit-scrollbar {
-  display: none !important;
+  flex-shrink: 0 !important;
+  width: auto !important;
 }
 
 .app-viewport-wrapper.view-mode-mobile .nav-btn {
@@ -838,11 +859,12 @@ input:focus, select:focus {
 }
 
 .app-viewport-wrapper.view-mode-mobile #user-selector {
-  grid-column: 1 / span 2 !important;
-  grid-row: 3 !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  margin-top: 2px !important;
+  flex-shrink: 0 !important;
+  width: auto !important;
+  min-width: 130px !important;
+  padding: 6px 10px !important;
+  font-size: 11px !important;
+  border-radius: 16px !important;
 }
 
 .app-viewport-wrapper.view-mode-mobile #member-since-display {
