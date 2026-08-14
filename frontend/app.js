@@ -481,12 +481,38 @@ async function fetchTodayActivity() {
       document.getElementById('marketplace-coins').innerText = currentUser.walkCoins.toLocaleString();
       document.getElementById('dashboard-coins-display').innerText = currentUser.walkCoins.toLocaleString();
 
-      // Circular Ring offset animation
+      // Circular Ring offset animation (Iron Man Arc Reactor Style)
       const ringFill = document.getElementById('step-ring-fill');
       if (ringFill) {
         const circumference = 502.6; // 2 * pi * 80
-        const offset = circumference - Math.min(1.0, percent / 100) * circumference;
+        
+        // Calculate the percentage of the current 100% loop
+        let currentCirclePercent = percent;
+        if (percent > 0) {
+          currentCirclePercent = percent % 100;
+          if (currentCirclePercent === 0 && percent >= 100) {
+            currentCirclePercent = 100;
+          }
+        }
+        
+        const offset = circumference - (currentCirclePercent / 100) * circumference;
         ringFill.style.strokeDashoffset = offset;
+
+        // Apply Iron Man style color shifts and glowing drop-shadows
+        if (percent >= 200) {
+          // Supercharged Reactor Purple
+          ringFill.setAttribute('stroke', 'url(#neon-purple-grad)');
+          ringFill.style.filter = 'drop-shadow(0 0 16px rgba(217, 70, 239, 0.9)) drop-shadow(0 0 4px rgba(217, 70, 239, 0.5))';
+        } else if (percent >= 100) {
+          // Core Active Bright Neon Blue
+          ringFill.setAttribute('stroke', 'url(#neon-blue-grad)');
+          ringFill.style.filter = 'drop-shadow(0 0 16px rgba(6, 182, 212, 0.9)) drop-shadow(0 0 4px rgba(6, 182, 212, 0.5))';
+        } else {
+          // Charging/Warm-up Golden Red
+          ringFill.setAttribute('stroke', 'url(#gold-grad)');
+          const glow = Math.max(3, (percent / 100) * 12);
+          ringFill.style.filter = `drop-shadow(0 0 ${glow}px rgba(245, 158, 11, 0.8)) drop-shadow(0 0 3px rgba(239, 68, 68, 0.4))`;
+        }
       }
 
       // Update Daily Challenge progress if active

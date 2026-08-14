@@ -787,7 +787,14 @@ input:focus, select:focus {
   width: 100%;
 }
 .app-viewport-wrapper.view-mode-mobile .user-profile-widget > div {
+  flex-wrap: wrap !important;
   justify-content: space-between !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+.app-viewport-wrapper.view-mode-mobile #user-selector {
+  width: 100% !important;
+  box-sizing: border-box;
 }
 .app-viewport-wrapper.view-mode-mobile .nav-tabs {
   width: 100%;
