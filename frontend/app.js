@@ -960,43 +960,78 @@ function getAvatarHTML(profilePic, size = '32px', fontSize = '22px') {
   return `<img src="${profilePic}" style="width: 100%; height: 100%; object-fit: cover;">`;
 }
 
+// Process uploaded or camera photo: center-crops to a 1:1 passport aspect ratio and resizes to 200x200
+function processUploadedImage(file, previewRender, avatarDataInput) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const img = new Image();
+    img.onload = () => {
+      // Create canvas for 1:1 crop and resize (passport / portrait mode square)
+      const canvas = document.createElement('canvas');
+      canvas.width = 200;
+      canvas.height = 200;
+      const ctx = canvas.getContext('2d');
+
+      // Calculate cropping coordinates (center crop to square)
+      const minSize = Math.min(img.width, img.height);
+      const sourceX = (img.width - minSize) / 2;
+      const sourceY = (img.height - minSize) / 2;
+
+      // Draw the center-cropped region scaled to 200x200
+      ctx.drawImage(
+        img, 
+        sourceX, sourceY, minSize, minSize, // source crop rect
+        0, 0, 200, 200                     // dest rect
+      );
+
+      // Export as compressed JPEG base64 Data URL
+      const processedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      
+      previewRender.innerHTML = `<img src="${processedDataUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+      previewRender.className = "avatar-circle-render";
+      avatarDataInput.value = processedDataUrl;
+      document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('active'));
+    };
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 // Initialize avatar handlers
 function initAvatarSetup() {
   const fileInput = document.getElementById('reg-avatar-file');
+  const cameraInput = document.getElementById('reg-avatar-camera');
   const uploadTrigger = document.getElementById('upload-avatar-trigger');
+  const cameraTrigger = document.getElementById('camera-avatar-trigger');
   const chooseTrigger = document.getElementById('choose-avatar-trigger');
   const grid = document.getElementById('avatar-selection-grid');
   const previewRender = document.getElementById('avatar-preview-render');
   const avatarDataInput = document.getElementById('reg-avatar-data');
 
   if (uploadTrigger && fileInput) {
-    uploadTrigger.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const base64Data = event.target.result;
-          previewRender.innerHTML = `<img src="${base64Data}" style="width:100%; height:100%; object-fit:cover;">`;
-          previewRender.className = "avatar-circle-render"; // reset close-up transform
-          avatarDataInput.value = base64Data;
-          
-          document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('active'));
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+    uploadTrigger.onclick = () => fileInput.click();
+    fileInput.onchange = (e) => {
+      processUploadedImage(e.target.files[0], previewRender, avatarDataInput);
+    };
+  }
+
+  if (cameraTrigger && cameraInput) {
+    cameraTrigger.onclick = () => cameraInput.click();
+    cameraInput.onchange = (e) => {
+      processUploadedImage(e.target.files[0], previewRender, avatarDataInput);
+    };
   }
 
   if (chooseTrigger && grid) {
-    chooseTrigger.addEventListener('click', () => {
+    chooseTrigger.onclick = () => {
       grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
-    });
+    };
   }
 
   const avatarOptions = document.querySelectorAll('.avatar-option');
   avatarOptions.forEach(opt => {
-    opt.addEventListener('click', () => {
+    opt.onclick = () => {
       avatarOptions.forEach(o => o.classList.remove('active'));
       opt.classList.add('active');
 
@@ -1005,44 +1040,8 @@ function initAvatarSetup() {
 
       previewRender.innerHTML = getAvatarHTML(avatarName, '90px', '55px');
       previewRender.className = "avatar-circle-render";
-    });
+    };
   });
-
-  // Simulated Sync Buttons
-  const syncGoogle = document.getElementById('sync-google-avatar');
-  const syncWhatsapp = document.getElementById('sync-whatsapp-avatar');
-
-  if (syncGoogle) {
-    syncGoogle.addEventListener('click', () => {
-      const name = document.getElementById('reg-name').value || 'User';
-      showToast('Syncing with Google Account...');
-      setTimeout(() => {
-        const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
-        const mockGoogleAvatar = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(initials)}&backgroundColor=1a73e8`;
-        previewRender.innerHTML = `<img src="${mockGoogleAvatar}" style="width:100%; height:100%; object-fit:cover;">`;
-        previewRender.className = "avatar-circle-render";
-        avatarDataInput.value = mockGoogleAvatar;
-        document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('active'));
-        showToast('Successfully synced Google avatar!');
-      }, 1000);
-    });
-  }
-
-  if (syncWhatsapp) {
-    syncWhatsapp.addEventListener('click', () => {
-      const name = document.getElementById('reg-name').value || 'User';
-      showToast('Syncing with WhatsApp Profile...');
-      setTimeout(() => {
-        const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
-        const mockWhatsappAvatar = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(initials)}&backgroundColor=25D366`;
-        previewRender.innerHTML = `<img src="${mockWhatsappAvatar}" style="width:100%; height:100%; object-fit:cover;">`;
-        previewRender.className = "avatar-circle-render";
-        avatarDataInput.value = mockWhatsappAvatar;
-        document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('active'));
-        showToast('Successfully synced WhatsApp avatar!');
-      }, 1000);
-    });
-  }
 }
 
 // Check pending invite and auto join
