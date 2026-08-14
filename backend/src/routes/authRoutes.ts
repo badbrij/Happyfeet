@@ -168,17 +168,21 @@ router.post('/login', async (req: Request, res: Response) => {
 router.post('/quick-login', async (req: Request, res: Response) => {
   const { phone } = req.body;
   if (!phone) {
-    return res.status(400).json({ error: 'Phone number is required' });
+    return res.status(400).json({ error: 'Phone number or Email is required' });
   }
 
-  const normalizedPhone = normalizePhone(phone);
+  const isEmail = phone.includes('@');
+  let query = supabase.from('users').select('*');
+
+  if (isEmail) {
+    query = query.eq('email', phone.toLowerCase().trim());
+  } else {
+    const normalizedPhone = normalizePhone(phone);
+    query = query.eq('phone', normalizedPhone);
+  }
 
   try {
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('phone', normalizedPhone)
-      .maybeSingle();
+    const { data: user, error } = await query.maybeSingle();
 
     if (error || !user) {
       return res.status(404).json({ error: 'User not found' });

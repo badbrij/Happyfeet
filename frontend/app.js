@@ -331,13 +331,15 @@ async function handleRegistrationSubmit(e) {
       refreshAllData();
       checkPendingInvite();
     } else {
-      if (data.error && (data.error.includes('mobile number') || data.error.includes('phone') || data.error.includes('already exists'))) {
+      if (data.error && (data.error.includes('mobile number') || data.error.includes('phone'))) {
         const signin = confirm("This mobile number is already registered! Would you like to Sign In instead?");
         if (signin) {
           document.getElementById('register-modal').classList.remove('active');
           document.getElementById('quick-login-modal').classList.add('active');
           document.getElementById('ql-phone').value = phone;
         }
+      } else if (data.error && data.error.includes('email')) {
+        alert(`❌ Email already exists: ${data.error}. Please log in or use a different email address.`);
       } else {
         alert(`❌ Registration Failed: ${data.error}`);
       }
@@ -1005,9 +1007,11 @@ function initAvatarSetup() {
 
   if (syncGoogle) {
     syncGoogle.addEventListener('click', () => {
+      const name = document.getElementById('reg-name').value || 'User';
       showToast('Syncing with Google Account...');
       setTimeout(() => {
-        const mockGoogleAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=GoogleUser${Date.now()}`;
+        const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
+        const mockGoogleAvatar = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(initials)}&backgroundColor=1a73e8`;
         previewRender.innerHTML = `<img src="${mockGoogleAvatar}" style="width:100%; height:100%; object-fit:cover;">`;
         previewRender.className = "avatar-circle-render";
         avatarDataInput.value = mockGoogleAvatar;
@@ -1019,9 +1023,11 @@ function initAvatarSetup() {
 
   if (syncWhatsapp) {
     syncWhatsapp.addEventListener('click', () => {
+      const name = document.getElementById('reg-name').value || 'User';
       showToast('Syncing with WhatsApp Profile...');
       setTimeout(() => {
-        const mockWhatsappAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=WhatsAppUser${Date.now()}`;
+        const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
+        const mockWhatsappAvatar = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(initials)}&backgroundColor=25D366`;
         previewRender.innerHTML = `<img src="${mockWhatsappAvatar}" style="width:100%; height:100%; object-fit:cover;">`;
         previewRender.className = "avatar-circle-render";
         avatarDataInput.value = mockWhatsappAvatar;
