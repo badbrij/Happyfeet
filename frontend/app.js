@@ -538,7 +538,7 @@ async function handleRegistrationSubmit(e) {
       refreshAllData();
       checkPendingInvite();
     } else {
-      if (data.error && (data.error.includes('mobile number') || data.error.includes('phone') || data.error.includes('already exists'))) {
+      if (data.error && (data.error.includes('mobile number') || data.error.includes('phone'))) {
         showToast('🔑 Mobile number already registered! Logging you in...');
         
         try {
