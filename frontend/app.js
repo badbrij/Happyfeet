@@ -484,6 +484,7 @@ async function handleQuickLoginOtpSubmit(e) {
         document.getElementById('reg-phone').style.background = 'rgba(255,255,255,0.02)';
         document.getElementById('reg-phone').style.opacity = '0.8';
 
+        verifiedPhone = quickLoginPhone; // Bypasses duplicate OTP validation on register submit!
         showToast('🔑 Mobile number verified! Please complete your profile configuration.');
         showFormStep(1);
       }

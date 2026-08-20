@@ -74,16 +74,40 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     );
     const rankGlobal = globalSorted.findIndex((u) => u.id === currentUser.id) + 1;
 
-    // Calculate Percentile
-    const percentile = Math.max(1, Math.round((rankCategory1 / cohort1.length) * 100));
-
     // AI Insight Card Generation
     const mySteps = userStepsMap.get(currentUser.id) || 0;
-    const outperformPercent = 100 - percentile;
-    const aiInsight = {
-      message: `You walked more than ${outperformPercent}% of ${currentUser.gender}s aged ${currentUser.age_group.split(' ')[0]} in ${currentUser.city}.`,
-      nudge: rankCategory1 > 1 ? `You need ${1250} more steps to enter the Top 10%.` : `Awesome! You are the #1 walker in your cohort today!`,
-    };
+    
+    let aiInsight;
+    let percentile = 100;
+
+    if (mySteps === 0) {
+      aiInsight = {
+        message: `You haven't started walking today. Get moving to rank in ${currentUser.city}!`,
+        nudge: `A brisk 10-minute walk will get you about 1,000 steps closer to your daily goal of ${currentUser.daily_step_goal.toLocaleString()} steps.`,
+      };
+    } else {
+      percentile = Math.max(1, Math.round((rankCategory1 / cohort1.length) * 100));
+      const outperformPercent = 100 - percentile;
+      
+      let nudgeMessage = `You need some more steps to climb the rankings today.`;
+      if (rankCategory1 === 1) {
+        nudgeMessage = `Awesome! You are the #1 walker in your cohort today!`;
+      } else {
+        const nextUser = cohort1[rankCategory1 - 2];
+        if (nextUser) {
+          const nextUserSteps = userStepsMap.get(nextUser.id) || 0;
+          const diff = nextUserSteps - mySteps;
+          if (diff > 0) {
+            nudgeMessage = `You are only ${diff.toLocaleString()} steps behind ${nextUser.alias || nextUser.name}! Walk a bit more to overtake them.`;
+          }
+        }
+      }
+
+      aiInsight = {
+        message: `You walked more than ${outperformPercent}% of ${currentUser.gender}s aged ${currentUser.age_group.split(' ')[0]} in ${currentUser.city}.`,
+        nudge: nudgeMessage,
+      };
+    }
 
     return res.json({
       userStepsToday: mySteps,
@@ -95,7 +119,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         city: { rank: rankCity, total: cohortCity.length, name: currentUser.city },
         global: { rank: rankGlobal, total: allUsers.length },
       },
-      fitnessPercentile: `Top ${percentile}%`,
+      fitnessPercentile: mySteps === 0 ? 'N/A' : `Top ${percentile}%`,
       aiInsight,
     });
   } catch (err) {
