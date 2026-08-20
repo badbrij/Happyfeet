@@ -7,6 +7,11 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    .otp-input-box:focus {
+      border-color: var(--accent-cyan) !important;
+      background: rgba(6,182,212,0.1) !important;
+      box-shadow: 0 0 10px rgba(6,182,212,0.2);
+    }
     /* Animated Avatar Styles */
     @keyframes zoomHead {
       0%, 100% { transform: scale(1) rotate(0deg); }
@@ -450,7 +455,25 @@
             <label>Mobile Number</label>
             <input type="text" id="ql-phone" placeholder="+919876543210" required>
           </div>
-          <button type="submit" class="submit-btn" style="width: 100%;"><i class="fa-solid fa-arrow-right-to-bracket"></i> Continue</button>
+          <button type="submit" class="submit-btn" style="width: 100%;"><i class="fa-solid fa-paper-plane"></i> Send Verification Code</button>
+        </form>
+
+        <form id="quick-login-otp-form" style="display: none; flex-direction: column; gap: 20px; align-items: center; text-align: center;">
+          <p style="color: var(--text-muted); font-size: 13px;">We sent a 6-digit verification code to <span id="ql-otp-phone-display" style="color: var(--accent-cyan); font-weight: 600;">+91 9876543210</span></p>
+          
+          <div class="otp-inputs-container" style="display: flex; gap: 8px; justify-content: center; margin: 12px 0;">
+            <input type="text" maxlength="1" class="otp-input-box" id="ql-otp-1" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <input type="text" maxlength="1" class="otp-input-box" id="ql-otp-2" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <input type="text" maxlength="1" class="otp-input-box" id="ql-otp-3" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <input type="text" maxlength="1" class="otp-input-box" id="ql-otp-4" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <input type="text" maxlength="1" class="otp-input-box" id="ql-otp-5" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <input type="text" maxlength="1" class="otp-input-box" id="ql-otp-6" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          </div>
+
+          <div style="display: flex; gap: 12px; width: 100%;">
+            <button type="button" id="ql-otp-back-btn" class="form-btn secondary" style="flex: 1;"><i class="fa-solid fa-arrow-left"></i> Back</button>
+            <button type="submit" class="submit-btn" style="flex: 2; margin-top: 0;"><i class="fa-solid fa-circle-check"></i> Verify & Login</button>
+          </div>
         </form>
       </div>
     </div>
@@ -617,6 +640,26 @@
           <div class="modal-actions">
             <span></span>
             <button type="button" class="form-btn primary" id="next-step-1">Next: Location & Demographics <i class="fa-solid fa-arrow-right"></i></button>
+          </div>
+        </div>
+
+        <!-- Step 1.5 OTP Panel (Hidden by default) -->
+        <div class="form-step" id="form-step-otp">
+          <h3 class="step-heading"><i class="fa-solid fa-shield-halved"></i> Verify Mobile Number</h3>
+          <p style="color: var(--text-muted); font-size: 13px; text-align: center; margin-bottom: 20px;">We sent a 6-digit verification code to <span id="reg-otp-phone-display" style="color: var(--accent-cyan); font-weight: 600;">+91 9876543210</span></p>
+          
+          <div class="otp-inputs-container" style="display: flex; gap: 8px; justify-content: center; margin: 20px 0;">
+            <input type="text" maxlength="1" class="otp-input-box" id="reg-otp-1" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <input type="text" maxlength="1" class="otp-input-box" id="reg-otp-2" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <input type="text" maxlength="1" class="otp-input-box" id="reg-otp-3" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <input type="text" maxlength="1" class="otp-input-box" id="reg-otp-4" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <input type="text" maxlength="1" class="otp-input-box" id="reg-otp-5" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <input type="text" maxlength="1" class="otp-input-box" id="reg-otp-6" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 24px; width: 100%;">
+            <button type="button" id="reg-otp-back-btn" class="form-btn secondary" style="flex: 1;"><i class="fa-solid fa-arrow-left"></i> Back</button>
+            <button type="button" id="reg-otp-verify-btn" class="form-btn primary" style="flex: 2; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 0;"><i class="fa-solid fa-shield-check"></i> Verify & Continue</button>
           </div>
         </div>
 

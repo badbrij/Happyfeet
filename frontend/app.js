@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initUserSelector();
   initModal();
   initLocationSelectors();
+  initOtpInputs('otp-inputs-container');
   checkSavedSession();
 
   document.getElementById('sync-steps-btn').addEventListener('click', handleSyncSteps);
@@ -17,6 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const quickLoginForm = document.getElementById('quick-login-form');
   if (quickLoginForm) {
     quickLoginForm.addEventListener('submit', handleQuickLogin);
+  }
+
+  const quickLoginOtpForm = document.getElementById('quick-login-otp-form');
+  if (quickLoginOtpForm) {
+    quickLoginOtpForm.addEventListener('submit', handleQuickLoginOtpSubmit);
   }
 
   const createGroupForm = document.getElementById('create-group-form');
@@ -83,12 +89,28 @@ function initModal() {
   if (closeQuickLoginBtn) {
     closeQuickLoginBtn.addEventListener('click', () => {
       quickLoginModal.classList.remove('active');
+      document.getElementById('quick-login-form').style.display = 'block';
+      document.getElementById('quick-login-otp-form').style.display = 'none';
+      document.getElementById('quick-login-otp-form').reset();
+      document.getElementById('quick-login-form').reset();
     });
   }
 
   if (closeRegisterBtn) {
     closeRegisterBtn.addEventListener('click', () => {
       registerModal.classList.remove('active');
+      showFormStep(1);
+      document.getElementById('registration-form').reset();
+      document.querySelectorAll('#form-step-otp .otp-input-box').forEach(inp => inp.value = '');
+    });
+  }
+
+  const qlOtpBackBtn = document.getElementById('ql-otp-back-btn');
+  if (qlOtpBackBtn) {
+    qlOtpBackBtn.addEventListener('click', () => {
+      document.getElementById('quick-login-otp-form').style.display = 'none';
+      document.getElementById('quick-login-form').style.display = 'block';
+      document.getElementById('quick-login-otp-form').reset();
     });
   }
 
@@ -168,7 +190,9 @@ function initModal() {
     });
   }
 
-  document.getElementById('next-step-1').addEventListener('click', () => {
+  let verificationPhone = '';
+
+  document.getElementById('next-step-1').addEventListener('click', async () => {
     const name = document.getElementById('reg-name').value;
     const email = document.getElementById('reg-email').value;
     const phone = document.getElementById('reg-phone').value;
@@ -183,8 +207,91 @@ function initModal() {
       showToast('⚠️ Please enter a valid 10-digit or 12-digit mobile number.');
       return;
     }
-    showFormStep(2);
+
+    verificationPhone = phone;
+    document.getElementById('reg-otp-phone-display').innerText = phone;
+
+    // Send OTP via Backend
+    showToast('📨 Sending verification code...');
+    try {
+      const res = await fetch(`${API_BASE}/auth/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        // Show simulated OTP in UI toast so user doesn't need terminal access
+        showToast(`💬 Simulated SMS: Your verification code is ${data.simulatedOtp}`, 10000);
+        showFormStep('otp');
+        setTimeout(() => document.getElementById('reg-otp-1').focus(), 100);
+      } else {
+        showToast(`❌ Error: ${data.error}`);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('❌ Connection error sending OTP.');
+    }
   });
+
+  // Back button from OTP verification step inside Registration
+  const regOtpBackBtn = document.getElementById('reg-otp-back-btn');
+  if (regOtpBackBtn) {
+    regOtpBackBtn.addEventListener('click', () => {
+      showFormStep(1);
+    });
+  }
+
+  // Verify OTP inside Registration step
+  const regOtpVerifyBtn = document.getElementById('reg-otp-verify-btn');
+  if (regOtpVerifyBtn) {
+    regOtpVerifyBtn.addEventListener('click', async () => {
+      let otp = '';
+      for (let i = 1; i <= 6; i++) {
+        otp += document.getElementById(`reg-otp-${i}`).value;
+      }
+
+      if (otp.length < 6) {
+        showToast('⚠️ Please enter the complete 6-digit verification code.');
+        return;
+      }
+
+      showToast('🔑 Verifying code...');
+      try {
+        const res = await fetch(`${API_BASE}/auth/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: verificationPhone, otp }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('✅ Mobile number verified!');
+          
+          if (data.exists) {
+            // Existing user duplicate registration path - auto-login directly!
+            document.getElementById('register-modal').classList.remove('active');
+            authToken = data.token;
+            currentUser = data.user;
+            localStorage.setItem('happyfeet_token', authToken);
+            localStorage.setItem('happyfeet_user_email', currentUser.email);
+            
+            showToast(`Welcome back, ${currentUser.alias || currentUser.name}!`);
+            updateAuthUI();
+            refreshAllData();
+            checkPendingInvite();
+          } else {
+            // New user - unlock step 2 and proceed
+            showFormStep(2);
+          }
+        } else {
+          showToast(`❌ Invalid OTP: ${data.error}`);
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('❌ Connection error verifying OTP.');
+      }
+    });
+  }
 
   document.getElementById('next-step-2').addEventListener('click', () => {
     const dob = document.getElementById('reg-dob').value;
@@ -230,62 +337,119 @@ function initModal() {
 
 function showFormStep(step) {
   currentStep = step;
-  document.getElementById('onboarding-step-num').innerText = step;
+  if (step === 'otp') {
+    document.getElementById('onboarding-step-num').innerText = 'Verification';
+  } else {
+    document.getElementById('onboarding-step-num').innerText = step;
+  }
 
   document.querySelectorAll('.form-step').forEach((el) => el.classList.remove('active'));
   document.getElementById(`form-step-${step}`).classList.add('active');
 }
 
-// Quick Login Handler
+let quickLoginPhone = '';
+
+// Quick Login Form Submit -> Dispatch OTP
 async function handleQuickLogin(e) {
   e.preventDefault();
   const phone = document.getElementById('ql-phone').value;
 
-  const isEmail = phone.includes('@');
-  if (!isEmail) {
-    const cleanPhone = phone.replace(/[-.\s()]/g, '');
-    const phoneRegex = /^\+?\d{10,12}$/;
-    if (!phoneRegex.test(cleanPhone)) {
-      showToast('⚠️ Please enter a valid 10-digit or 12-digit mobile number or email.');
-      return;
-    }
+  const cleanPhone = phone.replace(/[-.\s()]/g, '');
+  const phoneRegex = /^\+?\d{10,12}$/;
+  if (!phoneRegex.test(cleanPhone)) {
+    showToast('⚠️ Please enter a valid 10-digit or 12-digit mobile number.');
+    return;
   }
 
+  showToast('📨 Sending verification code...');
   try {
-    const res = await fetch(`${API_BASE}/auth/quick-login`, {
+    const res = await fetch(`${API_BASE}/auth/send-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone }),
     });
-
     const data = await res.json();
     if (res.ok) {
-      // User found, login successful
-      document.getElementById('quick-login-modal').classList.remove('active');
-      authToken = data.token;
-      currentUser = data.user;
-      localStorage.setItem('happyfeet_token', authToken);
-      localStorage.setItem('happyfeet_user_email', currentUser.email);
-
-      const displayName = currentUser.alias || currentUser.name;
-      showToast(`Welcome back, ${displayName}!`);
+      quickLoginPhone = phone;
+      document.getElementById('ql-otp-phone-display').innerText = phone;
       
-      updateAuthUI();
-      refreshAllData();
-      checkPendingInvite();
-    } else if (res.status === 404) {
-      // User not found, prompt registration
-      document.getElementById('quick-login-modal').classList.remove('active');
-      document.getElementById('register-modal').classList.add('active');
-      document.getElementById('reg-phone').value = phone;
-      currentStep = 1;
-      showFormStep(1);
+      // Show simulated OTP banner
+      showToast(`💬 Simulated SMS: Your verification code is ${data.simulatedOtp}`, 10000);
+      
+      // Transition forms inside modal
+      document.getElementById('quick-login-form').style.display = 'none';
+      document.getElementById('quick-login-otp-form').style.display = 'flex';
+      setTimeout(() => document.getElementById('ql-otp-1').focus(), 100);
     } else {
-      showToast(data.error || 'Quick Login Failed');
+      showToast(`❌ Error: ${data.error}`);
     }
   } catch (err) {
     console.error(err);
-    alert('Failed to connect to backend server for quick login.');
+    showToast('❌ Connection error sending OTP.');
+  }
+}
+
+// Quick Login OTP Verification
+async function handleQuickLoginOtpSubmit(e) {
+  e.preventDefault();
+  let otp = '';
+  for (let i = 1; i <= 6; i++) {
+    otp += document.getElementById(`ql-otp-${i}`).value;
+  }
+
+  if (otp.length < 6) {
+    showToast('⚠️ Please enter the complete 6-digit verification code.');
+    return;
+  }
+
+  showToast('🔑 Verifying code...');
+  try {
+    const res = await fetch(`${API_BASE}/auth/verify-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: quickLoginPhone, otp }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      if (data.exists) {
+        // User exists: log in successfully
+        document.getElementById('quick-login-modal').classList.remove('active');
+        document.getElementById('quick-login-otp-form').reset();
+        document.getElementById('quick-login-form').reset();
+        
+        authToken = data.token;
+        currentUser = data.user;
+        localStorage.setItem('happyfeet_token', authToken);
+        localStorage.setItem('happyfeet_user_email', currentUser.email);
+
+        const displayName = currentUser.alias || currentUser.name;
+        showToast(`Welcome back, ${displayName}!`);
+        
+        updateAuthUI();
+        refreshAllData();
+        checkPendingInvite();
+      } else {
+        // User does not exist: redirect to registration modal!
+        document.getElementById('quick-login-modal').classList.remove('active');
+        document.getElementById('quick-login-otp-form').reset();
+        document.getElementById('quick-login-form').reset();
+        
+        // Open registration and pre-fill phone number
+        document.getElementById('register-modal').classList.add('active');
+        document.getElementById('reg-phone').value = quickLoginPhone;
+        document.getElementById('reg-phone').setAttribute('readonly', 'true');
+        document.getElementById('reg-phone').style.background = 'rgba(255,255,255,0.02)';
+        document.getElementById('reg-phone').style.opacity = '0.8';
+
+        showToast('🔑 Mobile number verified! Please complete your profile configuration.');
+        showFormStep(1);
+      }
+    } else {
+      showToast(`❌ Invalid OTP: ${data.error}`);
+    }
+  } catch (err) {
+    console.error(err);
+    showToast('❌ Connection error verifying OTP.');
   }
 }
 
@@ -486,6 +650,38 @@ async function handleJoinGroup(e) {
     console.error(err);
     showToast('Failed to connect to server');
   }
+}
+
+// Setup multi-box focus and key actions for OTP verification screens
+function initOtpInputs(containerClass) {
+  const containers = document.querySelectorAll(`.${containerClass}`);
+  containers.forEach(container => {
+    const inputs = container.querySelectorAll('.otp-input-box');
+    inputs.forEach((input, index) => {
+      input.addEventListener('keyup', (e) => {
+        if (e.key >= 0 && e.key <= 9) {
+          if (index < inputs.length - 1) {
+            inputs[index + 1].focus();
+          }
+        } else if (e.key === 'Backspace') {
+          if (index > 0) {
+            inputs[index - 1].focus();
+          }
+        }
+      });
+      // Handle paste
+      input.addEventListener('paste', (e) => {
+        const data = e.clipboardData.getData('text').trim();
+        if (data.length === inputs.length && /^\d+$/.test(data)) {
+          inputs.forEach((inp, idx) => {
+            inp.value = data[idx];
+          });
+          inputs[inputs.length - 1].focus();
+          e.preventDefault();
+        }
+      });
+    });
+  });
 }
 
 // Check saved session in LocalStorage

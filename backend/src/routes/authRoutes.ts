@@ -247,4 +247,103 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
   }
 });
 
+// Memory store for OTPs (keyed by clean phone number)
+const otpStore = new Map<string, { otp: string; expiresAt: number }>();
+
+// POST /api/v1/auth/send-otp
+router.post('/send-otp', async (req: Request, res: Response) => {
+  const { phone } = req.body;
+  if (!phone) {
+    return res.status(400).json({ error: 'Phone number is required' });
+  }
+
+  const cleanPhone = phone.replace(/[-.\s()]/g, '');
+  const phoneRegex = /^\+?\d{10,12}$/;
+  if (!phoneRegex.test(cleanPhone)) {
+    return res.status(400).json({ error: 'Invalid phone number format' });
+  }
+
+  // Generate a random 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes validity
+
+  otpStore.set(cleanPhone, { otp, expiresAt });
+
+  console.log(`=========================================`);
+  console.log(`💬 OTP Dispatch Simulator`);
+  console.log(`📞 Phone: ${cleanPhone}`);
+  console.log(`🔑 Verification Code: ${otp}`);
+  console.log(`=========================================`);
+
+  return res.json({
+    success: true,
+    message: 'OTP sent successfully',
+    simulatedOtp: otp
+  });
+});
+
+// POST /api/v1/auth/verify-otp
+router.post('/verify-otp', async (req: Request, res: Response) => {
+  const { phone, otp } = req.body;
+  if (!phone || !otp) {
+    return res.status(400).json({ error: 'Phone number and verification OTP are required' });
+  }
+
+  const cleanPhone = phone.replace(/[-.\s()]/g, '');
+  const entry = otpStore.get(cleanPhone);
+
+  if (!entry) {
+    return res.status(400).json({ error: 'No verification request found for this phone number' });
+  }
+
+  if (Date.now() > entry.expiresAt) {
+    otpStore.delete(cleanPhone);
+    return res.status(400).json({ error: 'Verification code expired' });
+  }
+
+  if (entry.otp !== otp) {
+    return res.status(400).json({ error: 'Invalid verification code' });
+  }
+
+  // Successfully verified! Clear OTP from store
+  otpStore.delete(cleanPhone);
+
+  try {
+    // Check if the user exists in the database
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('phone', cleanPhone)
+      .maybeSingle();
+
+    if (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Database check failed' });
+    }
+
+    if (user) {
+      // Existing user: generate token and perform seamless auto-login
+      const token = generateToken(user.id);
+      const formattedUser = formatDBUser(user);
+      const { passwordHash: _, ...userWithoutPassword } = formattedUser;
+
+      return res.json({
+        verified: true,
+        exists: true,
+        token,
+        user: userWithoutPassword,
+      });
+    }
+
+    // New user: verify success, proceed to registration forms
+    return res.json({
+      verified: true,
+      exists: false,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Verification error' });
+  }
+});
+
 export default router;
