@@ -12,6 +12,15 @@
       background: rgba(6,182,212,0.1) !important;
       box-shadow: 0 0 10px rgba(6,182,212,0.2);
     }
+    .provider-card.active {
+      border-color: var(--accent-cyan) !important;
+      background: rgba(6,182,212,0.1) !important;
+    }
+    .sim-step-btn.active {
+      border-color: var(--accent-cyan) !important;
+      background: rgba(6,182,212,0.1) !important;
+      color: var(--accent-cyan) !important;
+    }
     /* Animated Avatar Styles */
     @keyframes zoomHead {
       0%, 100% { transform: scale(1) rotate(0deg); }
@@ -843,6 +852,73 @@
 
         <button type="submit" class="submit-btn" style="width: 100%; margin-top: 10px;"><i class="fa-solid fa-floppy-disk"></i> Save Profile Details</button>
       </form>
+    </div>
+  </div>
+
+  <!-- HEALTH DEVICE STEP SYNC MODAL -->
+  <div class="modal-overlay" id="health-sync-modal">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <div>
+          <h2>Sync Steps & Activity</h2>
+          <p style="font-size: 13px; color: var(--text-muted);">Connect your wearable device or health app</p>
+        </div>
+        <button class="close-modal-btn" id="close-health-sync-btn">&times;</button>
+      </div>
+
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- Provider Select Grid -->
+        <div id="sync-provider-select">
+          <label style="font-weight: 700; font-size: 13px; color: white; display: block; margin-bottom: 12px;">Choose your Health Platform</label>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+            <div class="provider-card" data-provider="AppleHealthKit" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s;">
+              <i class="fa-brands fa-apple" style="font-size: 24px; color: #ff2d55;"></i>
+              <span style="font-size: 13px; font-weight: 600; color: white;">Apple Health</span>
+            </div>
+            <div class="provider-card" data-provider="GoogleFit" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s;">
+              <i class="fa-brands fa-google" style="font-size: 20px; color: #4285f4;"></i>
+              <span style="font-size: 13px; font-weight: 600; color: white;">Google Fit</span>
+            </div>
+            <div class="provider-card" data-provider="Fitbit" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s;">
+              <i class="fa-solid fa-heart" style="font-size: 20px; color: #00b0b9;"></i>
+              <span style="font-size: 13px; font-weight: 600; color: white;">Fitbit Tracker</span>
+            </div>
+            <div class="provider-card" data-provider="SamsungHealth" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s;">
+              <i class="fa-solid fa-mobile-screen" style="font-size: 20px; color: #ff8c00;"></i>
+              <span style="font-size: 13px; font-weight: 600; color: white;">Samsung Health</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Connection Screen (Hidden initially) -->
+        <div id="sync-conn-status" style="display: none; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); padding: 16px; border-radius: 8px; text-align: center;">
+          <div id="conn-loading" style="display: none;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: var(--accent-cyan); margin-bottom: 10px;"></i>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0;" id="conn-loading-text">Connecting...</p>
+          </div>
+          <div id="conn-success" style="display: none;">
+            <i class="fa-solid fa-circle-check" style="font-size: 24px; color: var(--primary-emerald); margin-bottom: 10px;"></i>
+            <p style="font-size: 13px; font-weight: 600; color: white; margin-bottom: 4px;">Successfully Connected!</p>
+            <p style="font-size: 11px; color: var(--text-muted); margin: 0;">Access granted to capture daily steps.</p>
+          </div>
+        </div>
+
+        <!-- Steps Simulation Control (Shown after connecting) -->
+        <div id="sync-sim-controls" style="display: none; flex-direction: column; gap: 12px;">
+          <label style="font-weight: 700; font-size: 13px; color: white; display: block; margin-bottom: 0;">Interactive Steps Simulator</label>
+          <p style="font-size: 11px; color: var(--text-muted); margin: 0; line-height: 1.4;">Select step counts to sync for today to verify BadaKadam's calculations, streaks, and ranks in real-time:</p>
+          
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px;">
+            <button type="button" class="form-btn secondary sim-step-btn" data-steps="5200" style="margin-top: 0; padding: 10px 0; font-size: 12px;">🚶 5,200 steps</button>
+            <button type="button" class="form-btn secondary sim-step-btn" data-steps="12500" style="margin-top: 0; padding: 10px 0; font-size: 12px;">🏃 12,500 steps</button>
+            <button type="button" class="form-btn secondary sim-step-btn" data-steps="18500" style="margin-top: 0; padding: 10px 0; font-size: 12px;">⚡ 18,500 steps</button>
+          </div>
+
+          <button id="sync-action-submit-btn" class="submit-btn" style="width: 100%; margin-top: 10px;" disabled>
+            <i class="fa-solid fa-arrows-rotate"></i> Synchronize Health Data
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 

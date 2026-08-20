@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initLocationSelectors();
   initOtpInputs('otp-inputs-container');
   initEditProfileSetup();
+  initHealthSyncSetup();
   checkSavedSession();
 
   document.getElementById('sync-steps-btn').addEventListener('click', handleSyncSteps);
@@ -1047,7 +1048,22 @@ async function fetchRankings() {
 
 // Sync Steps Action
 function handleSyncSteps() {
-  alert('Please open the BadaKadam mobile app on your smartphone to sync steps. Steps are captured automatically from Apple Health or Google Fit to ensure fair play. Manual entry is not allowed.');
+  if (!currentUser) {
+    showToast('⚠️ Please log in to synchronize steps.');
+    document.getElementById('quick-login-modal').classList.add('active');
+    return;
+  }
+  
+  // Reset modal state
+  document.querySelectorAll('.provider-card').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.sim-step-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sync-provider-select').style.display = 'block';
+  document.getElementById('sync-conn-status').style.display = 'none';
+  document.getElementById('sync-sim-controls').style.display = 'none';
+  document.getElementById('sync-action-submit-btn').setAttribute('disabled', 'true');
+  
+  // Show Modal
+  document.getElementById('health-sync-modal').classList.add('active');
 }
 
 // Fetch Groups
@@ -1963,6 +1979,105 @@ async function handleEditProfileSubmit(e) {
   } catch (err) {
     console.error(err);
     showToast('❌ Connection error saving profile.');
+  }
+}
+
+// Health Device Sync Simulation handlers
+function initHealthSyncSetup() {
+  const modal = document.getElementById('health-sync-modal');
+  const closeBtn = document.getElementById('close-health-sync-btn');
+  const providerCards = document.querySelectorAll('.provider-card');
+  const simStepBtns = document.querySelectorAll('.sim-step-btn');
+  const submitBtn = document.getElementById('sync-action-submit-btn');
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => {
+      modal.classList.remove('active');
+    });
+  }
+
+  let selectedProvider = '';
+  let selectedSteps = 0;
+
+  providerCards.forEach(card => {
+    card.addEventListener('click', () => {
+      providerCards.forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      selectedProvider = card.getAttribute('data-provider');
+
+      // Trigger simulated connection loading
+      document.getElementById('sync-conn-status').style.display = 'block';
+      document.getElementById('conn-loading').style.display = 'block';
+      document.getElementById('conn-loading-text').innerText = `Establishing encrypted synchronization tunnel with ${selectedProvider}...`;
+      document.getElementById('conn-success').style.display = 'none';
+      document.getElementById('sync-sim-controls').style.display = 'none';
+
+      setTimeout(() => {
+        document.getElementById('conn-loading').style.display = 'none';
+        document.getElementById('conn-success').style.display = 'block';
+        document.getElementById('sync-sim-controls').style.display = 'flex';
+      }, 1500);
+    });
+  });
+
+  simStepBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      simStepBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedSteps = Number(btn.getAttribute('data-steps'));
+      submitBtn.removeAttribute('disabled');
+    });
+  });
+
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async () => {
+      if (!selectedSteps || !selectedProvider) return;
+
+      submitBtn.setAttribute('disabled', 'true');
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Synchronizing steps...';
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const payload = {
+        source: selectedProvider,
+        steps: [
+          {
+            timestamp: new Date().toISOString(),
+            date: todayStr,
+            count: selectedSteps,
+            distanceMeters: Math.round(selectedSteps * 0.7),
+            calories: Math.round(selectedSteps * 0.04),
+            activeMinutes: Math.round(selectedSteps / 100)
+          }
+        ]
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/steps/sync`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          modal.classList.remove('active');
+          showToast(`✅ Synced ${selectedSteps.toLocaleString()} steps via ${selectedProvider}!`);
+          window.location.reload();
+        } else {
+          showToast(`❌ Sync Failed: ${data.error || 'Check speed restrictions'}`);
+          submitBtn.removeAttribute('disabled');
+          submitBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Synchronize Health Data';
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('❌ Connection error syncing steps.');
+        submitBtn.removeAttribute('disabled');
+        submitBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Synchronize Health Data';
+      }
+    });
   }
 }
 
