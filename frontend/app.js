@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initUserSelector();
   initModal();
   initLocationSelectors();
-  loginUser('brijesh@badakadam.com');
+  checkSavedSession();
 
   document.getElementById('sync-steps-btn').addEventListener('click', handleSyncSteps);
   document.getElementById('registration-form').addEventListener('submit', handleRegistrationSubmit);
@@ -264,25 +264,12 @@ async function handleQuickLogin(e) {
       document.getElementById('quick-login-modal').classList.remove('active');
       authToken = data.token;
       currentUser = data.user;
+      localStorage.setItem('happyfeet_token', authToken);
+      localStorage.setItem('happyfeet_user_email', currentUser.email);
+
       const displayName = currentUser.alias || currentUser.name;
       showToast(`Welcome back, ${displayName}!`);
       
-      // Select the user in dropdown if they exist there, or just refresh
-      const selector = document.getElementById('user-selector');
-      let found = false;
-      Array.from(selector.options).forEach(opt => {
-        if (opt.value === currentUser.email) {
-          opt.selected = true;
-          found = true;
-        }
-      });
-      if (!found) {
-        const newOpt = document.createElement('option');
-        newOpt.value = currentUser.email;
-        newOpt.text = `${displayName} (${currentUser.location.city})`;
-        newOpt.selected = true;
-        selector.add(newOpt);
-      }
       updateAuthUI();
       refreshAllData();
       checkPendingInvite();
@@ -380,28 +367,40 @@ async function handleRegistrationSubmit(e) {
 
       authToken = data.token;
       currentUser = data.user;
-
-      // Add to user selector dropdown under registered accounts group
-      const regGroup = document.getElementById('user-registered-group');
-      if (regGroup) {
-        const newOpt = document.createElement('option');
-        newOpt.value = currentUser.email;
-        const optName = currentUser.alias || currentUser.name;
-        newOpt.text = `${optName} (${currentUser.location.city})`;
-        newOpt.selected = true;
-        regGroup.appendChild(newOpt);
-      }
+      localStorage.setItem('happyfeet_token', authToken);
+      localStorage.setItem('happyfeet_user_email', currentUser.email);
 
       updateAuthUI();
       refreshAllData();
       checkPendingInvite();
     } else {
-      if (data.error && (data.error.includes('mobile number') || data.error.includes('phone'))) {
-        const signin = confirm("This mobile number is already registered! Would you like to Sign In instead?");
-        if (signin) {
-          document.getElementById('register-modal').classList.remove('active');
-          document.getElementById('quick-login-modal').classList.add('active');
-          document.getElementById('ql-phone').value = phone;
+      if (data.error && (data.error.includes('mobile number') || data.error.includes('phone') || data.error.includes('already exists'))) {
+        showToast('🔑 Mobile number already registered! Logging you in...');
+        
+        try {
+          const loginRes = await fetch(`${API_BASE}/auth/quick-login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone }),
+          });
+          const loginData = await loginRes.json();
+          if (loginRes.ok) {
+            document.getElementById('register-modal').classList.remove('active');
+            authToken = loginData.token;
+            currentUser = loginData.user;
+            localStorage.setItem('happyfeet_token', authToken);
+            localStorage.setItem('happyfeet_user_email', currentUser.email);
+            
+            showToast(`Welcome back, ${currentUser.alias || currentUser.name}!`);
+            updateAuthUI();
+            refreshAllData();
+            checkPendingInvite();
+          } else {
+            alert(`❌ Auto-Login Failed: ${loginData.error}`);
+          }
+        } catch (loginErr) {
+          console.error(loginErr);
+          alert('Failed to connect to backend for auto-login.');
         }
       } else if (data.error && data.error.includes('email')) {
         alert(`❌ Email already exists: ${data.error}. Please log in or use a different email address.`);
@@ -489,6 +488,83 @@ async function handleJoinGroup(e) {
   }
 }
 
+// Check saved session in LocalStorage
+async function checkSavedSession() {
+  const savedToken = localStorage.getItem('happyfeet_token');
+  if (savedToken) {
+    authToken = savedToken;
+    try {
+      const res = await fetch(`${API_BASE}/auth/me`, {
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        currentUser = data.user;
+        updateAuthUI();
+        refreshAllData();
+        checkPendingInvite();
+        return;
+      } else {
+        localStorage.removeItem('happyfeet_token');
+        localStorage.removeItem('happyfeet_user_email');
+        authToken = '';
+      }
+    } catch (err) {
+      console.error('Session load error:', err);
+    }
+  }
+  
+  // Default fallback reviewer login
+  loginUser('brijesh@badakadam.com');
+}
+
+// Rebuild user profile switcher selector dropdown options dynamically
+function updateSwitcherOptions(topGroupWalkers = []) {
+  const selector = document.getElementById('user-selector');
+  if (!selector) return;
+
+  if (!currentUser) {
+    selector.innerHTML = `
+      <optgroup label="Demo Profiles">
+        <option value="brijesh@badakadam.com">Brijesh Sharma (Hyderabad)</option>
+        <option value="priya@badakadam.com">Priya Verma (Hyderabad)</option>
+        <option value="rahul@badakadam.com">Rahul Mehta (Hyderabad)</option>
+        <option value="amit@badakadam.com">Amit Patel (Mumbai)</option>
+        <option value="ananya@badakadam.com">Ananya Rao (Bangalore)</option>
+      </optgroup>
+      <optgroup label="Registered Profiles" id="user-registered-group"></optgroup>
+    `;
+    return;
+  }
+
+  const userCity = currentUser.location ? currentUser.location.city : '';
+  const userLabel = `${currentUser.alias || currentUser.name} (You, ${userCity})`;
+  
+  let html = `
+    <optgroup label="Your Profile">
+      <option value="${currentUser.email}" selected>${userLabel}</option>
+    </optgroup>
+  `;
+
+  if (topGroupWalkers.length > 0) {
+    html += `
+      <optgroup label="Battle & Group Members">
+        ${topGroupWalkers.map(w => `
+          <option value="${w.email || w.name}">${w.name} (${w.todaySteps.toLocaleString()} steps)</option>
+        `).join('')}
+      </optgroup>
+    `;
+  } else {
+    html += `
+      <optgroup label="Battle & Group Members">
+        <option disabled>No other members in your battles</option>
+      </optgroup>
+    `;
+  }
+
+  selector.innerHTML = html;
+}
+
 // Login via Backend API
 async function loginUser(email) {
   try {
@@ -502,6 +578,9 @@ async function loginUser(email) {
     if (res.ok) {
       authToken = data.token;
       currentUser = data.user;
+      localStorage.setItem('happyfeet_token', authToken);
+      localStorage.setItem('happyfeet_user_email', currentUser.email);
+
       const displayName = currentUser.alias || currentUser.name;
       showToast(`Active User: ${displayName}`);
       updateAuthUI();
@@ -910,7 +989,8 @@ function updateAuthUI() {
     }
   }
 
-  // Set profile selector value to match currentUser if logged in
+  // Rebuild selector options and match currentUser if logged in
+  updateSwitcherOptions();
   const selector = document.getElementById('user-selector');
   if (selector && currentUser) {
     selector.value = currentUser.email;
@@ -920,6 +1000,8 @@ function updateAuthUI() {
 function handleSignOut() {
   authToken = '';
   currentUser = null;
+  localStorage.removeItem('happyfeet_token');
+  localStorage.removeItem('happyfeet_user_email');
   updateAuthUI();
   
   // Clear dashboard or show a state that requires login
@@ -1238,16 +1320,7 @@ async function compileTopWalkers(groups) {
 
     const top5 = uniqueWalkers.slice(0, 5);
 
-    const walkersGroup = document.getElementById('user-top-walkers-group');
-    if (walkersGroup) {
-      if (top5.length === 0) {
-        walkersGroup.innerHTML = '<option disabled>No other walkers in your groups</option>';
-      } else {
-        walkersGroup.innerHTML = top5.map(w => `
-          <option value="${w.email || w.name}">${w.name} (${w.todaySteps.toLocaleString()} steps)</option>
-        `).join('');
-      }
-    }
+    updateSwitcherOptions(top5);
   } catch (err) {
     console.error('Error compiling top group walkers:', err);
   }
