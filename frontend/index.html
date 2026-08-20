@@ -469,6 +469,9 @@
             <input type="text" maxlength="1" class="otp-input-box" id="ql-otp-5" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
             <input type="text" maxlength="1" class="otp-input-box" id="ql-otp-6" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
           </div>
+          <div id="ql-otp-sim-hint" style="color: var(--accent-cyan); font-size: 12px; font-weight: 600; margin-top: -8px; margin-bottom: 12px; display: none;">
+            💬 Simulated SMS Code: <span id="ql-otp-sim-code" style="color: white; letter-spacing: 2px;"></span>
+          </div>
 
           <div style="display: flex; gap: 12px; width: 100%;">
             <button type="button" id="ql-otp-back-btn" class="form-btn secondary" style="flex: 1;"><i class="fa-solid fa-arrow-left"></i> Back</button>
@@ -655,6 +658,9 @@
             <input type="text" maxlength="1" class="otp-input-box" id="reg-otp-4" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
             <input type="text" maxlength="1" class="otp-input-box" id="reg-otp-5" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
             <input type="text" maxlength="1" class="otp-input-box" id="reg-otp-6" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          </div>
+          <div id="reg-otp-sim-hint" style="color: var(--accent-cyan); font-size: 12px; font-weight: 600; margin-top: -12px; margin-bottom: 20px; text-align: center; display: none;">
+            💬 Simulated SMS Code: <span id="reg-otp-sim-code" style="color: white; letter-spacing: 2px;"></span>
           </div>
 
           <div style="display: flex; gap: 12px; margin-top: 24px; width: 100%;">

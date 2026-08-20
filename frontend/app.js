@@ -93,6 +93,8 @@ function initModal() {
       document.getElementById('quick-login-otp-form').style.display = 'none';
       document.getElementById('quick-login-otp-form').reset();
       document.getElementById('quick-login-form').reset();
+      document.getElementById('ql-otp-sim-hint').style.display = 'none';
+      document.getElementById('ql-otp-sim-code').innerText = '';
     });
   }
 
@@ -102,6 +104,8 @@ function initModal() {
       showFormStep(1);
       document.getElementById('registration-form').reset();
       document.querySelectorAll('#form-step-otp .otp-input-box').forEach(inp => inp.value = '');
+      document.getElementById('reg-otp-sim-hint').style.display = 'none';
+      document.getElementById('reg-otp-sim-code').innerText = '';
     });
   }
 
@@ -111,6 +115,8 @@ function initModal() {
       document.getElementById('quick-login-otp-form').style.display = 'none';
       document.getElementById('quick-login-form').style.display = 'block';
       document.getElementById('quick-login-otp-form').reset();
+      document.getElementById('ql-otp-sim-hint').style.display = 'none';
+      document.getElementById('ql-otp-sim-code').innerText = '';
     });
   }
 
@@ -222,7 +228,9 @@ function initModal() {
       const data = await res.json();
       if (res.ok) {
         // Show simulated OTP in UI toast so user doesn't need terminal access
-        showToast(`💬 Simulated SMS: Your verification code is ${data.simulatedOtp}`, 10000);
+        showToast(`💬 Simulated SMS: Your verification code is ${data.simulatedOtp}`, 15000);
+        document.getElementById('reg-otp-sim-code').innerText = data.simulatedOtp;
+        document.getElementById('reg-otp-sim-hint').style.display = 'block';
         showFormStep('otp');
         setTimeout(() => document.getElementById('reg-otp-1').focus(), 100);
       } else {
@@ -239,6 +247,8 @@ function initModal() {
   if (regOtpBackBtn) {
     regOtpBackBtn.addEventListener('click', () => {
       showFormStep(1);
+      document.getElementById('reg-otp-sim-hint').style.display = 'none';
+      document.getElementById('reg-otp-sim-code').innerText = '';
     });
   }
 
@@ -374,7 +384,9 @@ async function handleQuickLogin(e) {
       document.getElementById('ql-otp-phone-display').innerText = phone;
       
       // Show simulated OTP banner
-      showToast(`💬 Simulated SMS: Your verification code is ${data.simulatedOtp}`, 10000);
+      showToast(`💬 Simulated SMS: Your verification code is ${data.simulatedOtp}`, 15000);
+      document.getElementById('ql-otp-sim-code').innerText = data.simulatedOtp;
+      document.getElementById('ql-otp-sim-hint').style.display = 'block';
       
       // Transition forms inside modal
       document.getElementById('quick-login-form').style.display = 'none';
@@ -1269,13 +1281,18 @@ async function redeemReward(rewardId) {
 }
 
 // Toast notification helper
-function showToast(message) {
+function showToast(message, duration = 3000) {
   const toast = document.getElementById('toast');
   toast.innerText = message;
   toast.style.display = 'block';
-  setTimeout(() => {
+  
+  if (toast.timeoutId) {
+    clearTimeout(toast.timeoutId);
+  }
+  
+  toast.timeoutId = setTimeout(() => {
     toast.style.display = 'none';
-  }, 3000);
+  }, duration);
 }
 
 // Avatar rendering helper
