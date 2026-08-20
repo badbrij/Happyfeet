@@ -346,4 +346,44 @@ router.post('/verify-otp', async (req: Request, res: Response) => {
   }
 });
 
+// PUT /api/v1/auth/profile
+router.put('/profile', authMiddleware, async (req: AuthRequest, res: Response) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { alias, gender, profilePic } = req.body;
+
+  try {
+    const updates: any = {};
+    if (alias !== undefined) updates.alias = alias || null;
+    if (gender !== undefined) updates.gender = gender;
+    if (profilePic !== undefined) updates.profile_pic = profilePic || null;
+
+    const { data: user, error } = await supabase
+      .from('users')
+      .update(updates)
+      .eq('id', userId)
+      .select('*')
+      .single();
+
+    if (error) {
+      console.error(error);
+      return res.status(400).json({ error: 'Failed to update profile' });
+    }
+
+    const formattedUser = formatDBUser(user);
+    const { passwordHash: _, ...userWithoutPassword } = formattedUser;
+
+    return res.json({
+      message: 'Profile updated successfully',
+      user: userWithoutPassword,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Server error during profile update' });
+  }
+});
+
 export default router;

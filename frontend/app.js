@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initModal();
   initLocationSelectors();
   initOtpInputs('otp-inputs-container');
+  initEditProfileSetup();
   checkSavedSession();
 
   document.getElementById('sync-steps-btn').addEventListener('click', handleSyncSteps);
@@ -79,6 +80,33 @@ function initModal() {
   const openQuickLoginBtn = document.getElementById('open-quick-login-modal-btn');
   const closeRegisterBtn = document.getElementById('close-modal-btn');
   const closeQuickLoginBtn = document.getElementById('close-quick-login-modal-btn');
+  const headerAvatar = document.getElementById('header-user-avatar');
+  const editProfileModal = document.getElementById('edit-profile-modal');
+  const closeEditProfileBtn = document.getElementById('close-edit-profile-btn');
+
+  if (headerAvatar) {
+    headerAvatar.style.cursor = 'pointer';
+    headerAvatar.title = 'Edit Profile';
+    headerAvatar.addEventListener('click', () => {
+      if (currentUser) {
+        document.getElementById('edit-alias').value = currentUser.alias || currentUser.name || '';
+        document.getElementById('edit-gender').value = currentUser.gender || 'Male';
+        document.getElementById('edit-avatar-data').value = currentUser.profilePic || '';
+        
+        const preview = document.getElementById('edit-avatar-preview');
+        if (preview) {
+          preview.innerHTML = getAvatarHTML(currentUser.profilePic, '90px', '55px', currentUser.gender);
+        }
+        editProfileModal.classList.add('active');
+      }
+    });
+  }
+
+  if (closeEditProfileBtn) {
+    closeEditProfileBtn.addEventListener('click', () => {
+      editProfileModal.classList.remove('active');
+    });
+  }
 
   if (openQuickLoginBtn) {
     openQuickLoginBtn.addEventListener('click', () => {
@@ -197,6 +225,7 @@ function initModal() {
   }
 
   let verificationPhone = '';
+  let verifiedPhone = '';
 
   document.getElementById('next-step-1').addEventListener('click', async () => {
     const name = document.getElementById('reg-name').value;
@@ -211,6 +240,11 @@ function initModal() {
     }
     if (!phoneRegex.test(cleanPhone)) {
       showToast('⚠️ Please enter a valid 10-digit or 12-digit mobile number.');
+      return;
+    }
+
+    if (phone === verifiedPhone) {
+      showFormStep(2);
       return;
     }
 
@@ -277,6 +311,7 @@ function initModal() {
         if (res.ok) {
           showToast('✅ Mobile number verified!');
           
+          verifiedPhone = verificationPhone;
           if (data.exists) {
             // Existing user duplicate registration path - auto-login directly!
             document.getElementById('register-modal').classList.remove('active');
@@ -286,9 +321,7 @@ function initModal() {
             localStorage.setItem('happyfeet_user_email', currentUser.email);
             
             showToast(`Welcome back, ${currentUser.alias || currentUser.name}!`);
-            updateAuthUI();
-            refreshAllData();
-            checkPendingInvite();
+            window.location.reload();
           } else {
             // New user - unlock step 2 and proceed
             showFormStep(2);
@@ -436,10 +469,7 @@ async function handleQuickLoginOtpSubmit(e) {
 
         const displayName = currentUser.alias || currentUser.name;
         showToast(`Welcome back, ${displayName}!`);
-        
-        updateAuthUI();
-        refreshAllData();
-        checkPendingInvite();
+        window.location.reload();
       } else {
         // User does not exist: redirect to registration modal!
         document.getElementById('quick-login-modal').classList.remove('active');
@@ -545,10 +575,7 @@ async function handleRegistrationSubmit(e) {
       currentUser = data.user;
       localStorage.setItem('happyfeet_token', authToken);
       localStorage.setItem('happyfeet_user_email', currentUser.email);
-
-      updateAuthUI();
-      refreshAllData();
-      checkPendingInvite();
+      window.location.reload();
     } else {
       if (data.error && (data.error.includes('mobile number') || data.error.includes('phone'))) {
         showToast('🔑 Mobile number already registered! Logging you in...');
@@ -568,9 +595,7 @@ async function handleRegistrationSubmit(e) {
             localStorage.setItem('happyfeet_user_email', currentUser.email);
             
             showToast(`Welcome back, ${currentUser.alias || currentUser.name}!`);
-            updateAuthUI();
-            refreshAllData();
-            checkPendingInvite();
+            window.location.reload();
           } else {
             alert(`❌ Auto-Login Failed: ${loginData.error}`);
           }
@@ -791,9 +816,7 @@ async function loginUser(email) {
 
       const displayName = currentUser.alias || currentUser.name;
       showToast(`Active User: ${displayName}`);
-      updateAuthUI();
-      refreshAllData();
-      checkPendingInvite();
+      window.location.reload();
     } else {
       showToast(data.error || 'Login failed');
     }
@@ -1206,11 +1229,11 @@ function updateAuthUI() {
 }
 
 function handleSignOut() {
-  authToken = '';
+  authToken = null;
   currentUser = null;
   localStorage.removeItem('happyfeet_token');
   localStorage.removeItem('happyfeet_user_email');
-  updateAuthUI();
+  window.location.reload();
   
   // Clear dashboard or show a state that requires login
   document.getElementById('user-coins').innerText = '0';
@@ -1864,5 +1887,85 @@ function initLocationSelectors() {
       }
     }
   });
+}
+
+// Edit Profile Modal handlers
+function initEditProfileSetup() {
+  const fileInput = document.getElementById('edit-avatar-file');
+  const cameraInput = document.getElementById('edit-avatar-camera');
+  const uploadTrigger = document.getElementById('edit-upload-avatar-trigger');
+  const cameraTrigger = document.getElementById('edit-camera-avatar-trigger');
+  const previewRender = document.getElementById('edit-avatar-preview');
+  const avatarDataInput = document.getElementById('edit-avatar-data');
+  const editProfileForm = document.getElementById('edit-profile-form');
+
+  if (uploadTrigger && fileInput) {
+    uploadTrigger.onclick = () => fileInput.click();
+    fileInput.onchange = (e) => {
+      processUploadedImage(e.target.files[0], previewRender, avatarDataInput);
+    };
+  }
+
+  if (cameraTrigger && cameraInput) {
+    cameraTrigger.onclick = () => cameraInput.click();
+    cameraInput.onchange = (e) => {
+      processUploadedImage(e.target.files[0], previewRender, avatarDataInput);
+    };
+  }
+
+  // Update gender placeholder dynamically in Edit Profile
+  const editGenderSelect = document.getElementById('edit-gender');
+  if (editGenderSelect) {
+    editGenderSelect.addEventListener('change', (e) => {
+      if (!avatarDataInput.value || (!avatarDataInput.value.startsWith('data:image') && !avatarDataInput.value.startsWith('http'))) {
+        if (previewRender) {
+          previewRender.innerHTML = getAvatarHTML('', '90px', '55px', e.target.value);
+        }
+      }
+    });
+  }
+
+  if (editProfileForm) {
+    editProfileForm.addEventListener('submit', handleEditProfileSubmit);
+  }
+}
+
+async function handleEditProfileSubmit(e) {
+  e.preventDefault();
+  
+  const alias = document.getElementById('edit-alias').value.trim();
+  const gender = document.getElementById('edit-gender').value;
+  const profilePic = document.getElementById('edit-avatar-data').value;
+
+  if (!alias) {
+    showToast('⚠️ Alias/Nickname cannot be empty.');
+    return;
+  }
+
+  showToast('💾 Saving profile changes...');
+  try {
+    const res = await fetch(`${API_BASE}/auth/profile`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({ alias, gender, profilePic }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById('edit-profile-modal').classList.remove('active');
+      showToast('🎉 Profile updated successfully!');
+      currentUser = data.user;
+      localStorage.setItem('happyfeet_user_email', currentUser.email);
+      window.location.reload();
+    } else {
+      showToast(`❌ Error: ${data.error || 'Failed to update profile'}`);
+    }
+  } catch (err) {
+    console.error(err);
+    showToast('❌ Connection error saving profile.');
+  }
 }
 

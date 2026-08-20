@@ -799,6 +799,57 @@
     </div>
   </div>
 
+  <!-- EDIT PROFILE MODAL -->
+  <div class="modal-overlay" id="edit-profile-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2>Edit Your Profile</h2>
+          <p style="font-size: 13px; color: var(--text-muted);">Update your alias, gender, and profile photo</p>
+        </div>
+        <button class="close-modal-btn" id="close-edit-profile-btn">&times;</button>
+      </div>
+
+      <form id="edit-profile-form" novalidate style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- Profile Pic Upload section -->
+        <div class="avatar-setup-container" style="display: flex; gap: 16px; align-items: center; background: rgba(255,255,255,0.05); padding: 16px; border-radius: 12px;">
+          <div class="avatar-preview-wrapper" style="position: relative; width: 90px; height: 90px; border-radius: 50%; overflow: hidden; border: 3px solid var(--accent-cyan); display: flex; align-items: center; justify-content: center; background: #1F2937; box-shadow: 0 0 15px rgba(6,182,212,0.3); flex-shrink: 0;">
+            <div id="edit-avatar-preview" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 55px; transition: all 0.3s ease;">👤</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1;">
+            <label style="font-weight: 700; font-size: 14px; color: white; margin-bottom: 0;">Update Profile Avatar / Photo</label>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="sync-action-btn" id="edit-upload-avatar-trigger" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: var(--accent-cyan); color: #0f172a; cursor: pointer; border-radius: 6px;">
+                <i class="fa-solid fa-upload"></i> Upload Photo
+              </button>
+              <button type="button" class="sync-action-btn" id="edit-camera-avatar-trigger" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: var(--primary-emerald); color: white; cursor: pointer; border-radius: 6px;">
+                <i class="fa-solid fa-camera"></i> Take Photo
+              </button>
+            </div>
+            <input type="file" id="edit-avatar-file" accept="image/*" style="display: none;">
+            <input type="file" id="edit-avatar-camera" accept="image/*" capture="user" style="display: none;">
+            <input type="hidden" id="edit-avatar-data" value="">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Alias / Nickname</label>
+          <input type="text" id="edit-alias" placeholder="e.g. Vicky" required>
+        </div>
+
+        <div class="form-group">
+          <label>Gender</label>
+          <select id="edit-gender" class="profile-select" style="width: 100%; height: 42px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; padding: 0 12px;">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+
+        <button type="submit" class="submit-btn" style="width: 100%; margin-top: 10px;"><i class="fa-solid fa-floppy-disk"></i> Save Profile Details</button>
+      </form>
+    </div>
+  </div>
+
   <!-- WALKCOINS GUIDE MODAL -->
   <div class="modal-overlay" id="walkcoins-guide-modal">
     <div class="modal-card">
