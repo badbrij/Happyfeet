@@ -28,7 +28,7 @@ export function normalizePhone(phone: string): string {
 
 // POST /api/v1/auth/register
 router.post('/register', async (req: Request, res: Response) => {
-  const { name, alias, profilePic, email, phone, password, dob, gender, location, healthProfile } = req.body;
+  const { name, alias, profilePic, phone, password, dob, gender, location, healthProfile } = req.body;
 
   if (!phone || !password || !name || !dob || !gender || !location) {
     return res.status(400).json({ error: 'Missing required registration fields' });
@@ -39,6 +39,7 @@ router.post('/register', async (req: Request, res: Response) => {
   }
 
   const normalizedPhone = normalizePhone(phone);
+  const constructedEmail = `${normalizedPhone.replace('+', '')}@badakadam.com`;
 
   try {
     // Check if phone already exists
@@ -56,7 +57,7 @@ router.post('/register', async (req: Request, res: Response) => {
     const { data: existingUserByEmail } = await supabase
       .from('users')
       .select('id')
-      .eq('email', email.toLowerCase())
+      .eq('email', constructedEmail)
       .maybeSingle();
 
     if (existingUserByEmail) {
@@ -88,7 +89,7 @@ router.post('/register', async (req: Request, res: Response) => {
       name,
       alias: alias || null,
       profile_pic: profilePic || null,
-      email: email.toLowerCase(),
+      email: constructedEmail,
       phone: normalizedPhone,
       password_hash: passwordHash,
       dob,
@@ -150,22 +151,27 @@ router.post('/register', async (req: Request, res: Response) => {
 router.post('/login', async (req: Request, res: Response) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required' });
+    return res.status(400).json({ error: 'Email/Phone and password are required' });
   }
 
   try {
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', email.toLowerCase())
-      .maybeSingle();
+    const isEmail = email.includes('@');
+    let query = supabase.from('users').select('*');
+    if (isEmail) {
+      query = query.eq('email', email.toLowerCase().trim());
+    } else {
+      const normalizedPhone = normalizePhone(email);
+      query = query.eq('phone', normalizedPhone);
+    }
+
+    const { data: user, error } = await query.maybeSingle();
 
     if (error || !user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     if (!bcrypt.compareSync(password, user.password_hash)) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const token = generateToken(user.id);

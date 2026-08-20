@@ -229,12 +229,11 @@ function initModal() {
 
   document.getElementById('next-step-1').addEventListener('click', async () => {
     const name = document.getElementById('reg-name').value;
-    const email = document.getElementById('reg-email').value;
     const phone = document.getElementById('reg-phone').value;
     const cleanPhone = phone.replace(/[-.\s()]/g, '');
     const phoneRegex = /^\+?\d{10,12}$/;
 
-    if (!name || !email || !phone) {
+    if (!name || !phone) {
       showToast('⚠️ Please fill out all basic details.');
       return;
     }
@@ -501,7 +500,6 @@ async function handleRegistrationSubmit(e) {
 
   const name = document.getElementById('reg-name').value;
   const alias = document.getElementById('reg-alias').value;
-  const email = document.getElementById('reg-email').value;
   const phone = document.getElementById('reg-phone').value;
   const password = 'Password123!';
 
@@ -549,7 +547,6 @@ async function handleRegistrationSubmit(e) {
     name,
     alias,
     profilePic,
-    email,
     phone,
     password,
     dob,
