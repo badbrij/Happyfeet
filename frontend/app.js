@@ -466,6 +466,7 @@ async function handleQuickLoginOtpSubmit(e) {
         currentUser = data.user;
         localStorage.setItem('happyfeet_token', authToken);
         localStorage.setItem('happyfeet_user_email', currentUser.email);
+        localStorage.removeItem('happyfeet_logged_out');
 
         const displayName = currentUser.alias || currentUser.name;
         showToast(`Welcome back, ${displayName}!`);
@@ -573,6 +574,7 @@ async function handleRegistrationSubmit(e) {
       currentUser = data.user;
       localStorage.setItem('happyfeet_token', authToken);
       localStorage.setItem('happyfeet_user_email', currentUser.email);
+      localStorage.removeItem('happyfeet_logged_out');
       window.location.reload();
     } else {
       if (data.error && (data.error.includes('mobile number') || data.error.includes('phone'))) {
@@ -591,6 +593,7 @@ async function handleRegistrationSubmit(e) {
             currentUser = loginData.user;
             localStorage.setItem('happyfeet_token', authToken);
             localStorage.setItem('happyfeet_user_email', currentUser.email);
+            localStorage.removeItem('happyfeet_logged_out');
             
             showToast(`Welcome back, ${currentUser.alias || currentUser.name}!`);
             window.location.reload();
@@ -722,6 +725,8 @@ function initOtpInputs(containerClass) {
 // Check saved session in LocalStorage
 async function checkSavedSession() {
   const savedToken = localStorage.getItem('happyfeet_token');
+  const loggedOut = localStorage.getItem('happyfeet_logged_out');
+  
   if (savedToken) {
     authToken = savedToken;
     try {
@@ -743,6 +748,11 @@ async function checkSavedSession() {
     } catch (err) {
       console.error('Session load error:', err);
     }
+  }
+  
+  if (loggedOut === 'true') {
+    updateAuthUI();
+    return;
   }
   
   // Default fallback reviewer login
@@ -811,6 +821,7 @@ async function loginUser(email) {
       currentUser = data.user;
       localStorage.setItem('happyfeet_token', authToken);
       localStorage.setItem('happyfeet_user_email', currentUser.email);
+      localStorage.removeItem('happyfeet_logged_out');
 
       const displayName = currentUser.alias || currentUser.name;
       showToast(`Active User: ${displayName}`);
@@ -1054,13 +1065,29 @@ function handleSyncSteps() {
     return;
   }
   
+  const savedProvider = localStorage.getItem('happyfeet_sync_provider');
+  
   // Reset modal state
   document.querySelectorAll('.provider-card').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.sim-step-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('sync-provider-select').style.display = 'block';
-  document.getElementById('sync-conn-status').style.display = 'none';
-  document.getElementById('sync-sim-controls').style.display = 'none';
-  document.getElementById('sync-action-submit-btn').setAttribute('disabled', 'true');
+  
+  if (savedProvider) {
+    document.getElementById('sync-provider-select').style.display = 'none';
+    document.getElementById('sync-conn-status').style.display = 'block';
+    document.getElementById('conn-loading').style.display = 'none';
+    document.getElementById('conn-success').style.display = 'block';
+    
+    const activeCard = document.querySelector(`.provider-card[data-provider="${savedProvider}"]`);
+    if (activeCard) activeCard.classList.add('active');
+    
+    document.getElementById('sync-sim-controls').style.display = 'flex';
+    document.getElementById('sync-action-submit-btn').removeAttribute('disabled');
+  } else {
+    document.getElementById('sync-provider-select').style.display = 'block';
+    document.getElementById('sync-conn-status').style.display = 'none';
+    document.getElementById('sync-sim-controls').style.display = 'none';
+    document.getElementById('sync-action-submit-btn').setAttribute('disabled', 'true');
+  }
   
   // Show Modal
   document.getElementById('health-sync-modal').classList.add('active');
@@ -1246,6 +1273,7 @@ function handleSignOut() {
   currentUser = null;
   localStorage.removeItem('happyfeet_token');
   localStorage.removeItem('happyfeet_user_email');
+  localStorage.setItem('happyfeet_logged_out', 'true');
   window.location.reload();
   
   // Clear dashboard or show a state that requires login
@@ -1989,6 +2017,7 @@ function initHealthSyncSetup() {
   const providerCards = document.querySelectorAll('.provider-card');
   const simStepBtns = document.querySelectorAll('.sim-step-btn');
   const submitBtn = document.getElementById('sync-action-submit-btn');
+  const changeProviderBtn = document.getElementById('change-sync-provider-btn');
 
   if (closeBtn && modal) {
     closeBtn.addEventListener('click', () => {
@@ -1996,7 +2025,22 @@ function initHealthSyncSetup() {
     });
   }
 
-  let selectedProvider = '';
+  if (changeProviderBtn) {
+    changeProviderBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem('happyfeet_sync_provider');
+      selectedProvider = '';
+      
+      document.querySelectorAll('.provider-card').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.sim-step-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('sync-provider-select').style.display = 'block';
+      document.getElementById('sync-conn-status').style.display = 'none';
+      document.getElementById('sync-sim-controls').style.display = 'none';
+      submitBtn.setAttribute('disabled', 'true');
+    });
+  }
+
+  let selectedProvider = localStorage.getItem('happyfeet_sync_provider') || '';
   let selectedSteps = 0;
 
   providerCards.forEach(card => {
@@ -2016,6 +2060,7 @@ function initHealthSyncSetup() {
         document.getElementById('conn-loading').style.display = 'none';
         document.getElementById('conn-success').style.display = 'block';
         document.getElementById('sync-sim-controls').style.display = 'flex';
+        localStorage.setItem('happyfeet_sync_provider', selectedProvider);
       }, 1500);
     });
   });
