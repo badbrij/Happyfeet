@@ -855,22 +855,29 @@ input:focus, select:focus {
   order: 3 !important;
   display: flex !important;
   flex-direction: row !important;
-  gap: 6px !important;
+  gap: 4px !important;
   padding: 4px 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
   border: none !important;
   flex-shrink: 0 !important;
   width: 100% !important;
-  overflow-x: auto !important;
+  overflow-x: hidden !important;
   white-space: nowrap !important;
+  justify-content: space-between !important;
 }
 
 .app-viewport-wrapper.view-mode-mobile .nav-btn {
-  padding: 8px 12px !important;
-  font-size: 11px !important;
+  padding: 8px 6px !important;
+  font-size: 10.5px !important;
   border-radius: 20px !important;
-  flex-shrink: 0 !important;
+  flex-shrink: 1 !important;
+  flex-grow: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  min-width: 0 !important;
 }
 
 .app-viewport-wrapper.view-mode-mobile #member-since-display {
