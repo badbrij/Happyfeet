@@ -1167,9 +1167,6 @@ async function fetchGroups() {
                 ${leaveBtnHTML}
               </div>
             </div>
-          </div>
-        `;
-      }).join('');
           
           <!-- Collapsible Leaderboard section -->
           <div id="group-leaderboard-${g.id}" class="group-leaderboard-container" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px; margin-top: 8px;">
@@ -1182,7 +1179,8 @@ async function fetchGroups() {
             </div>
           </div>
         </div>
-      `).join('');
+        `;
+      }).join('');
       
       // Compile and list top 5 group walkers in switcher
       compileTopWalkers(data.groups);
