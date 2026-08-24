@@ -19,6 +19,71 @@ function normalizePhoneFrontend(phone) {
   return cleaned;
 }
 
+let webcamStream = null;
+let webcamTargetPreview = null;
+let webcamTargetInput = null;
+
+async function openWebcamCapture(targetPreviewEl, targetInputEl) {
+  webcamTargetPreview = targetPreviewEl;
+  webcamTargetInput = targetInputEl;
+
+  const modal = document.getElementById('webcam-modal');
+  const video = document.getElementById('webcam-video');
+
+  modal.classList.add('active');
+
+  try {
+    webcamStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: 400, height: 400 }
+    });
+    video.srcObject = webcamStream;
+  } catch (err) {
+    console.error('Webcam access error:', err);
+    showToast('❌ Camera access denied or not available.');
+    modal.classList.remove('active');
+  }
+}
+
+function closeWebcamCapture() {
+  const modal = document.getElementById('webcam-modal');
+  modal.classList.remove('active');
+
+  if (webcamStream) {
+    webcamStream.getTracks().forEach(track => track.stop());
+    webcamStream = null;
+  }
+}
+
+function captureWebcamPhoto() {
+  if (!webcamStream || !webcamTargetPreview || !webcamTargetInput) return;
+
+  const video = document.getElementById('webcam-video');
+  const canvas = document.getElementById('webcam-canvas');
+  const ctx = canvas.getContext('2d');
+
+  const size = Math.min(video.videoWidth, video.videoHeight) || 300;
+  canvas.width = size;
+  canvas.height = size;
+
+  ctx.translate(size, 0);
+  ctx.scale(-1, 1);
+
+  const sx = (video.videoWidth - size) / 2;
+  const sy = (video.videoHeight - size) / 2;
+  ctx.drawImage(video, sx, sy, size, size, 0, 0, size, size);
+
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+
+  webcamTargetPreview.innerHTML = `<img src="${dataUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+  webcamTargetPreview.className = "avatar-circle-render";
+  webcamTargetInput.value = dataUrl;
+
+  document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('active'));
+
+  closeWebcamCapture();
+  showToast('📸 Photo captured successfully!');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initTabs();
   initUserSelector();
@@ -28,6 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initEditProfileSetup();
   initHealthSyncSetup();
   checkSavedSession();
+
+  // Webcam event listeners
+  document.getElementById('close-webcam-modal-btn').addEventListener('click', closeWebcamCapture);
+  document.getElementById('webcam-cancel-btn').addEventListener('click', closeWebcamCapture);
+  document.getElementById('webcam-capture-btn').addEventListener('click', captureWebcamPhoto);
 
   document.getElementById('sync-steps-btn').addEventListener('click', handleSyncSteps);
   document.getElementById('registration-form').addEventListener('submit', handleRegistrationSubmit);
@@ -1583,10 +1653,9 @@ function initAvatarSetup() {
     };
   }
 
-  if (cameraTrigger && cameraInput) {
-    cameraTrigger.onclick = () => cameraInput.click();
-    cameraInput.onchange = (e) => {
-      processUploadedImage(e.target.files[0], previewRender, avatarDataInput);
+  if (cameraTrigger) {
+    cameraTrigger.onclick = () => {
+      openWebcamCapture(previewRender, avatarDataInput);
     };
   }
 
@@ -2090,10 +2159,9 @@ function initEditProfileSetup() {
     };
   }
 
-  if (cameraTrigger && cameraInput) {
-    cameraTrigger.onclick = () => cameraInput.click();
-    cameraInput.onchange = (e) => {
-      processUploadedImage(e.target.files[0], previewRender, avatarDataInput);
+  if (cameraTrigger) {
+    cameraTrigger.onclick = () => {
+      openWebcamCapture(previewRender, avatarDataInput);
     };
   }
 
