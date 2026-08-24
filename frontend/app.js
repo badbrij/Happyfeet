@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000/api/v1';
+const API_BASE = 'http://127.0.0.1:5000/api/v1';
 
 let authToken = '';
 let currentUser = null;
