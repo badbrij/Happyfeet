@@ -3,6 +3,21 @@ const API_BASE = 'http://127.0.0.1:5000/api/v1';
 let authToken = '';
 let currentUser = null;
 let currentStep = 1;
+let verificationPhone = '';
+let verifiedPhone = '';
+
+function normalizePhoneFrontend(phone) {
+  if (!phone) return '';
+  let cleaned = phone.replace(/[-.\s()]/g, '');
+  cleaned = cleaned.replace(/[^0-9+]/g, '');
+  if (cleaned.length === 10 && /^\d+$/.test(cleaned)) {
+    cleaned = '+91' + cleaned;
+  }
+  if (cleaned.length === 12 && cleaned.startsWith('91') && /^\d+$/.test(cleaned)) {
+    cleaned = '+' + cleaned;
+  }
+  return cleaned;
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   initTabs();
@@ -225,16 +240,14 @@ function initModal() {
     });
   }
 
-  let verificationPhone = '';
-  let verifiedPhone = '';
-
   document.getElementById('next-step-1').addEventListener('click', async () => {
     const name = document.getElementById('reg-name').value;
-    const phone = document.getElementById('reg-phone').value;
-    const cleanPhone = phone.replace(/[-.\s()]/g, '');
+    const rawPhone = document.getElementById('reg-phone').value;
+    const phone = normalizePhoneFrontend(rawPhone);
+    const cleanPhone = phone.replace('+', '');
     const phoneRegex = /^\+?\d{10,12}$/;
 
-    if (!name || !phone) {
+    if (!name || !rawPhone) {
       showToast('⚠️ Please fill out all basic details.');
       return;
     }
@@ -503,7 +516,8 @@ async function handleRegistrationSubmit(e) {
 
   const name = document.getElementById('reg-name').value;
   const alias = document.getElementById('reg-alias').value;
-  const phone = document.getElementById('reg-phone').value;
+  const rawPhone = document.getElementById('reg-phone').value;
+  const phone = normalizePhoneFrontend(rawPhone);
   const password = 'Password123!';
 
   const dob = document.getElementById('reg-dob').value;

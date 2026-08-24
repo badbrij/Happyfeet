@@ -253,7 +253,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Memory store for OTPs (keyed by clean phone number)
+// Memory store for OTPs (keyed by normalized phone number)
 const otpStore = new Map<string, { otp: string; expiresAt: number }>();
 
 // POST /api/v1/auth/send-otp
@@ -263,9 +263,8 @@ router.post('/send-otp', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Phone number is required' });
   }
 
-  const cleanPhone = phone.replace(/[-.\s()]/g, '');
-  const phoneRegex = /^\+?\d{10,12}$/;
-  if (!phoneRegex.test(cleanPhone)) {
+  const normalizedPhone = normalizePhone(phone);
+  if (!isValidPhoneNumber(normalizedPhone)) {
     return res.status(400).json({ error: 'Invalid phone number format' });
   }
 
@@ -273,11 +272,11 @@ router.post('/send-otp', async (req: Request, res: Response) => {
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes validity
 
-  otpStore.set(cleanPhone, { otp, expiresAt });
+  otpStore.set(normalizedPhone, { otp, expiresAt });
 
   console.log(`=========================================`);
   console.log(`💬 OTP Dispatch Simulator`);
-  console.log(`📞 Phone: ${cleanPhone}`);
+  console.log(`📞 Phone: ${normalizedPhone}`);
   console.log(`🔑 Verification Code: ${otp}`);
   console.log(`=========================================`);
 
@@ -295,15 +294,15 @@ router.post('/verify-otp', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Phone number and verification OTP are required' });
   }
 
-  const cleanPhone = phone.replace(/[-.\s()]/g, '');
-  const entry = otpStore.get(cleanPhone);
+  const normalizedPhone = normalizePhone(phone);
+  const entry = otpStore.get(normalizedPhone);
 
   if (!entry) {
     return res.status(400).json({ error: 'No verification request found for this phone number' });
   }
 
   if (Date.now() > entry.expiresAt) {
-    otpStore.delete(cleanPhone);
+    otpStore.delete(normalizedPhone);
     return res.status(400).json({ error: 'Verification code expired' });
   }
 
@@ -312,14 +311,14 @@ router.post('/verify-otp', async (req: Request, res: Response) => {
   }
 
   // Successfully verified! Clear OTP from store
-  otpStore.delete(cleanPhone);
+  otpStore.delete(normalizedPhone);
 
   try {
     // Check if the user exists in the database
     const { data: user, error } = await supabase
       .from('users')
       .select('*')
-      .eq('phone', cleanPhone)
+      .eq('phone', normalizedPhone)
       .maybeSingle();
 
     if (error) {
