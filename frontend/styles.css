@@ -1098,4 +1098,72 @@ input:focus, select:focus {
   box-sizing: border-box !important;
 }
 
+/* Timebound Battle & visualized leaderboards styling */
+.battle-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.battle-status-badge.active {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--primary-emerald);
+}
+.battle-status-badge.concluded {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #EF4444;
+}
+.comparison-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.comparison-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.comparison-bar-fill.current-user {
+  background: linear-gradient(90deg, var(--primary-emerald), var(--accent-cyan));
+}
+.battle-podium-header {
+  background: radial-gradient(circle at center, rgba(245, 158, 11, 0.15) 0%, transparent 70%);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.leave-battle-btn {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  font-weight: 600;
+  text-transform: none;
+  outline: none;
+}
+.leave-battle-btn:hover {
+  background: #EF4444;
+  color: white;
+  border-color: #EF4444;
+}
+
 

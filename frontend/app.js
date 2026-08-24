@@ -628,6 +628,7 @@ async function handleCreateGroup(e) {
   const name = document.getElementById('grp-name').value;
   const groupType = document.getElementById('grp-type').value;
   const targetSteps = parseInt(document.getElementById('grp-target').value, 10);
+  const battleDuration = document.getElementById('grp-duration').value;
   const allowedPhonesVal = document.getElementById('grp-allowed-phones').value;
   const allowedPhones = allowedPhonesVal ? allowedPhonesVal.split(',').map(p => p.trim()).filter(p => p !== '') : [];
 
@@ -638,7 +639,7 @@ async function handleCreateGroup(e) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${authToken}`,
       },
-      body: JSON.stringify({ name, groupType, targetSteps, allowedPhones }),
+      body: JSON.stringify({ name, groupType, targetSteps, allowedPhones, battleDuration }),
     });
 
     const data = await res.json();
@@ -1104,11 +1105,44 @@ async function fetchGroups() {
 
     if (res.ok) {
       const container = document.getElementById('groups-container');
-      container.innerHTML = data.groups.map((g) => `
+      container.innerHTML = data.groups.map((g) => {
+        let statusBadge = '';
+        if (g.battleDuration && g.battleDuration !== 'Infinite') {
+          if (g.status === 'Concluded') {
+            statusBadge = `<span class="battle-status-badge concluded" style="margin-left: 10px;"><i class="fa-solid fa-circle-stop"></i> Concluded</span>`;
+          } else {
+            statusBadge = `<span class="battle-status-badge active" style="margin-left: 10px;"><i class="fa-solid fa-circle-play"></i> Active (${g.daysRemaining} days left)</span>`;
+          }
+        } else {
+          statusBadge = `<span class="battle-status-badge active" style="margin-left: 10px; background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.3); color: var(--accent-cyan);"><i class="fa-solid fa-rotate"></i> Ongoing</span>`;
+        }
+
+        let dateInfo = '';
+        if (g.battleDuration && g.battleDuration !== 'Infinite') {
+          dateInfo = `<div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Timeline: ${g.startDate} to ${g.endDate}</div>`;
+        }
+
+        const isOwner = currentUser && g.ownerId === currentUser.id;
+        const actionBtnText = isOwner ? '<i class="fa-solid fa-trash-can"></i> Delete' : '<i class="fa-solid fa-right-from-bracket"></i> Leave';
+        const actionBtnClass = isOwner ? 'sync-action-btn' : 'leave-battle-btn';
+        const actionBtnStyle = isOwner 
+          ? 'margin-top: 0; padding: 6px 12px; font-size: 12px; background: rgba(239,68,68,0.15); color: #F87171; border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; cursor: pointer;' 
+          : 'margin-top: 0;';
+
+        const leaveBtnHTML = `
+          <button class="${actionBtnClass}" onclick="leaveOrDeleteGroup('${g.id}', ${isOwner})" style="${actionBtnStyle}">
+            ${actionBtnText}
+          </button>
+        `;
+
+        return `
         <div class="glass-card group-item" id="group-card-${g.id}" style="display: flex; flex-direction: column; gap: 16px; padding: 20px; margin-bottom: 16px;">
           <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
             <div>
-              <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">${g.name}</h3>
+              <div style="display: flex; align-items: center; flex-wrap: wrap;">
+                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">${g.name}</h3>
+                ${statusBadge}
+              </div>
               <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 8px;">${g.description}</p>
               <div style="font-size: 13px; color: var(--accent-cyan); font-weight: 600;">
                 Collective Target: ${g.currentSteps.toLocaleString()} / ${g.targetSteps.toLocaleString()} steps
@@ -1116,22 +1150,26 @@ async function fetchGroups() {
               <div class="progress-bar-bg" style="margin-top: 6px; width: 250px;">
                 <div class="progress-bar-fill" style="width: ${Math.min(100, Math.round((g.currentSteps / g.targetSteps) * 100))}%;"></div>
               </div>
+              ${dateInfo}
             </div>
             <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;">
               <div>
                 <span class="rank-badge" style="margin-bottom: 8px; display: inline-block;">Invite Code: ${g.inviteCode}</span>
                 <div style="font-size: 13px; color: var(--text-muted);">${g.members.length} Members Active</div>
               </div>
-              <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <div style="display: flex; gap: 8px; margin-top: 8px; align-items: center;">
                 <button class="sync-action-btn" onclick="toggleGroupLeaderboard('${g.id}')" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: rgba(6,182,212,0.15); color: var(--accent-cyan); border: 1px solid rgba(6,182,212,0.3); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
                   <i class="fa-solid fa-ranking-star"></i> View Battle
                 </button>
                 <button class="sync-action-btn share-grp-btn" onclick="openShareModal('${g.name}', '${g.inviteCode}')" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: rgba(59,130,246,0.2); color: #60A5FA; border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
                   <i class="fa-solid fa-share-nodes"></i> Share
                 </button>
+                ${leaveBtnHTML}
               </div>
             </div>
           </div>
+        `;
+      }).join('');
           
           <!-- Collapsible Leaderboard section -->
           <div id="group-leaderboard-${g.id}" class="group-leaderboard-container" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px; margin-top: 8px;">
@@ -1172,45 +1210,109 @@ window.toggleGroupLeaderboard = async function(groupId) {
     const data = await res.json();
 
     if (res.ok) {
-      document.getElementById(`group-total-steps-${groupId}`).innerText = `Total group steps today: ${data.groupTotalSteps.toLocaleString()}`;
+      const isConcluded = data.status === 'Concluded';
+      const stepsContextLabel = data.battleDuration !== 'Infinite' ? 'battle steps' : 'steps today';
+      
+      document.getElementById(`group-total-steps-${groupId}`).innerText = data.battleDuration !== 'Infinite'
+        ? `Total battle steps: ${data.battleTotalSteps.toLocaleString()}`
+        : `Total group steps today: ${data.groupTotalSteps.toLocaleString()}`;
       
       const listContainer = document.getElementById(`group-leaderboard-list-${groupId}`);
       const totalMembers = data.leaderboard.length;
       
-      listContainer.innerHTML = data.leaderboard.map((m, index) => {
+      // Determine max steps for visual comparison bar relative scaling
+      const leaderSteps = data.leaderboard[0]?.battleSteps || 1;
+      const maxSteps = leaderSteps > 0 ? leaderSteps : 1;
+
+      let podiumHeaderHTML = '';
+      if (data.battleDuration !== 'Infinite') {
+        if (isConcluded) {
+          const winner = data.leaderboard[0];
+          const winnerName = winner ? winner.name : 'No one';
+          const winnerSteps = winner ? winner.battleSteps.toLocaleString() : '0';
+          podiumHeaderHTML = `
+            <div class="battle-podium-header">
+              <h4 style="color: #F59E0B; font-size: 15px; font-weight: 800; margin-bottom: 4px;">
+                🏆 BATTLE CHAMPION CONCLUDED
+              </h4>
+              <p style="color: white; font-size: 13px; font-weight: 700; margin: 0;">
+                Congratulations to <span style="color: var(--accent-cyan); font-weight: 800;">${winnerName}</span> for winning the battle with <span style="color: #10B981; font-weight: 800;">${winnerSteps}</span> cumulative steps!
+              </p>
+            </div>
+          `;
+        } else {
+          podiumHeaderHTML = `
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 16px;">
+              <p style="color: var(--text-muted); font-size: 12px; margin: 0; line-height: 1.4;">
+                🕒 Battle Timeline: <span style="color: white; font-weight: 700;">${data.startDate}</span> to <span style="color: white; font-weight: 700;">${data.endDate}</span>. <span style="color: var(--accent-cyan); font-weight: 700;">${data.daysRemaining} days remaining</span>.
+              </p>
+            </div>
+          `;
+        }
+      }
+
+      const listHTML = data.leaderboard.map((m, index) => {
         const rank = index + 1;
         let medal = '';
-        if (rank === 1) medal = '🥇 ';
-        else if (rank === 2) medal = '🥈 ';
-        else if (rank === 3) medal = '🥉 ';
-        else medal = `#${rank} `;
+        let glowBorder = '';
+        if (rank === 1) {
+          medal = '🥇 ';
+          if (isConcluded) glowBorder = 'box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); border: 1px solid rgba(245, 158, 11, 0.5);';
+        } else if (rank === 2) {
+          medal = '🥈 ';
+          if (isConcluded) glowBorder = 'box-shadow: 0 0 10px rgba(148, 163, 184, 0.25); border: 1px solid rgba(148, 163, 184, 0.35);';
+        } else if (rank === 3) {
+          medal = '🥉 ';
+          if (isConcluded) glowBorder = 'box-shadow: 0 0 10px rgba(180, 83, 9, 0.25); border: 1px solid rgba(180, 83, 9, 0.35);';
+        } else {
+          medal = `#${rank} `;
+        }
 
         const isCurrentUser = currentUser && (currentUser.name === m.name || currentUser.alias === m.name);
-        const highlightStyle = isCurrentUser ? 'background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.25);' : 'background: rgba(255,255,255,0.02);';
+        const highlightStyle = isCurrentUser 
+          ? 'background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.25);' 
+          : 'background: rgba(255,255,255,0.02);';
 
         const avatarHTML = getAvatarHTML(m.profilePic, '28px', '18px', m.gender);
+        const widthPercent = Math.min(100, Math.round((m.battleSteps / maxSteps) * 100));
 
         return `
-          <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 8px; ${highlightStyle}">
-            <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 8px; ${highlightStyle} ${glowBorder}">
+            <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1;">
               <span style="font-weight: 800; font-size: 14px; color: ${rank <= 3 ? '#F59E0B' : 'var(--text-muted)'}; min-width: 28px;">${medal}</span>
               <div class="avatar-circle" style="width: 28px; height: 28px; border-color: ${isCurrentUser ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.1)'};">
                 ${avatarHTML}
               </div>
-              <div>
-                <span style="font-size: 13px; font-weight: 700; color: white;">${m.name}</span>
-                ${m.role !== 'Member' ? `<span style="font-size: 10px; padding: 1px 4px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-left: 6px; color: var(--text-muted);">${m.role}</span>` : ''}
+              <div style="display: flex; flex-direction: column; gap: 2px;">
+                <div style="display: flex; align-items: center;">
+                  <span style="font-size: 13px; font-weight: 700; color: white;">${m.name}</span>
+                  ${m.role !== 'Member' ? `<span style="font-size: 9px; padding: 1px 4px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-left: 6px; color: var(--text-muted); font-weight: 600;">${m.role}</span>` : ''}
+                </div>
+                
+                <!-- Visualized progress comparison bar -->
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                  <div class="comparison-bar-bg" style="width: 140px; margin-top: 0;">
+                    <div class="comparison-bar-fill ${isCurrentUser ? 'current-user' : ''}" style="width: ${widthPercent}%;"></div>
+                  </div>
+                  <span style="font-size: 10px; color: var(--text-muted); font-weight: 700;">${widthPercent}%</span>
+                </div>
               </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 16px; flex-shrink: 0; text-align: right;">
               <span style="font-size: 12px; color: #F59E0B;"><i class="fa-solid fa-fire"></i> ${m.streak}d</span>
-              <span style="font-size: 13px; font-weight: 800; color: white;">${m.todaySteps.toLocaleString()} <span style="font-size: 11px; font-weight: 500; color: var(--text-muted);">steps</span></span>
-              <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">(Rank ${rank} of ${totalMembers})</span>
+              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+                <span style="font-size: 13px; font-weight: 800; color: white;">
+                  ${m.battleSteps.toLocaleString()} <span style="font-size: 10px; font-weight: 500; color: var(--accent-cyan);">${stepsContextLabel}</span>
+                </span>
+                ${data.battleDuration !== 'Infinite' ? `<span style="font-size: 10px; color: var(--text-muted);">Today: ${m.todaySteps.toLocaleString()}</span>` : ''}
+              </div>
+              <span style="font-size: 11px; color: var(--text-muted); font-weight: 600; display: none;">(Rank ${rank} of ${totalMembers})</span>
             </div>
           </div>
         `;
       }).join('');
 
+      listContainer.innerHTML = podiumHeaderHTML + listHTML;
       container.style.display = 'block';
     } else {
       showToast(data.error || 'Failed to load leaderboard');
@@ -1218,6 +1320,34 @@ window.toggleGroupLeaderboard = async function(groupId) {
   } catch (err) {
     console.error(err);
     showToast('Failed to connect to server');
+  }
+};
+
+// Global Group Leaving / Deletion Click Trigger handler
+window.leaveOrDeleteGroup = async function(groupId, isOwner) {
+  const actionText = isOwner ? 'DELETE this battle challenge (all collective progress will be deleted)?' : 'LEAVE this battle/group?';
+  if (!confirm(`Are you sure you want to ${actionText}`)) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/groups/leave`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({ groupId })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      showToast(isOwner ? '🔥 Battle deleted successfully!' : '🚪 Left group successfully!');
+      window.location.reload();
+    } else {
+      showToast(`❌ Error: ${data.error || 'Operation failed'}`);
+    }
+  } catch (err) {
+    console.error(err);
+    showToast('❌ Connection error leaving group.');
   }
 };
 
