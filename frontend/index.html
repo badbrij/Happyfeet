@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BadaKadam - Enterprise Wellness & Social Walking Platform</title>
+  <link rel="icon" type="image/png" href="logo.png">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -451,10 +452,13 @@
     <!-- QUICK LOGIN MODAL -->
     <div class="modal-overlay" id="quick-login-modal">
     <div class="modal-card">
-      <div class="modal-header">
-        <div>
-          <h2>Login to BadaKadam</h2>
-          <p style="color: var(--text-muted); font-size: 14px;">Enter your mobile number to login or register.</p>
+      <div class="modal-header" style="align-items: center;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <img src="logo.png" style="height: 42px; border-radius: 8px; box-shadow: 0 0 10px rgba(6, 182, 212, 0.2); border: 1px solid rgba(255,255,255,0.08);">
+          <div>
+            <h2 style="font-size: 18px;">Login to BadaKadam</h2>
+            <p style="color: var(--text-muted); font-size: 12px; margin-top: 2px;">Enter your mobile number to login or register.</p>
+          </div>
         </div>
         <button class="icon-btn" id="close-quick-login-modal-btn"><i class="fa-solid fa-xmark"></i></button>
       </div>
@@ -624,10 +628,13 @@
   <!-- MULTI-STEP USER REGISTRATION MODAL -->
   <div class="modal-overlay" id="register-modal">
     <div class="modal-card">
-      <div class="modal-header">
-        <div>
-          <h2>Create Your BadaKadam Profile</h2>
-          <p style="font-size: 13px; color: var(--text-muted);">Step <span id="onboarding-step-num">1</span> of 3</p>
+      <div class="modal-header" style="align-items: center;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <img src="logo.png" style="height: 42px; border-radius: 8px; box-shadow: 0 0 10px rgba(6, 182, 212, 0.2); border: 1px solid rgba(255,255,255,0.08);">
+          <div>
+            <h2 style="font-size: 18px;">Create Your BadaKadam Profile</h2>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Step <span id="onboarding-step-num">1</span> of 3</p>
+          </div>
         </div>
         <button class="close-modal-btn" id="close-modal-btn">&times;</button>
       </div>
