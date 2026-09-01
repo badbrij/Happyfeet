@@ -5,6 +5,11 @@ let currentUser = null;
 let currentStep = 1;
 let verificationPhone = '';
 let verifiedPhone = '';
+let auditedUsers = [];
+let currentModalDisplayedUsers = [];
+let currentAuditKeyType = 'all';
+let currentAuditFilterValue = '';
+let currentAuditSortBy = '';
 
 function normalizePhoneFrontend(phone) {
   if (!phone) return '';
@@ -85,6 +90,7 @@ function captureWebcamPhoto() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initViewportSwitcher();
   initTabs();
   initUserSelector();
   initModal();
@@ -94,13 +100,27 @@ document.addEventListener('DOMContentLoaded', () => {
   initHealthSyncSetup();
   checkSavedSession();
 
-  // Webcam event listeners
-  document.getElementById('close-webcam-modal-btn').addEventListener('click', closeWebcamCapture);
-  document.getElementById('webcam-cancel-btn').addEventListener('click', closeWebcamCapture);
-  document.getElementById('webcam-capture-btn').addEventListener('click', captureWebcamPhoto);
+  // Refresh admin dashboard button
+  const refreshAdminBtn = document.getElementById('refresh-admin-btn');
+  if (refreshAdminBtn) {
+    refreshAdminBtn.addEventListener('click', fetchAdminDashboard);
+  }
 
-  document.getElementById('sync-steps-btn').addEventListener('click', handleSyncSteps);
-  document.getElementById('registration-form').addEventListener('submit', handleRegistrationSubmit);
+  // Webcam event listeners with safety null checks
+  const closeWebcamBtn = document.getElementById('close-webcam-modal-btn');
+  if (closeWebcamBtn) closeWebcamBtn.addEventListener('click', closeWebcamCapture);
+
+  const webcamCancelBtn = document.getElementById('webcam-cancel-btn');
+  if (webcamCancelBtn) webcamCancelBtn.addEventListener('click', closeWebcamCapture);
+
+  const webcamCaptureBtn = document.getElementById('webcam-capture-btn');
+  if (webcamCaptureBtn) webcamCaptureBtn.addEventListener('click', captureWebcamPhoto);
+
+  const syncStepsBtn = document.getElementById('sync-steps-btn');
+  if (syncStepsBtn) syncStepsBtn.addEventListener('click', handleSyncSteps);
+
+  const regForm = document.getElementById('registration-form');
+  if (regForm) regForm.addEventListener('submit', handleRegistrationSubmit);
   
   const quickLoginForm = document.getElementById('quick-login-form');
   if (quickLoginForm) {
@@ -127,26 +147,56 @@ document.addEventListener('DOMContentLoaded', () => {
   const inviteCode = urlParams.get('invite');
   if (inviteCode) {
     localStorage.setItem('pending_invite_code', inviteCode);
-    // Clear query parameter from browser address bar
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
-  initViewportSwitcher();
   initDailyChallenge();
   initAvatarSetup();
+  initNotificationDrawer();
+  initShareCardModal();
+  initUserDashboardTileModals();
+  initPWAServiceWorker();
 });
 
 // Tab Navigation
 function initTabs() {
   const tabs = document.querySelectorAll('.nav-btn');
   tabs.forEach((tab) => {
-    tab.addEventListener('click', () => {
+    tab.addEventListener('click', (e) => {
+      const targetView = tab.getAttribute('data-tab');
+      
+      if (targetView === 'admin-view') {
+        const allowedAdminEmails = [
+          'brijesh@badakadam.com',
+          'superadmin@badakadam.com',
+          'developer@badakadam.com',
+          'admin@badakadam.com'
+        ];
+        const hasAccess = currentUser && (
+          (currentUser.email && allowedAdminEmails.includes(currentUser.email.toLowerCase())) ||
+          currentUser.isAdmin ||
+          currentUser.is_admin
+        );
+        if (!hasAccess) {
+          showToast('❌ Access Denied: Admin dashboard is restricted.');
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+      }
+
       tabs.forEach((t) => t.classList.remove('active'));
       tab.classList.add('active');
 
-      const targetView = tab.getAttribute('data-tab');
       document.querySelectorAll('.view-panel').forEach((panel) => panel.classList.remove('active'));
-      document.getElementById(targetView).classList.add('active');
+      const targetPanel = document.getElementById(targetView);
+      if (targetPanel) {
+        targetPanel.classList.add('active');
+      }
+
+      if (targetView === 'admin-view') {
+        fetchAdminDashboard();
+      }
     });
   });
 }
@@ -297,6 +347,20 @@ function initModal() {
     closeGuideBtn.addEventListener('click', () => {
       guideModal.classList.remove('active');
     });
+  }
+
+  // Admin User Modal close handler
+  const adminUserModal = document.getElementById('admin-user-list-modal');
+  const closeAdminUserBtn = document.getElementById('close-admin-user-modal-btn');
+  if (closeAdminUserBtn && adminUserModal) {
+    closeAdminUserBtn.addEventListener('click', () => {
+      adminUserModal.classList.remove('active');
+    });
+  }
+
+  const exportExcelBtn = document.getElementById('admin-export-excel-btn');
+  if (exportExcelBtn) {
+    exportExcelBtn.addEventListener('click', exportAuditedUsersToCSV);
   }
 
   const copyBtn = document.getElementById('copy-share-link-btn');
@@ -1479,6 +1543,31 @@ function updateAuthUI() {
   if (selector && currentUser) {
     selector.value = currentUser.email;
   }
+  updateAdminTabVisibility();
+}
+
+function updateAdminTabVisibility() {
+  const adminTab = document.getElementById('nav-admin-tab');
+  if (!adminTab) return;
+
+  const allowedAdminEmails = [
+    'brijesh@badakadam.com',
+    'superadmin@badakadam.com',
+    'developer@badakadam.com',
+    'admin@badakadam.com'
+  ];
+
+  const hasAccess = currentUser && (
+    (currentUser.email && allowedAdminEmails.includes(currentUser.email.toLowerCase())) ||
+    currentUser.isAdmin ||
+    currentUser.is_admin
+  );
+
+  if (hasAccess) {
+    adminTab.classList.remove('admin-hidden');
+  } else {
+    adminTab.classList.add('admin-hidden');
+  }
 }
 
 function handleSignOut() {
@@ -1503,6 +1592,9 @@ function handleSignOut() {
   showToast('You have been signed out.');
 }
 
+let cachedRewardsList = [];
+let activeRewardCategory = 'all';
+
 // Fetch Marketplace Rewards
 async function fetchMarketplace() {
   try {
@@ -1512,24 +1604,62 @@ async function fetchMarketplace() {
     const data = await res.json();
 
     if (res.ok) {
-      const container = document.getElementById('rewards-container');
-      container.innerHTML = data.rewards.map((r) => `
-        <div class="glass-card reward-card">
-          <div>
-            <div class="reward-brand">${r.brand}</div>
-            <div class="reward-title">${r.title}</div>
-            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">${r.description}</p>
-          </div>
-          <div>
-            <div class="reward-cost"><i class="fa-solid fa-coins"></i> ${r.costWalkCoins} WalkCoins</div>
-            <button class="redeem-btn" onclick="redeemReward('${r.id}')">Redeem Voucher</button>
-          </div>
-        </div>
-      `).join('');
+      cachedRewardsList = data.rewards || [];
+      renderFilteredRewards();
+      initRewardCategoryChips();
     }
   } catch (err) {
     console.error(err);
   }
+}
+
+function renderFilteredRewards() {
+  const container = document.getElementById('rewards-container');
+  if (!container) return;
+
+  const filtered = activeRewardCategory === 'all'
+    ? cachedRewardsList
+    : cachedRewardsList.filter(r => r.category === activeRewardCategory || (activeRewardCategory === 'Voucher' && r.category === 'Voucher'));
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div style="grid-column: 1/-1; padding: 30px; text-align: center; color: var(--text-muted);">No rewards found in "${activeRewardCategory}" category.</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map((r) => `
+    <div class="glass-card reward-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+          <div class="reward-brand">${r.brand}</div>
+          <span style="font-size: 10px; background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 10px; color: var(--accent-cyan); border: 1px solid rgba(255,255,255,0.1);">${r.category || 'Voucher'}</span>
+        </div>
+        <div class="reward-title">${r.title}</div>
+        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">${r.description}</p>
+      </div>
+      <div>
+        <div class="reward-cost"><i class="fa-solid fa-coins"></i> ${r.costWalkCoins} WalkCoins</div>
+        <button class="redeem-btn" onclick="redeemReward('${r.id}')">Redeem Voucher</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function initRewardCategoryChips() {
+  const chips = document.querySelectorAll('.rewards-cat-chips .cat-chip');
+  chips.forEach(chip => {
+    chip.onclick = () => {
+      chips.forEach(c => {
+        c.classList.remove('active');
+        c.style.background = 'rgba(255,255,255,0.06)';
+        c.style.color = 'var(--text-muted)';
+      });
+      chip.classList.add('active');
+      chip.style.background = 'var(--primary-emerald)';
+      chip.style.color = 'white';
+      activeRewardCategory = chip.getAttribute('data-cat');
+      renderFilteredRewards();
+    };
+  });
 }
 
 // Redeem Reward Action
@@ -1846,6 +1976,12 @@ function setViewportMode(mode) {
   const mobileBtn = document.getElementById('switch-mobile-btn');
   const header = document.getElementById('app-header');
   const main = document.getElementById('app-main');
+  const modals = document.getElementById('app-modals');
+  const toast = document.getElementById('toast');
+  const mobileScreen = document.getElementById('mobile-screen');
+  const webContainer = document.getElementById('web-container');
+
+  if (!wrapper || !webBtn || !mobileBtn || !header || !main || !mobileScreen || !webContainer) return;
 
   if (mode === 'mobile') {
     wrapper.classList.remove('view-mode-web');
@@ -1853,22 +1989,20 @@ function setViewportMode(mode) {
     webBtn.classList.remove('active');
     mobileBtn.classList.add('active');
 
-    // Reparent header, main, modals, and toast to mobile screen content
-    document.getElementById('mobile-screen').appendChild(header);
-    document.getElementById('mobile-screen').appendChild(main);
-    document.getElementById('mobile-screen').appendChild(document.getElementById('app-modals'));
-    document.getElementById('mobile-screen').appendChild(document.getElementById('toast'));
+    mobileScreen.appendChild(header);
+    mobileScreen.appendChild(main);
+    if (modals) mobileScreen.appendChild(modals);
+    if (toast) mobileScreen.appendChild(toast);
   } else {
     wrapper.classList.remove('view-mode-mobile');
     wrapper.classList.add('view-mode-web');
     mobileBtn.classList.remove('active');
     webBtn.classList.add('active');
 
-    // Reparent header, main back to web container, modals and toast back to body
-    document.getElementById('web-container').appendChild(header);
-    document.getElementById('web-container').appendChild(main);
-    document.body.appendChild(document.getElementById('app-modals'));
-    document.body.appendChild(document.getElementById('toast'));
+    webContainer.appendChild(header);
+    webContainer.appendChild(main);
+    if (modals) document.body.appendChild(modals);
+    if (toast) document.body.appendChild(toast);
   }
 }
 
@@ -2335,5 +2469,946 @@ function initHealthSyncSetup() {
       }
     });
   }
+}
+
+let activeAdminRange = '30d';
+
+// Fetch Admin Dashboard Metrics
+async function fetchAdminDashboard(range = activeAdminRange) {
+  activeAdminRange = range;
+  const container = document.getElementById('admin-view');
+  if (!container) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/dashboard?range=${range}`, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+    const resData = await res.json();
+    if (!resData.success) {
+      showToast('❌ Failed to load admin metrics: ' + (resData.error || 'Server error'));
+      return;
+    }
+
+    const { summary, funnel, demographics, economy, journey, users } = resData;
+
+    // Cache audited users list globally for modal filtering
+    auditedUsers = users || [];
+
+    initAdminRangeChips();
+    fetchFraudRules();
+    initFraudRulesForm();
+    fetchFlaggedLogs();
+
+    // 1. Update Hero Cards
+    document.getElementById('admin-stat-users').innerText = summary.totalUsers;
+    document.getElementById('admin-stat-steps').innerText = summary.totalPlatformSteps.toLocaleString();
+    document.getElementById('admin-stat-coins').innerText = summary.totalCoinsEarned.toLocaleString();
+    document.getElementById('admin-stat-groups').innerText = summary.totalGroups;
+
+    // Wire up audit trail on clicking Total Users Card
+    const totalUsersCard = document.getElementById('admin-stat-users').parentElement;
+    if (totalUsersCard) {
+      totalUsersCard.style.cursor = 'pointer';
+      totalUsersCard.title = 'Click to audit all walkers';
+      
+      const newCard = totalUsersCard.cloneNode(true);
+      totalUsersCard.parentNode.replaceChild(newCard, totalUsersCard);
+      newCard.addEventListener('click', () => {
+        showAdminUserAudit('all', null);
+      });
+    }
+
+    // Platform Steps Card
+    const stepsCard = document.getElementById('admin-stat-steps').parentElement;
+    if (stepsCard) {
+      stepsCard.style.cursor = 'pointer';
+      stepsCard.title = 'Click to view top step contributors';
+      
+      const newCard = stepsCard.cloneNode(true);
+      stepsCard.parentNode.replaceChild(newCard, stepsCard);
+      newCard.addEventListener('click', () => {
+        showAdminUserAudit('all', null, 'lifetime_steps');
+      });
+    }
+
+    // WalkCoins Circulation Card
+    const coinsCard = document.getElementById('admin-stat-coins').parentElement;
+    if (coinsCard) {
+      coinsCard.style.cursor = 'pointer';
+      coinsCard.title = 'Click to view top WalkCoins holders';
+      
+      const newCard = coinsCard.cloneNode(true);
+      coinsCard.parentNode.replaceChild(newCard, coinsCard);
+      newCard.addEventListener('click', () => {
+        showAdminUserAudit('all', null, 'walk_coins');
+      });
+    }
+
+    // Group Battles Card
+    const groupsCard = document.getElementById('admin-stat-groups').parentElement;
+    if (groupsCard) {
+      groupsCard.style.cursor = 'pointer';
+      groupsCard.title = 'Click to view group battle participants';
+      
+      const newCard = groupsCard.cloneNode(true);
+      groupsCard.parentNode.replaceChild(newCard, groupsCard);
+      newCard.addEventListener('click', () => {
+        showAdminUserAudit('in_group', null);
+      });
+    }
+
+    // 2. Update Marketing Funnel
+    document.getElementById('admin-funnel-downloads').innerText = summary.downloads.toLocaleString();
+    document.getElementById('admin-funnel-installs').innerText = summary.installs.toLocaleString();
+    document.getElementById('admin-funnel-uninstalls').innerText = summary.uninstalls.toLocaleString();
+
+    // Wire up clicks for Downloads, Installs, and Uninstalls in simulated funnel
+    const dlBtn = document.getElementById('admin-funnel-downloads-btn');
+    if (dlBtn) {
+      const newBtn = dlBtn.cloneNode(true);
+      dlBtn.parentNode.replaceChild(newBtn, dlBtn);
+      newBtn.addEventListener('click', () => showAdminUserAudit('all', null));
+    }
+    const instBtn = document.getElementById('admin-funnel-installs-btn');
+    if (instBtn) {
+      const newBtn = instBtn.cloneNode(true);
+      instBtn.parentNode.replaceChild(newBtn, instBtn);
+      newBtn.addEventListener('click', () => showAdminUserAudit('app_status', 'Installed'));
+    }
+    const uninstBtn = document.getElementById('admin-funnel-uninstalls-btn');
+    if (uninstBtn) {
+      const newBtn = uninstBtn.cloneNode(true);
+      uninstBtn.parentNode.replaceChild(newBtn, uninstBtn);
+      newBtn.addEventListener('click', () => showAdminUserAudit('app_status', 'Uninstalled'));
+    }
+
+    // Platforms
+    const androidPct = summary.installs > 0 ? Math.round((funnel.platforms.Android / summary.installs) * 100) : 72;
+    const iosPct = summary.installs > 0 ? Math.round((funnel.platforms.iOS / summary.installs) * 100) : 28;
+    document.getElementById('admin-platform-android').innerText = `${androidPct}% (${funnel.platforms.Android.toLocaleString()})`;
+    document.getElementById('admin-platform-ios').innerText = `${iosPct}% (${funnel.platforms.iOS.toLocaleString()})`;
+
+    // Funnel Chart Graph
+    const funnelChart = document.getElementById('admin-funnel-chart');
+    funnelChart.innerHTML = '';
+    const maxVal = Math.max(...funnel.timeline.map((t) => t.downloads), 1);
+    
+    funnel.timeline.forEach(val => {
+      const dHeight = (val.downloads / maxVal) * 100;
+      const uHeight = (val.uninstalls / maxVal) * 100;
+      
+      const bar = document.createElement('div');
+      bar.className = 'funnel-bar-wrapper';
+      bar.innerHTML = `
+        <div class="funnel-tooltip">
+          <strong>📅 Date: ${val.date}</strong><br/>
+          📥 Downloads: ${val.downloads.toLocaleString()}<br/>
+          📲 Installs: ${val.installs.toLocaleString()}<br/>
+          🗑️ Uninstalls: ${val.uninstalls.toLocaleString()}
+        </div>
+        <div class="funnel-bar-downloads" style="height: ${dHeight}%"></div>
+        <div class="funnel-bar-uninstalls" style="height: ${uHeight}%"></div>
+        <div class="funnel-x-label">${val.date.substring(8, 10)}</div>
+      `;
+      funnelChart.appendChild(bar);
+    });
+
+    // 3. Economy Velocity
+    const spentRatio = summary.totalCoinsEarned > 0 ? Math.round((summary.totalCoinsSpent / summary.totalCoinsEarned) * 100) : 0;
+    document.getElementById('admin-economy-ratio').innerText = `${spentRatio}% Spent (${summary.totalCoinsSpent.toLocaleString()} / ${summary.totalCoinsEarned.toLocaleString()})`;
+    document.getElementById('admin-economy-ratio-bar').style.width = `${spentRatio}%`;
+
+    // Earnings Channels
+    const earningsList = document.getElementById('admin-earnings-list');
+    earningsList.innerHTML = '';
+    const earnKeys = Object.keys(economy.earnings);
+    if (earnKeys.length === 0) {
+      earningsList.innerHTML = '<div style="color:var(--text-muted)">No coin transactions yet</div>';
+    } else {
+      earnKeys.forEach(k => {
+        const item = document.createElement('div');
+        item.style.display = 'flex';
+        item.style.justifyContent = 'space-between';
+        item.innerHTML = `<span>${k}</span><strong style="color: var(--accent-cyan);">+${economy.earnings[k].toLocaleString()}</strong>`;
+        earningsList.appendChild(item);
+      });
+    }
+
+    // Redemptions Channels
+    const redemptionsList = document.getElementById('admin-redemptions-list');
+    redemptionsList.innerHTML = '';
+    const redeemKeys = Object.keys(economy.redemptions);
+    if (redeemKeys.length === 0) {
+      redemptionsList.innerHTML = '<div style="color:var(--text-muted)">No redemptions yet</div>';
+    } else {
+      redeemKeys.forEach(k => {
+        const item = document.createElement('div');
+        item.style.display = 'flex';
+        item.style.justifyContent = 'space-between';
+        item.innerHTML = `<span>${k}</span><strong style="color: var(--accent-amber);">${economy.redemptions[k].toLocaleString()}</strong>`;
+        redemptionsList.appendChild(item);
+      });
+    }
+
+    // 4. Demographics Aggregations UI
+    const demoContainer = document.getElementById('admin-demographics-container');
+    demoContainer.innerHTML = '';
+
+    const renderDemoSection = (title, itemsMap, total, keyType) => {
+      const sec = document.createElement('div');
+      sec.style.marginBottom = '16px';
+      sec.innerHTML = `<h4 style="font-weight: 700; color: white; font-size: 13px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">${title}</h4>`;
+      
+      const keys = Object.keys(itemsMap);
+      if (keys.length === 0) {
+        sec.innerHTML += '<div style="color:var(--text-muted); font-size:12px;">No data</div>';
+      } else {
+        keys.forEach(k => {
+          const val = itemsMap[k];
+          const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+          
+          const row = document.createElement('div');
+          row.className = 'demo-stat-row';
+          row.style.cursor = 'pointer';
+          row.title = `Click to view walkers of '${k}'`;
+          row.innerHTML = `
+            <div class="demo-stat-info">
+              <span class="label">${k}</span>
+              <span class="value">${val} (${pct}%)</span>
+            </div>
+            <div class="demo-stat-bar-bg">
+              <div class="demo-stat-bar-fill" style="width: ${pct}%;"></div>
+            </div>
+          `;
+          
+          row.addEventListener('click', () => {
+            showAdminUserAudit(keyType, k);
+          });
+          
+          sec.appendChild(row);
+        });
+      }
+      demoContainer.appendChild(sec);
+    };
+
+    renderDemoSection('Gender split', demographics.gender, summary.totalUsers, 'gender');
+    renderDemoSection('Age divisions', demographics.age, summary.totalUsers, 'age_group');
+    renderDemoSection('BMI categories', demographics.bmi, summary.totalUsers, 'bmi_category');
+    renderDemoSection('Occupation distribution', demographics.occupation, summary.totalUsers, 'occupation');
+    renderDemoSection('Top states', demographics.state, summary.totalUsers, 'state');
+    renderDemoSection('Top cities', demographics.city, summary.totalUsers, 'city');
+
+    // 5. User Journey stream
+    const journeyFeed = document.getElementById('admin-journey-feed');
+    journeyFeed.innerHTML = '';
+    
+    if (journey.length === 0) {
+      journeyFeed.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding: 20px;">Journey stream is empty</div>';
+    } else {
+      journey.forEach(event => {
+        let typeClass = 'signup';
+        let iconHtml = '<i class="fa-solid fa-user-plus"></i>';
+        if (event.type === 'Earning') {
+          typeClass = 'earning';
+          iconHtml = '<i class="fa-solid fa-coins"></i>';
+        } else if (event.type === 'Redemption') {
+          typeClass = 'redemption';
+          iconHtml = '<i class="fa-solid fa-gift"></i>';
+        }
+
+        const dateFormatted = new Date(event.timestamp).toLocaleString();
+        
+        const card = document.createElement('div');
+        card.className = 'journey-event-card';
+        card.innerHTML = `
+          <div class="journey-event-icon ${typeClass}">${iconHtml}</div>
+          <div style="flex-grow: 1;">
+            <div class="journey-event-desc">${event.description}</div>
+            <div class="journey-event-time"><i class="fa-regular fa-clock"></i> ${dateFormatted}</div>
+          </div>
+        `;
+        journeyFeed.appendChild(card);
+      });
+    }
+
+  } catch (err) {
+    console.error('Error fetching admin stats:', err);
+    showToast('❌ Server error loading admin metrics');
+  }
+}
+
+// User-level dynamic auditing modal handlers
+let activeAuditList = [];
+
+function showAdminUserAudit(keyType, filterValue, sortBy = null) {
+  currentAuditKeyType = keyType;
+  currentAuditFilterValue = filterValue;
+  currentAuditSortBy = sortBy;
+
+  const labelEl = document.getElementById('admin-filter-category-label');
+  const searchInput = document.getElementById('admin-user-search-input');
+  
+  if (searchInput) searchInput.value = ''; // Reset search input
+
+  if (keyType === 'all') {
+    labelEl.innerText = sortBy === 'lifetime_steps' ? 'All Users (Sorted by Steps)' : (sortBy === 'walk_coins' ? 'All Users (Sorted by Coins)' : 'All Users');
+    activeAuditList = auditedUsers;
+  } else if (keyType === 'in_group') {
+    labelEl.innerText = 'Battle & Group Participants';
+    activeAuditList = auditedUsers.filter(u => u.groups && u.groups.length > 0);
+  } else {
+    // Normalization helper
+    labelEl.innerText = `${keyType.toUpperCase().replace('_', ' ')}: ${filterValue}`;
+    activeAuditList = auditedUsers.filter(u => {
+      const userVal = u[keyType] ? String(u[keyType]).trim().toLowerCase() : '';
+      const filterVal = filterValue ? String(filterValue).trim().toLowerCase() : '';
+      return userVal === filterVal;
+    });
+  }
+
+  // Handle optional sorting (e.g. by steps or coins)
+  if (sortBy) {
+    activeAuditList = [...activeAuditList].sort((a, b) => (b[sortBy] || 0) - (a[sortBy] || 0));
+  }
+
+  renderAuditedUsersTable(activeAuditList);
+
+  // Wire up dynamic search within the filtered subset
+  if (searchInput) {
+    // Rebind search listener by replacing clone
+    const newSearch = searchInput.cloneNode(true);
+    searchInput.parentNode.replaceChild(newSearch, searchInput);
+    
+    newSearch.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      const searchFiltered = activeAuditList.filter(u => 
+        (u.name && u.name.toLowerCase().includes(q)) ||
+        (u.alias && u.alias.toLowerCase().includes(q)) ||
+        (u.email && u.email.toLowerCase().includes(q)) ||
+        (u.city && u.city.toLowerCase().includes(q)) ||
+        (u.state && u.state.toLowerCase().includes(q)) ||
+        (u.occupation && u.occupation.toLowerCase().includes(q))
+      );
+      renderAuditedUsersTable(searchFiltered);
+    });
+  }
+
+  // Open modal
+  const modal = document.getElementById('admin-user-list-modal');
+  if (modal) modal.classList.add('active');
+}
+
+function renderAuditedUsersTable(usersList) {
+  const tbody = document.getElementById('admin-user-modal-tbody');
+  if (!tbody) return;
+
+  // Cache currently displayed list for the CSV export feature
+  currentModalDisplayedUsers = usersList;
+
+  tbody.innerHTML = '';
+  if (usersList.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="padding: 24px; text-align: center; color: var(--text-muted);">No audited users matched this group</td></tr>`;
+    return;
+  }
+
+  usersList.forEach(u => {
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid rgba(255, 255, 255, 0.06)';
+    tr.style.transition = 'background 0.2s';
+    
+    // Hover row effect
+    tr.addEventListener('mouseenter', () => tr.style.background = 'rgba(255,255,255,0.02)');
+    tr.addEventListener('mouseleave', () => tr.style.background = 'transparent');
+
+    const profilePic = u.profile_pic || 'Cheetah';
+    const aliasText = u.alias ? `@${u.alias}` : '@walker';
+    
+    const statusBadge = u.app_status === 'Uninstalled' 
+      ? '<span style="padding: 2px 6px; font-size: 10px; border-radius: 4px; background: rgba(239, 68, 68, 0.15); color: #EF4444; font-weight: 700; margin-left: 6px;">Uninstalled</span>'
+      : '<span style="padding: 2px 6px; font-size: 10px; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: var(--primary-emerald); font-weight: 700; margin-left: 6px;">Installed</span>';
+
+    const signupDate = new Date(u.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    const lastActiveDate = new Date(u.last_activity).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+    // Admin action button rendering
+    let actionHTML = '';
+    const isSuperadmin = currentUser && currentUser.email === 'brijesh@badakadam.com';
+    const staticAdmins = [
+      'brijesh@badakadam.com',
+      'superadmin@badakadam.com',
+      'developer@badakadam.com',
+      'admin@badakadam.com'
+    ];
+
+    if (isSuperadmin) {
+      if (u.email === 'brijesh@badakadam.com') {
+        actionHTML = '<span style="color: var(--accent-cyan); font-weight: 700;">Superadmin</span>';
+      } else if (staticAdmins.includes(u.email.toLowerCase())) {
+        actionHTML = '<span style="color: var(--text-muted); font-weight: 700;">Static Dev</span>';
+      } else if (u.is_admin) {
+        actionHTML = `<button onclick="toggleAdminStatus('${u.id}', 'remove')" class="register-hero-btn" style="height: 28px; padding: 0 10px; margin-top: 0; font-size: 11px; background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); color: #EF4444; border-radius: 6px; cursor: pointer; transition: all 0.2s;">Revoke Admin</button>`;
+      } else {
+        actionHTML = `<button onclick="toggleAdminStatus('${u.id}', 'add')" class="register-hero-btn" style="height: 28px; padding: 0 10px; margin-top: 0; font-size: 11px; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: var(--primary-emerald); border-radius: 6px; cursor: pointer; transition: all 0.2s;">Make Admin</button>`;
+      }
+    } else {
+      if (u.email === 'brijesh@badakadam.com') {
+        actionHTML = '<span style="color: var(--accent-cyan); font-weight: 700;">Superadmin</span>';
+      } else if (u.is_admin) {
+        actionHTML = '<span style="color: var(--primary-emerald); font-weight: 700;">Admin</span>';
+      } else {
+        actionHTML = '<span style="color: var(--text-muted);">User</span>';
+      }
+    }
+
+    tr.innerHTML = `
+      <td style="padding: 12px 16px; display: flex; align-items: center; gap: 10px;">
+        <div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); font-size: 18px;">
+          ${getAvatarHTML(profilePic, '32px', '18px', u.gender)}
+        </div>
+        <div>
+          <div style="display: flex; align-items: center;">
+            <strong style="color: white; font-size: 13px;">${u.name}</strong>
+            ${statusBadge}
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted);">${aliasText}</div>
+        </div>
+      </td>
+      <td style="padding: 12px 16px;">
+        <div style="color: white;">${u.email}</div>
+        <div style="font-size: 11px; color: var(--text-muted);">${u.phone}</div>
+      </td>
+      <td style="padding: 12px 16px;">
+        <div>${u.gender}</div>
+        <div style="font-size: 11px; color: var(--text-muted);">${u.age_group}</div>
+      </td>
+      <td style="padding: 12px 16px;">
+        <div style="color: white;">${u.city}</div>
+        <div style="font-size: 11px; color: var(--text-muted);">${u.state}</div>
+      </td>
+      <td style="padding: 12px 16px;">
+        <div style="color: white;">📥 ${signupDate}</div>
+        <div style="font-size: 11px; color: var(--text-muted);">⚡ Active: ${lastActiveDate}</div>
+      </td>
+      <td style="padding: 12px 16px;">
+        <div>🎯 Goal: ${(u.daily_step_goal || 10000).toLocaleString()} steps</div>
+        <div style="font-size: 11px; font-weight: 700; color: ${u.bmi_category?.toLowerCase() === 'normal' ? 'var(--primary-emerald)' : 'var(--accent-amber)'};">
+          BMI: ${u.bmi_category || 'Normal'}
+        </div>
+      </td>
+      <td style="padding: 12px 16px; text-align: right;">
+        <div style="font-weight: 700; color: var(--accent-cyan);"><i class="fa-solid fa-coins"></i> ${u.walk_coins.toLocaleString()}</div>
+        <div style="font-size: 11px; color: var(--text-muted);">🔥 Streak: ${u.current_streak} days</div>
+      </td>
+      <td style="padding: 12px 16px; text-align: center;">
+        ${actionHTML}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+async function toggleAdminStatus(targetUserId, action) {
+  try {
+    const res = await fetch(`${API_BASE}/admin/whitelist`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({ targetUserId, action })
+    });
+    
+    const data = await res.json();
+    if (!res.ok) {
+      showToast('❌ Failed to update admin status: ' + (data.error || 'Server error'));
+      return;
+    }
+    
+    showToast(`✅ ${data.message}`);
+    
+    // Refresh the dashboard to get the updated status of users!
+    await fetchAdminDashboard();
+    
+    // Refresh the current modal table rows!
+    showAdminUserAudit(currentAuditKeyType, currentAuditFilterValue, currentAuditSortBy);
+
+  } catch (err) {
+    console.error('Error toggling admin status:', err);
+    showToast('❌ Network error updating admin status.');
+  }
+}
+
+function exportAuditedUsersToCSV() {
+  if (!currentModalDisplayedUsers || currentModalDisplayedUsers.length === 0) {
+    showToast('⚠️ No users to export.');
+    return;
+  }
+
+  const csvRows = [];
+  
+  // Headers
+  const headers = [
+    'Name',
+    'Alias',
+    'Email',
+    'Phone',
+    'Gender',
+    'Age Group',
+    'City',
+    'State',
+    'Occupation',
+    'Role',
+    'App Status',
+    'Member From',
+    'Last Active',
+    'Step Goal',
+    'BMI Category',
+    'WalkCoins Balance',
+    'Consistency Streak',
+    'Groups Joined'
+  ];
+  csvRows.push(headers.join(','));
+
+  // Data Rows
+  currentModalDisplayedUsers.forEach(u => {
+    const signupDate = new Date(u.created_at).toLocaleDateString();
+    const lastActiveDate = new Date(u.last_activity).toLocaleDateString();
+    const groupList = u.groups ? u.groups.join('; ') : '';
+    
+    const userRole = u.email === 'brijesh@badakadam.com' ? 'Superadmin' : (u.is_admin ? 'Admin' : 'User');
+
+    const row = [
+      `"${(u.name || '').replace(/"/g, '""')}"`,
+      `"${(u.alias || '').replace(/"/g, '""')}"`,
+      `"${(u.email || '').replace(/"/g, '""')}"`,
+      `"${(u.phone || '').replace(/"/g, '""')}"`,
+      `"${(u.gender || '').replace(/"/g, '""')}"`,
+      `"${(u.age_group || '').replace(/"/g, '""')}"`,
+      `"${(u.city || '').replace(/"/g, '""')}"`,
+      `"${(u.state || '').replace(/"/g, '""')}"`,
+      `"${(u.occupation || '').replace(/"/g, '""')}"`,
+      `"${userRole}"`,
+      `"${u.app_status || 'Installed'}"`,
+      `"${signupDate}"`,
+      `"${lastActiveDate}"`,
+      u.daily_step_goal || 10000,
+      `"${(u.bmi_category || 'Normal').replace(/"/g, '""')}"`,
+      u.walk_coins || 0,
+      u.current_streak || 0,
+      `"${groupList.replace(/"/g, '""')}"`
+    ];
+    csvRows.push(row.join(','));
+  });
+
+  // Create & Download Blob
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  
+  const dateStr = new Date().toISOString().split('T')[0];
+  const groupLabel = document.getElementById('admin-filter-category-label')?.innerText || 'Audited_Walkers';
+  const cleanLabel = groupLabel.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  
+  link.setAttribute('download', `BadaKadam_${cleanLabel}_${dateStr}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  showToast('📊 Walkers list exported successfully!');
+}
+
+// In-App Notification Engine & Drawer
+let userNotifications = [
+  { id: 'n1', title: '🎯 Step Goal Alert', message: 'Only 2,400 steps left to reach your 12,000 daily goal!', time: '10 mins ago', type: 'goal', unread: true },
+  { id: 'n2', title: '🔥 Streak Safeguard', message: 'Keep your 21-day streak alive before midnight tonight!', time: '1 hour ago', type: 'streak', unread: true },
+  { id: 'n3', title: '⚔️ Battle Rank Shift', message: 'Priya Verma reached 18,000 steps in Hyderabad City Leaderboard!', time: '3 hours ago', type: 'battle', unread: true },
+];
+
+function renderNotifications() {
+  const container = document.getElementById('notif-list-container');
+  const badge = document.getElementById('notif-badge-count');
+  if (!container) return;
+
+  const unreadCount = userNotifications.filter(n => n.unread).length;
+  if (badge) {
+    badge.innerText = unreadCount;
+    badge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+  }
+
+  container.innerHTML = userNotifications.map(n => `
+    <div style="background: ${n.unread ? 'rgba(6, 182, 212, 0.08)' : 'rgba(255,255,255,0.03)'}; border: 1px solid ${n.unread ? 'rgba(6, 182, 212, 0.25)' : 'rgba(255,255,255,0.06)'}; padding: 12px; border-radius: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+        <strong style="color: white; font-size: 13px;">${n.title}</strong>
+        <span style="font-size: 10px; color: var(--text-muted);">${n.time}</span>
+      </div>
+      <p style="font-size: 12px; color: rgba(255,255,255,0.8); margin: 0; line-height: 1.3;">${n.message}</p>
+    </div>
+  `).join('');
+}
+
+function initNotificationDrawer() {
+  const btn = document.getElementById('open-notif-drawer-btn');
+  const modal = document.getElementById('notif-drawer-modal');
+  const closeBtn = document.getElementById('close-notif-modal-btn');
+  const testBtn = document.getElementById('trigger-test-push-btn');
+
+  if (btn && modal) {
+    btn.onclick = () => {
+      userNotifications.forEach(n => n.unread = false);
+      renderNotifications();
+      modal.classList.add('active');
+    };
+  }
+
+  if (closeBtn && modal) {
+    closeBtn.onclick = () => modal.classList.remove('active');
+  }
+
+  if (testBtn) {
+    testBtn.onclick = () => {
+      const newAlert = {
+        id: `n_${Date.now()}`,
+        title: '⚡ Live Push Simulation',
+        message: 'Great pacing! You just completed another 1,000 steps milestone. +10 WalkCoins earned!',
+        time: 'Just now',
+        type: 'sync',
+        unread: true
+      };
+      userNotifications.unshift(newAlert);
+      renderNotifications();
+      showToast('🔔 Push Notification Delivered!');
+    };
+  }
+
+  renderNotifications();
+}
+
+function initShareCardModal() {
+  const openBtn = document.getElementById('open-share-card-btn');
+  const modal = document.getElementById('share-card-modal');
+  const closeBtn = document.getElementById('close-share-modal-btn');
+
+  if (openBtn && modal) {
+    openBtn.onclick = () => {
+      if (currentUser) {
+        document.getElementById('share-card-walker-name').innerText = currentUser.alias || currentUser.name;
+        document.getElementById('share-card-steps').innerText = (currentUser.lifetimeSteps || currentUser.lifetime_steps || 624500).toLocaleString();
+        document.getElementById('share-card-coins').innerText = (currentUser.walkCoins || currentUser.walk_coins || 1050).toLocaleString();
+        document.getElementById('share-card-badge-title').innerText = `🔥 ${currentUser.currentStreak || currentUser.current_streak || 21} Day Walking Streak Master`;
+      }
+      modal.classList.add('active');
+    };
+  }
+
+  if (closeBtn && modal) {
+    closeBtn.onclick = () => modal.classList.remove('active');
+  }
+
+  const waBtn = document.getElementById('share-whatsapp-btn');
+  if (waBtn) {
+    waBtn.onclick = () => {
+      const text = encodeURIComponent(`👟 Check out my BadaKadam fitness achievements! Walking streak: ${currentUser?.currentStreak || 21} days! Join me with invite code BADASPEED.`);
+      window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+    };
+  }
+
+  const linkBtn = document.getElementById('copy-share-link-btn');
+  if (linkBtn) {
+    linkBtn.onclick = () => {
+      navigator.clipboard.writeText(window.location.href);
+      showToast('📋 Achievement Link copied to clipboard!');
+    };
+  }
+
+  const pngBtn = document.getElementById('download-card-png-btn');
+  if (pngBtn) {
+    pngBtn.onclick = () => {
+      showToast('📸 Share Card saved as PNG image!');
+    };
+  }
+}
+
+function initAdminRangeChips() {
+  const chips = document.querySelectorAll('.admin-range-chips .range-chip');
+  chips.forEach(chip => {
+    const chipRange = chip.getAttribute('data-range');
+    if (chipRange === activeAdminRange) {
+      chip.classList.add('active');
+      chip.style.background = 'var(--accent-cyan)';
+      chip.style.color = '#000';
+    } else {
+      chip.classList.remove('active');
+      chip.style.background = 'rgba(255,255,255,0.06)';
+      chip.style.color = 'var(--text-muted)';
+    }
+
+    chip.onclick = () => {
+      fetchAdminDashboard(chipRange);
+    };
+  });
+}
+
+async function fetchFraudRules() {
+  try {
+    const res = await fetch(`${API_BASE}/admin/fraud-rules`, {
+      headers: { Authorization: `Bearer ${authToken}` }
+    });
+    const data = await res.json();
+    if (res.ok && data.rules) {
+      const maxCadence = document.getElementById('fraud-max-cadence');
+      const spikeSteps = document.getElementById('fraud-spike-steps');
+      const syncWindow = document.getElementById('fraud-sync-window');
+      if (maxCadence) maxCadence.value = data.rules.maxCadencePerMinute;
+      if (spikeSteps) spikeSteps.value = data.rules.maxBatchSpikeSteps;
+      if (syncWindow) syncWindow.value = data.rules.rapidSyncWindowSeconds;
+    }
+  } catch (err) {
+    console.error('Error fetching fraud rules:', err);
+  }
+}
+
+function initFraudRulesForm() {
+  const form = document.getElementById('admin-fraud-rules-form');
+  if (!form || form.dataset.bound) return;
+  form.dataset.bound = 'true';
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const maxCadencePerMinute = Number(document.getElementById('fraud-max-cadence').value);
+    const maxBatchSpikeSteps = Number(document.getElementById('fraud-spike-steps').value);
+    const rapidSyncWindowSeconds = Number(document.getElementById('fraud-sync-window').value);
+
+    try {
+      const res = await fetch(`${API_BASE}/admin/fraud-rules`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ maxCadencePerMinute, maxBatchSpikeSteps, rapidSyncWindowSeconds })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('🛡️ Anti-Cheat & Fraud Rules Updated Successfully!');
+      } else {
+        showToast('❌ Failed to update rules: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('❌ Connection error updating fraud rules');
+    }
+  };
+}
+
+async function fetchFlaggedLogs() {
+  const container = document.getElementById('admin-flagged-logs-container');
+  if (!container) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/flagged-logs`, {
+      headers: { Authorization: `Bearer ${authToken}` }
+    });
+    const data = await res.json();
+    if (res.ok && data.logs) {
+      if (data.logs.length === 0) {
+        container.innerHTML = '<div style="font-size:12px; color:var(--text-muted); padding:10px; text-align:center;">No suspicious step syncs flagged yet.</div>';
+        return;
+      }
+      container.innerHTML = data.logs.map(log => `
+        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); padding: 8px 12px; border-radius: 8px; font-size: 11px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+            <strong style="color:white;">${log.user ? log.user.name : 'Walker'} (${log.user ? log.user.email : 'N/A'})</strong>
+            <span style="color:#EF4444; font-weight:700;">⚠️ FLAGGED</span>
+          </div>
+          <div style="color:var(--text-muted);">
+            Synced <strong>${log.count.toLocaleString()} steps</strong> via ${log.source || 'HealthKit'} (${new Date(log.timestamp).toLocaleTimeString()})
+          </div>
+        </div>
+      `).join('');
+    }
+  } catch (err) {
+    console.error('Error fetching flagged logs:', err);
+  }
+}
+
+let deferredPWAInstallPrompt = null;
+
+function initPWAServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then((reg) => {
+          console.log('✅ BadaKadam PWA Service Worker Registered:', reg.scope);
+        })
+        .catch((err) => {
+          console.error('Service Worker registration failed:', err);
+        });
+    });
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPWAInstallPrompt = e;
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.style.display = 'flex';
+  });
+
+  const installBtn = document.getElementById('pwa-install-btn');
+  if (installBtn) {
+    installBtn.onclick = async () => {
+      if (deferredPWAInstallPrompt) {
+        deferredPWAInstallPrompt.prompt();
+        const { outcome } = await deferredPWAInstallPrompt.userChoice;
+        console.log('PWA Install choice:', outcome);
+        deferredPWAInstallPrompt = null;
+      }
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) banner.style.display = 'none';
+    };
+  }
+
+  const dismissBtn = document.getElementById('pwa-dismiss-btn');
+  if (dismissBtn) {
+    dismissBtn.onclick = () => {
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) banner.style.display = 'none';
+    };
+  }
+}
+
+function initUserDashboardTileModals() {
+  const calCard = document.getElementById('tile-calories-card');
+  const distCard = document.getElementById('tile-distance-card');
+  const coinsCard = document.getElementById('tile-coins-card');
+  const badgesCard = document.getElementById('tile-achievements-card');
+
+  if (calCard) {
+    calCard.onclick = () => openCalorieDrillDown();
+  }
+  if (distCard) {
+    distCard.onclick = () => openDistanceDrillDown();
+  }
+  if (coinsCard) {
+    coinsCard.onclick = () => openCoinsDrillDown();
+  }
+  if (badgesCard) {
+    badgesCard.onclick = () => openBadgesDrillDown();
+  }
+}
+
+function openCalorieDrillDown() {
+  const modal = document.getElementById('modal-tile-calories');
+  if (!modal) return;
+
+  const calVal = document.getElementById('calories-display')?.innerText || '581 kcal';
+  document.getElementById('drill-cal-today').innerText = calVal;
+
+  const dates = [];
+  const now = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const dateLabel = i === 0 ? 'Today' : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const cals = i === 0 ? parseInt(calVal) || 581 : Math.floor(380 + (d.getDate() * 19) % 280);
+    dates.push({ label: dateLabel, cals });
+  }
+
+  const logContainer = document.getElementById('drill-cal-7day-log');
+  if (logContainer) {
+    logContainer.innerHTML = dates.map(item => `
+      <div style="display:flex; justify-space-between; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:6px; margin-bottom: 2px;">
+        <span>📅 ${item.label}</span>
+        <strong style="color:white;">${item.cals} kcal</strong>
+      </div>
+    `).join('');
+  }
+
+  modal.classList.add('active');
+}
+
+function openDistanceDrillDown() {
+  const modal = document.getElementById('modal-tile-distance');
+  if (!modal) return;
+
+  const distVal = document.getElementById('distance-display')?.innerText || '12.4 km';
+  document.getElementById('drill-dist-today').innerText = distVal;
+
+  const dates = [];
+  const now = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const dateLabel = i === 0 ? 'Today' : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const dist = i === 0 ? parseFloat(distVal) || 12.4 : ((6 + (d.getDate() * 4) % 8) + 0.3).toFixed(1);
+    dates.push({ label: dateLabel, dist });
+  }
+
+  const logContainer = document.getElementById('drill-dist-7day-log');
+  if (logContainer) {
+    logContainer.innerHTML = dates.map(item => `
+      <div style="display:flex; justify-content:space-between; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:6px; margin-bottom: 2px;">
+        <span>📅 ${item.label}</span>
+        <strong style="color:var(--accent-cyan);">${item.dist} km</strong>
+      </div>
+    `).join('');
+  }
+
+  modal.classList.add('active');
+}
+
+function openCoinsDrillDown() {
+  const modal = document.getElementById('modal-tile-coins');
+  if (!modal) return;
+
+  const coinsVal = currentUser ? (currentUser.walkCoins || currentUser.walk_coins || 1450) : 1450;
+  document.getElementById('drill-coins-balance').innerText = `${coinsVal.toLocaleString()} Coins`;
+  document.getElementById('drill-coins-lifetime').innerText = `${(coinsVal + 1400).toLocaleString()} Coins`;
+
+  fetchWalletHistory();
+
+  setTimeout(() => {
+    const listContainer = document.getElementById('drill-coins-tx-list');
+    const mainHistory = document.getElementById('wallet-history-container');
+    if (mainHistory && listContainer) {
+      listContainer.innerHTML = mainHistory.innerHTML;
+    }
+  }, 200);
+
+  modal.classList.add('active');
+}
+
+function openBadgesDrillDown() {
+  const modal = document.getElementById('modal-tile-achievements');
+  if (!modal) return;
+
+  const streak = currentUser?.currentStreak || 21;
+  const lifetime = currentUser?.lifetimeSteps || 624500;
+  const todaySteps = parseInt(document.getElementById('step-count-display')?.innerText.replace(/,/g, '') || '14521', 10);
+
+  const badges = [
+    { name: '🌅 Early Bird', desc: 'Walk 10,000 steps today', unlocked: todaySteps >= 10000, prog: `${todaySteps.toLocaleString()} / 10,000 steps` },
+    { name: '🔥 Streak Starter', desc: 'Reach a 7-day walking streak', unlocked: streak >= 7, prog: `${streak} / 7 days` },
+    { name: '👑 Consistency Master', desc: 'Reach a 30-day streak', unlocked: streak >= 30, prog: `${streak} / 30 days` },
+    { name: '💯 Centurion Walker', desc: 'Reach 100k lifetime steps', unlocked: lifetime >= 100000, prog: `${lifetime.toLocaleString()} / 100,000 steps` },
+    { name: '🌌 Millionaire Pace', desc: 'Reach 1,000,000 lifetime steps', unlocked: lifetime >= 1000000, prog: `${lifetime.toLocaleString()} / 1,000,000 steps` }
+  ];
+
+  const container = document.getElementById('drill-badges-showcase');
+  if (container) {
+    container.innerHTML = badges.map(b => `
+      <div style="background:${b.unlocked ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255,255,255,0.03)'}; border:1px solid ${b.unlocked ? 'rgba(16, 185, 129, 0.25)' : 'rgba(255,255,255,0.06)'}; padding:12px; border-radius:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <strong style="color:white; font-size:13px;">${b.name}</strong>
+          <span style="font-size:10px; padding:2px 8px; border-radius:10px; font-weight:700; background:${b.unlocked ? 'var(--primary-emerald)' : 'rgba(255,255,255,0.1)'}; color:white;">${b.unlocked ? 'UNLOCKED' : 'LOCKED'}</span>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted);">${b.desc}</div>
+        <div style="font-size:11px; color:var(--accent-cyan); margin-top:4px; font-weight:600;">Progress: ${b.prog}</div>
+      </div>
+    `).join('');
+  }
+
+  modal.classList.add('active');
 }
 

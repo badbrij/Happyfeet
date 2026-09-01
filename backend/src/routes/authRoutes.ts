@@ -4,6 +4,7 @@ import { supabase } from '../database/supabase';
 import { generateToken, authMiddleware, AuthRequest } from '../middleware/auth';
 import { calculateAge, getAgeGroup, calculateBMI } from '../utils/cohorts';
 import { formatDBUser } from '../utils/userFormatter';
+import { authRateLimiter } from '../middleware/security';
 
 const router = Router();
 
@@ -27,7 +28,7 @@ export function normalizePhone(phone: string): string {
 }
 
 // POST /api/v1/auth/register
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/register', authRateLimiter, async (req: Request, res: Response) => {
   const { name, alias, profilePic, phone, password, dob, gender, location, healthProfile } = req.body;
 
   if (!phone || !password || !name || !dob || !gender || !location) {
@@ -148,7 +149,7 @@ router.post('/register', async (req: Request, res: Response) => {
 });
 
 // POST /api/v1/auth/login
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', authRateLimiter, async (req: Request, res: Response) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email/Phone and password are required' });
@@ -190,7 +191,7 @@ router.post('/login', async (req: Request, res: Response) => {
 });
 
 // POST /api/v1/auth/quick-login
-router.post('/quick-login', async (req: Request, res: Response) => {
+router.post('/quick-login', authRateLimiter, async (req: Request, res: Response) => {
   const { phone } = req.body;
   if (!phone) {
     return res.status(400).json({ error: 'Phone number or Email is required' });
@@ -231,6 +232,28 @@ router.post('/quick-login', async (req: Request, res: Response) => {
   }
 });
 
+async function checkIsAdmin(userId: string, email: string): Promise<boolean> {
+  const allowedAdminEmails = [
+    'brijesh@badakadam.com',
+    'superadmin@badakadam.com',
+    'developer@badakadam.com',
+    'admin@badakadam.com'
+  ];
+
+  if (allowedAdminEmails.includes(email.toLowerCase())) {
+    return true;
+  }
+
+  const { data: member } = await supabase
+    .from('group_members')
+    .select('user_id')
+    .eq('group_id', 'admin_whitelist_group')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  return !!member;
+}
+
 // GET /api/v1/auth/me
 router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
@@ -246,7 +269,16 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     const formattedUser = formatDBUser(user);
     const { passwordHash: _, ...userWithoutPassword } = formattedUser;
-    return res.json({ user: userWithoutPassword });
+    
+    // Check if dynamically or statically whitelisted admin
+    const isAdmin = await checkIsAdmin(user.id, user.email);
+
+    return res.json({ 
+      user: {
+        ...userWithoutPassword,
+        is_admin: isAdmin
+      } 
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Server error fetching user profile' });

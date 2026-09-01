@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BadaKadam - Couch Potato to Cardio Champion</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --primary-emerald: #10b981;
+      --accent-cyan: #06b6d4;
+      --accent-amber: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --glow-emerald: rgba(16, 185, 129, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 40%),
+                  radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 40%),
+                  #0b0f19;
+    }
+
+    /* Presentation Container */
+    .deck-container {
+      position: relative;
+      width: 90vw;
+      max-width: 1200px;
+      height: 75vh;
+      max-height: 700px;
+      perspective: 1500px;
+    }
+
+    .slide {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      opacity: 0;
+      transform: rotateY(90deg) translateZ(100px);
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: rotateY(0deg) translateZ(0);
+      pointer-events: auto;
+    }
+
+    .slide.previous {
+      opacity: 0;
+      transform: rotateY(-90deg) translateZ(100px);
+    }
+
+    /* Header Styles */
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 20px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary-emerald), var(--accent-cyan));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .logo-text {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, white, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide-number {
+      font-size: 14px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 6px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Content Layouts */
+    .slide-body {
+      flex-grow: 1;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 40px;
+      align-items: center;
+      margin: 32px 0;
+    }
+
+    .slide-left h1 {
+      font-size: 44px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #ffffff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide-left .subtitle {
+      font-size: 18px;
+      color: var(--accent-cyan);
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+
+    .witty-bullet-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .witty-bullet {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 16px;
+      line-height: 1.4;
+    }
+
+    .witty-bullet i {
+      color: var(--primary-emerald);
+      margin-top: 4px;
+      font-size: 18px;
+    }
+
+    /* Right visual side */
+    .slide-right {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+
+    .visual-card {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      position: relative;
+    }
+
+    /* Visual highlights */
+    .funnel-meme-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .meme-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      transition: all 0.3s;
+    }
+
+    .meme-row:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(6, 182, 212, 0.2);
+      transform: translateX(5px);
+    }
+
+    .meme-row.highlight {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-card .val {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--accent-amber);
+    }
+
+    .stat-card .lbl {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 20px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .control-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .control-btn:hover {
+      background: var(--primary-emerald);
+      border-color: var(--primary-emerald);
+      box-shadow: 0 4px 15px var(--glow-emerald);
+    }
+
+    .control-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      background: rgba(255, 255, 255, 0.02);
+      border-color: rgba(255, 255, 255, 0.02);
+      box-shadow: none;
+    }
+
+    .hotkey-tip {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .hotkey-tip kbd {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="deck-container">
+    <!-- SLIDE 1 -->
+    <div class="slide active" id="slide-1">
+      <div class="slide-header">
+        <div class="logo-container">
+          <div class="logo-icon"><i class="fa-solid fa-person-walking"></i></div>
+          <div class="logo-text">BadaKadam</div>
+        </div>
+        <div class="slide-number">Slide 1 / 2</div>
+      </div>
+
+      <div class="slide-body">
+        <div class="slide-left">
+          <h1>How to Get Paid for Not Being a Couch Potato 🥔</h1>
+          <div class="subtitle">Converting sweat equity into Swiggy vouchers since 2026.</div>
+          <div class="witty-bullet-list">
+            <div class="witty-bullet">
+              <i class="fa-solid fa-shield-halved"></i>
+              <div><strong>The Phone-Shaker Deterrent:</strong> Yes, we sync with Apple Health and Google Fit. And yes, our AI fraud engine knows if you strapped your phone to your ceiling fan. Cheaters get a one-way ticket to 0 coins. 🌀</div>
+            </div>
+            <div class="witty-bullet">
+              <i class="fa-solid fa-coins"></i>
+              <div><strong>Sweat Tokenomics:</strong> Walk 1,000 steps, mint 10 WalkCoins. It's basically a currency backed by heavy breathing and sore calves. 🥵</div>
+            </div>
+            <div class="witty-bullet">
+              <i class="fa-solid fa-gift"></i>
+              <div><strong>Voucher Fuel:</strong> Swap those step coins for Swiggy food vouchers, Apollo health metrics, or Decathlon discounts. We literally feed your appetite for walking.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-right">
+          <div class="visual-card">
+            <div class="funnel-meme-container">
+              <h3 style="margin-bottom: 8px; color: var(--accent-cyan); font-size: 15px; letter-spacing: 1px; text-transform: uppercase;">Real-Life Activity Loop</h3>
+              <div class="meme-row">
+                <span>🛋️ Sitting on Couch</span>
+                <strong style="color: #ef4444;">0 Coins (Sad)</strong>
+              </div>
+              <div class="meme-row">
+                <span>🚶 Walking to Fridge</span>
+                <strong style="color: var(--accent-amber);">1 Coin (Progress?)</strong>
+              </div>
+              <div class="meme-row">
+                <span>🌳 Walking Around Block</span>
+                <strong style="color: var(--primary-emerald);">50 Coins (Healthy!)</strong>
+              </div>
+              <div class="meme-row highlight">
+                <span>🍕 Redeeming Free Pizza</span>
+                <strong style="color: var(--accent-cyan);">Priceless 🎉</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="hotkey-tip">Tip: Use <kbd>←</kbd> <kbd>→</kbd> keys or click buttons to navigate</div>
+        <div class="nav-buttons">
+          <button class="control-btn" disabled><i class="fa-solid fa-arrow-left"></i> Back</button>
+          <button class="control-btn" onclick="nextSlide()">Next <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="slide" id="slide-2">
+      <div class="slide-header">
+        <div class="logo-container">
+          <div class="logo-icon"><i class="fa-solid fa-person-walking"></i></div>
+          <div class="logo-text">BadaKadam</div>
+        </div>
+        <div class="slide-number">Slide 2 / 2</div>
+      </div>
+
+      <div class="slide-body">
+        <div class="slide-left">
+          <h1>The Masterplan: Tricking You Into Doing Cardio ⚔️</h1>
+          <div class="subtitle">Because nothing motivates you like defeating your coworker Priya.</div>
+          <div class="witty-bullet-list">
+            <div class="witty-bullet">
+              <i class="fa-solid fa-users-rays"></i>
+              <div><strong>Group Battles:</strong> We pooled steps. Want to walk 15,000 steps on a rainy Tuesday? No. Want to do it to defeat Priya from marketing? Absolutely, yes. Mutual rivalry is our best fitness tier.</div>
+            </div>
+            <div class="witty-bullet">
+              <i class="fa-solid fa-chart-line"></i>
+              <div><strong>IT Compiling Consistency:</strong> IT Professionals maintain a 45-day average streak. We assume they pace back and forth waiting for local Docker containers to build. 💻</div>
+            </div>
+            <div class="witty-bullet">
+              <i class="fa-solid fa-user-shield"></i>
+              <div><strong>Dynamic Whitelisting:</strong> Superadmins can promote standard users to Admins directly inside our audit trail modal. Perfect for delegating the job of tracking down ceiling-fan shakers.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-right">
+          <div class="visual-card">
+            <h3 style="margin-bottom: 16px; color: var(--accent-cyan); font-size: 15px; letter-spacing: 1px; text-transform: uppercase; text-align: center;">Verified Impact Cohorts</h3>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="val">45 Days</div>
+                <div class="lbl">IT Pacing Streak</div>
+              </div>
+              <div class="stat-card">
+                <div class="val">92%</div>
+                <div class="lbl">Install Funnel Conversion</div>
+              </div>
+              <div class="stat-card">
+                <div class="val">8%</div>
+                <div class="lbl">Uninstall Churn Rate</div>
+              </div>
+              <div class="stat-card">
+                <div class="val">18%</div>
+                <div class="lbl">Sick Leaves Saved</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="hotkey-tip">Tip: Use <kbd>←</kbd> <kbd>→</kbd> keys or click buttons to navigate</div>
+        <div class="nav-buttons">
+          <button class="control-btn" onclick="prevSlide()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+          <button class="control-btn" disabled>Next <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentSlide = 1;
+    const slide1 = document.getElementById('slide-1');
+    const slide2 = document.getElementById('slide-2');
+
+    function updateSlides() {
+      if (currentSlide === 1) {
+        slide1.classList.add('active');
+        slide1.classList.remove('previous');
+        slide2.classList.remove('active');
+      } else {
+        slide1.classList.remove('active');
+        slide1.classList.add('previous');
+        slide2.classList.add('active');
+      }
+    }
+
+    function nextSlide() {
+      if (currentSlide < 2) {
+        currentSlide++;
+        updateSlides();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        updateSlides();
+      }
+    }
+
+    // Keybindings
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft') {
+        prevSlide();
+      }
+    });
+  </script>
+</body>
+</html>

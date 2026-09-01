@@ -1,5 +1,28 @@
 import { StepLog } from '../types';
 
+export interface FraudRulesConfig {
+  maxCadencePerMinute: number;
+  maxBatchSpikeSteps: number;
+  rapidSyncWindowSeconds: number;
+  suspectAction: 'flag' | 'freeze' | 'ban';
+}
+
+let activeFraudRules: FraudRulesConfig = {
+  maxCadencePerMinute: 260,
+  maxBatchSpikeSteps: 15000,
+  rapidSyncWindowSeconds: 60,
+  suspectAction: 'flag',
+};
+
+export function getFraudRules(): FraudRulesConfig {
+  return activeFraudRules;
+}
+
+export function updateFraudRules(newRules: Partial<FraudRulesConfig>): FraudRulesConfig {
+  activeFraudRules = { ...activeFraudRules, ...newRules };
+  return activeFraudRules;
+}
+
 export interface FraudAnalysisResult {
   isSuspicious: boolean;
   fraudScoreDelta: number;
@@ -10,20 +33,19 @@ export function evaluateStepLogFraud(stepLog: StepLog, lastLog?: StepLog): Fraud
   const reasons: string[] = [];
   let scoreDelta = 0;
 
-  // 1. Cadence / Velocity Check (Human maximum cadence ~ 250 steps/min or ~ 4.1 steps/sec)
-  // Check if step count is unrealistically high for active minutes
+  // 1. Cadence / Velocity Check
   if (stepLog.activeMinutes > 0) {
     const stepsPerMinute = stepLog.count / stepLog.activeMinutes;
-    if (stepsPerMinute > 260) {
+    if (stepsPerMinute > activeFraudRules.maxCadencePerMinute) {
       scoreDelta += 40;
-      reasons.push(`Unrealistic step cadence detected: ${Math.round(stepsPerMinute)} steps/minute`);
+      reasons.push(`Unrealistic step cadence detected: ${Math.round(stepsPerMinute)} steps/min (Max limit: ${activeFraudRules.maxCadencePerMinute})`);
     }
   }
 
-  // 2. Single Batch Step Spike Check (e.g. > 15,000 steps in 5 minutes)
-  if (stepLog.count > 15000 && stepLog.activeMinutes < 30) {
+  // 2. Single Batch Step Spike Check
+  if (stepLog.count > activeFraudRules.maxBatchSpikeSteps && stepLog.activeMinutes < 30) {
     scoreDelta += 50;
-    reasons.push('Excessive step spike in a short duration');
+    reasons.push(`Excessive step spike: ${stepLog.count.toLocaleString()} steps exceeds single batch limit of ${activeFraudRules.maxBatchSpikeSteps.toLocaleString()}`);
   }
 
   // 3. Duplicate / Rapid Consecutive Logs Check
@@ -32,9 +54,9 @@ export function evaluateStepLogFraud(stepLog: StepLog, lastLog?: StepLog): Fraud
     const currTime = new Date(stepLog.timestamp).getTime();
     const diffSeconds = (currTime - prevTime) / 1000;
 
-    if (diffSeconds < 60 && stepLog.count > 3000) {
+    if (diffSeconds < activeFraudRules.rapidSyncWindowSeconds && stepLog.count > 3000) {
       scoreDelta += 30;
-      reasons.push('Rapid consecutive high-volume step payload');
+      reasons.push(`Rapid sync detected within ${Math.round(diffSeconds)}s (Min window: ${activeFraudRules.rapidSyncWindowSeconds}s)`);
     }
   }
 

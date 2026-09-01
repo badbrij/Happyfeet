@@ -2,11 +2,12 @@ import { Router, Response } from 'express';
 import { supabase } from '../database/supabase';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { evaluateStepLogFraud } from '../utils/antiCheat';
+import { stepSyncRateLimiter } from '../middleware/security';
 
 const router = Router();
 
 // POST /api/v1/steps/sync
-router.post('/sync', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/sync', authMiddleware, stepSyncRateLimiter, async (req: AuthRequest, res: Response) => {
   const userId = req.userId!;
   const { steps, source } = req.body; // Array of step payloads
 

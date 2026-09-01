@@ -1190,4 +1190,189 @@ input:focus, select:focus {
   border-color: #EF4444;
 }
 
+/* Admin Analytics Dashboard styling */
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+.admin-grid-full {
+  grid-column: span 2;
+}
+.admin-metric-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.admin-metric-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.admin-metric-card .value {
+  font-size: 26px;
+  font-weight: 800;
+  color: white;
+}
+.admin-metric-card .label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+/* CSS Timeline bar chart */
+.funnel-chart-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 16px 12px;
+  margin-top: 16px;
+}
+.funnel-bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-grow: 1;
+  height: 100%;
+  justify-content: flex-end;
+  cursor: pointer;
+  position: relative;
+}
+.funnel-bar-wrapper:hover .funnel-tooltip {
+  display: block;
+}
+.funnel-bar-downloads {
+  width: 10px;
+  background: linear-gradient(180deg, var(--accent-cyan), #3b82f6);
+  border-radius: 9999px 9999px 0 0;
+  min-height: 2px;
+}
+.funnel-bar-uninstalls {
+  width: 10px;
+  background: linear-gradient(180deg, #ef4444, #b91c1c);
+  border-radius: 9999px 9999px 0 0;
+  margin-top: 2px;
+  min-height: 2px;
+}
+.funnel-tooltip {
+  display: none;
+  position: absolute;
+  bottom: 105%;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: white;
+  font-size: 10px;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  z-index: 10;
+}
+.funnel-x-label {
+  font-size: 8px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+/* Demographics progress list */
+.demo-stat-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.demo-stat-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+.demo-stat-info .label {
+  color: white;
+  font-weight: 600;
+}
+.demo-stat-info .value {
+  color: var(--text-muted);
+}
+.demo-stat-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.demo-stat-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+  width: 0%;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* User Journey Feed */
+.journey-timeline-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+.journey-event-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.journey-event-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.journey-event-icon.signup {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--primary-emerald);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.journey-event-icon.earning {
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+.journey-event-icon.redemption {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--accent-amber);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.journey-event-desc {
+  font-size: 12px;
+  color: white;
+  line-height: 1.4;
+}
+.journey-event-time {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Enforce absolute hidden status on both web and mobile viewport layouts */
+.admin-hidden {
+  display: none !important;
+}
+
 
