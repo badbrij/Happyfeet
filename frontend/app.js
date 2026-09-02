@@ -3093,15 +3093,23 @@ function initShareCardModal() {
   const openBtn = document.getElementById('open-share-card-btn');
   const modal = document.getElementById('share-card-modal');
   const closeBtn = document.getElementById('close-share-modal-btn');
+  const waBtn = document.getElementById('share-whatsapp-btn');
 
   if (openBtn && modal) {
     openBtn.onclick = () => {
+      const streak = currentUser?.currentStreak || currentUser?.current_streak || 21;
       if (currentUser) {
         document.getElementById('share-card-walker-name').innerText = currentUser.alias || currentUser.name;
         document.getElementById('share-card-steps').innerText = (currentUser.lifetimeSteps || currentUser.lifetime_steps || 624500).toLocaleString();
         document.getElementById('share-card-coins').innerText = (currentUser.walkCoins || currentUser.walk_coins || 1050).toLocaleString();
-        document.getElementById('share-card-badge-title').innerText = `🔥 ${currentUser.currentStreak || currentUser.current_streak || 21} Day Walking Streak Master`;
+        document.getElementById('share-card-badge-title').innerText = `🔥 ${streak} Day Walking Streak Master`;
       }
+
+      if (waBtn) {
+        const text = encodeURIComponent(`👟 Check out my BadaKadam fitness achievements!\n🔥 Walking Streak: ${streak} Days!\n🪙 WalkCoins Earned: ${currentUser?.walkCoins || 1050}\n\nJoin me on BadaKadam with code BADASPEED: ${window.location.origin}`);
+        waBtn.href = `https://wa.me/?text=${text}`;
+      }
+
       modal.classList.add('active');
     };
   }
@@ -3110,11 +3118,14 @@ function initShareCardModal() {
     closeBtn.onclick = () => modal.classList.remove('active');
   }
 
-  const waBtn = document.getElementById('share-whatsapp-btn');
   if (waBtn) {
-    waBtn.onclick = () => {
-      const text = encodeURIComponent(`👟 Check out my BadaKadam fitness achievements! Walking streak: ${currentUser?.currentStreak || 21} days! Join me with invite code BADASPEED.`);
-      window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+    waBtn.onclick = (e) => {
+      const streak = currentUser?.currentStreak || currentUser?.current_streak || 21;
+      const text = encodeURIComponent(`👟 Check out my BadaKadam fitness achievements!\n🔥 Walking Streak: ${streak} Days!\n🪙 WalkCoins Earned: ${currentUser?.walkCoins || 1050}\n\nJoin me on BadaKadam with code BADASPEED: ${window.location.origin}`);
+      const url = `https://wa.me/?text=${text}`;
+      waBtn.href = url;
+      // Backup window open for desktop browsers
+      window.open(url, '_blank');
     };
   }
 
