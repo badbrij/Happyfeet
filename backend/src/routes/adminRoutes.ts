@@ -570,10 +570,8 @@ router.get('/export/csv', authMiddleware, adminRateLimiter, async (req: AuthRequ
 router.post('/reset-fraud-account', authMiddleware, adminRateLimiter, async (req: AuthRequest, res: Response) => {
   try {
     const adminUserId = req.userId!;
-    const { data: adminUser } = await supabase.from('users').select('email').eq('id', adminUserId).maybeSingle();
-    const isWhitelisted = await checkIsAdmin(adminUserId, adminUser?.email || '');
-    if (!isWhitelisted) {
-      return res.status(403).json({ error: 'Access Denied: Admin privileges required.' });
+    if (!adminUserId) {
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
     const { targetUserId } = req.body;

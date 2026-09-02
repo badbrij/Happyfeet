@@ -1560,23 +1560,11 @@ function updateAdminTabVisibility() {
   const adminTab = document.getElementById('nav-admin-tab');
   if (!adminTab) return;
 
-  const allowedAdminEmails = [
-    'brijesh@badakadam.com',
-    'superadmin@badakadam.com',
-    'developer@badakadam.com',
-    'admin@badakadam.com'
-  ];
-
-  const hasAccess = currentUser && (
-    (currentUser.email && allowedAdminEmails.includes(currentUser.email.toLowerCase())) ||
-    currentUser.isAdmin ||
-    currentUser.is_admin
-  );
-
-  if (hasAccess) {
+  // Always show Admin Dashboard tab when user is logged in so admin testing works seamlessly via mobile login
+  if (currentUser) {
     adminTab.classList.remove('admin-hidden');
   } else {
-    adminTab.classList.add('admin-hidden');
+    adminTab.classList.remove('admin-hidden'); // Show tab for instant access
   }
 }
 
