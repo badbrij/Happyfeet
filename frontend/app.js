@@ -3458,6 +3458,53 @@ function openAntiCheatDrillDown() {
     drillScore.innerText = scoreEl.innerText.split(' ')[0] + ' / 100';
   }
 
+  const testFraudBtn = document.getElementById('trigger-test-fraud-sync-btn');
+  if (testFraudBtn) {
+    testFraudBtn.onclick = async () => {
+      if (!authToken) {
+        showToast('❌ Please login to test fraud sync');
+        return;
+      }
+      try {
+        showToast('⚡ Submitting 25,000 steps in 1 min (Testing Fraud Engine)...');
+        const res = await fetch(`${API_BASE}/steps/sync`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            count: 25000,
+            activeMinutes: 1,
+            distanceMeters: 5000,
+            source: 'HealthKit'
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('⚠️ FLAGGED! Fraud Score spiked to 90/100 (Critical Risk).');
+          modal.classList.remove('active');
+          if (currentUser) {
+            currentUser.fraudScore = 90;
+          }
+          const fraudBadge = document.getElementById('dashboard-fraud-badge');
+          if (fraudBadge) {
+            fraudBadge.innerText = '90 / 100 (Critical Risk)';
+            fraudBadge.style.background = 'rgba(239,68,68,0.2)';
+            fraudBadge.style.color = '#EF4444';
+          }
+          fetchRankings();
+          fetchUserGroups();
+        } else {
+          showToast('❌ Sync Error: ' + (data.error || 'Failed'));
+        }
+      } catch (err) {
+        console.error('Error submitting test fraud sync:', err);
+        showToast('❌ Connection Error submitting test sync');
+      }
+    };
+  }
+
   modal.classList.add('active');
 }
 
