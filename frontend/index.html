@@ -822,16 +822,16 @@
           <label>Invite Link</label>
           <div style="display: flex; gap: 8px;">
             <input type="text" id="share-link-input" readonly style="flex-grow: 1;">
-            <button class="sync-action-btn" id="copy-share-link-btn" style="margin-top: 0; white-space: nowrap;">
+            <button class="sync-action-btn" id="grp-copy-share-link-btn" style="margin-top: 0; white-space: nowrap;">
               <i class="fa-regular fa-copy"></i> Copy
             </button>
           </div>
         </div>
         <div style="display: flex; gap: 12px; margin-top: 8px;">
-          <a id="share-whatsapp-btn" target="_blank" class="submit-btn" style="flex: 1; text-align: center; text-decoration: none; background: #25D366; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+          <a id="grp-share-whatsapp-btn" target="_blank" class="submit-btn" style="flex: 1; text-align: center; text-decoration: none; background: #25D366; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
             <i class="fa-brands fa-whatsapp" style="font-size: 18px;"></i> WhatsApp
           </a>
-          <a id="share-email-btn" class="submit-btn" style="flex: 1; text-align: center; text-decoration: none; background: #3B82F6; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+          <a id="grp-share-email-btn" class="submit-btn" style="flex: 1; text-align: center; text-decoration: none; background: #3B82F6; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
             <i class="fa-regular fa-envelope" style="font-size: 18px;"></i> Email
           </a>
         </div>
@@ -1293,46 +1293,48 @@
       </div>
 
       <!-- Live Preview Canvas Card -->
-      <div id="achievement-card-preview" style="background: linear-gradient(135deg, #0F172A, #1E293B); border: 2px solid var(--primary-emerald); border-radius: 16px; padding: 24px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);">
-        <div style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(16, 185, 129, 0.15); border-radius: 50%; blur: 20px;"></div>
+      <div id="achievement-card-preview" style="background: linear-gradient(135deg, #0F172A, #1E293B); border: 2px solid var(--primary-emerald); border-radius: 16px; padding: 24px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2); text-align: center;">
+        <div style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(16, 185, 129, 0.15); border-radius: 50%; filter: blur(20px);"></div>
         
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px;">
-          <span style="font-size: 24px;">👟</span>
-          <span style="font-size: 20px; font-weight: 800; background: linear-gradient(135deg, #FFF, #CBD5E1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">BadaKadam</span>
+        <!-- App Logo & Brand Name -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 14px;">
+          <img src="logo.png" style="height: 38px; object-fit: contain;">
+          <span style="font-size: 22px; font-weight: 900; color: #FFFFFF; letter-spacing: -0.5px;">BadaKadam</span>
         </div>
 
-        <div id="share-card-avatar" style="width: 54px; height: 54px; border-radius: 50%; margin: 0 auto 10px auto; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 28px; border: 2px solid var(--accent-cyan);">
-          🏃
+        <!-- User Profile Photo / Avatar -->
+        <div id="share-card-avatar" style="width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 12px auto; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 3px solid var(--accent-cyan); box-shadow: 0 0 15px rgba(6,182,212,0.3);">
+          👤
         </div>
 
-        <h2 id="share-card-walker-name" style="font-size: 20px; color: white; margin-bottom: 4px;">Brijesh Sharma</h2>
+        <h2 id="share-card-walker-name" style="font-size: 20px; color: white; margin-bottom: 4px; font-weight: 800;">Brijesh Sharma</h2>
         <p id="share-card-badge-title" style="font-size: 13px; color: var(--accent-amber); font-weight: 700; margin-bottom: 16px;">🔥 21 Day Walking Streak Master</p>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(0,0,0,0.3); padding: 14px; border-radius: 12px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(0,0,0,0.35); padding: 14px; border-radius: 12px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.06);">
           <div>
-            <div style="font-size: 11px; color: var(--text-muted);">Lifetime Steps</div>
+            <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Lifetime Steps</div>
             <div id="share-card-steps" style="font-size: 18px; font-weight: 800; color: white;">624,500</div>
           </div>
           <div>
-            <div style="font-size: 11px; color: var(--text-muted);">WalkCoins Earned</div>
+            <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">WalkCoins Earned</div>
             <div id="share-card-coins" style="font-size: 18px; font-weight: 800; color: var(--accent-cyan);">1,050</div>
           </div>
         </div>
 
         <div style="font-size: 11px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 6px;">
-          <span>Scan or join via code: <strong style="color: white;">BADASPEED</strong></span>
+          <span>Scan or join via code: <strong style="color: white; font-weight: 800;">BADASPEED</strong></span>
         </div>
       </div>
 
       <!-- Action Buttons -->
       <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button id="share-whatsapp-btn" class="register-hero-btn" style="flex: 1; height: 40px; margin-top: 0; background: #25D366; border-color: #25D366; color: white; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; cursor: pointer;">
+        <button id="share-card-whatsapp-btn" class="register-hero-btn" style="flex: 1; height: 40px; margin-top: 0; background: #25D366; border-color: #25D366; color: white; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; cursor: pointer;">
           <i class="fa-brands fa-whatsapp" style="font-size: 16px;"></i> WhatsApp
         </button>
-        <button id="download-card-png-btn" class="register-hero-btn" style="flex: 1; height: 40px; margin-top: 0; background: var(--primary-emerald); border-color: var(--primary-emerald); color: white; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px;">
+        <button id="share-card-png-btn" class="register-hero-btn" style="flex: 1; height: 40px; margin-top: 0; background: var(--primary-emerald); border-color: var(--primary-emerald); color: white; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; cursor: pointer;">
           <i class="fa-solid fa-download"></i> Save PNG
         </button>
-        <button id="copy-share-link-btn" class="register-hero-btn" style="flex: 1; height: 40px; margin-top: 0; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); color: white; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px;">
+        <button id="share-card-copy-btn" class="register-hero-btn" style="flex: 1; height: 40px; margin-top: 0; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); color: white; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; cursor: pointer;">
           <i class="fa-solid fa-link"></i> Copy Link
         </button>
       </div>

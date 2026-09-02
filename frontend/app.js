@@ -1830,19 +1830,37 @@ window.openShareModal = function(groupName, inviteCode) {
   const shareModal = document.getElementById('share-group-modal');
   if (!shareModal) return;
 
-  const inviteLink = `${window.location.origin}/?invite=${inviteCode}`;
+  const shareDomain = window.location.origin.includes('localhost')
+    ? 'https://badakadam-fitness.vercel.app'
+    : window.location.origin;
+
+  const inviteLink = `${shareDomain}/?invite=${inviteCode}`;
   
   document.getElementById('share-invite-code').value = inviteCode;
   document.getElementById('share-link-input').value = inviteLink;
 
   // Setup WhatsApp link
-  const waText = encodeURIComponent(`Join my BadaKadam walking group "${groupName}"! Use invite code: ${inviteCode}.\n\nClick here to join directly: ${inviteLink}`);
-  document.getElementById('share-whatsapp-btn').href = `https://api.whatsapp.com/send?text=${waText}`;
+  const waText = encodeURIComponent(`👟 Join my BadaKadam walking battle group "${groupName}"!\n\n🔑 Invite Code: *${inviteCode}*\n👉 Click to join: ${inviteLink}`);
+  const waBtn = document.getElementById('grp-share-whatsapp-btn');
+  if (waBtn) {
+    waBtn.href = `https://api.whatsapp.com/send?text=${waText}`;
+  }
 
   // Setup Email link
   const emailSubject = encodeURIComponent(`Join my BadaKadam Walking Group!`);
   const emailBody = encodeURIComponent(`Hey,\n\nJoin my BadaKadam walking group "${groupName}"!\n\nInvite Code: ${inviteCode}\nClick here to join directly: ${inviteLink}\n\nDownload BadaKadam and let's start walking together!`);
-  document.getElementById('share-email-btn').href = `mailto:?subject=${emailSubject}&body=${emailBody}`;
+  const emailBtn = document.getElementById('grp-share-email-btn');
+  if (emailBtn) {
+    emailBtn.href = `mailto:?subject=${emailSubject}&body=${emailBody}`;
+  }
+
+  const copyBtn = document.getElementById('grp-copy-share-link-btn');
+  if (copyBtn) {
+    copyBtn.onclick = () => {
+      navigator.clipboard.writeText(inviteLink);
+      showToast('📋 Invite Link copied to clipboard!');
+    };
+  }
 
   shareModal.classList.add('active');
 };
@@ -3093,9 +3111,9 @@ function initShareCardModal() {
   const openBtn = document.getElementById('open-share-card-btn');
   const modal = document.getElementById('share-card-modal');
   const closeBtn = document.getElementById('close-share-modal-btn');
-  const waBtn = document.getElementById('share-whatsapp-btn');
-  const pngBtn = document.getElementById('download-card-png-btn');
-  const linkBtn = document.getElementById('copy-share-link-btn');
+  const waBtn = document.getElementById('share-card-whatsapp-btn');
+  const pngBtn = document.getElementById('share-card-png-btn');
+  const linkBtn = document.getElementById('share-card-copy-btn');
 
   const getFormattedWAText = () => {
     const walkerName = currentUser?.alias || currentUser?.name || 'Walker';
@@ -3125,6 +3143,12 @@ ${shareUrl}?invite=BADASPEED`;
         document.getElementById('share-card-steps').innerText = (currentUser.lifetimeSteps || currentUser.lifetime_steps || 624500).toLocaleString();
         document.getElementById('share-card-coins').innerText = (currentUser.walkCoins || currentUser.walk_coins || 1050).toLocaleString();
         document.getElementById('share-card-badge-title').innerText = `🔥 ${streak} Day Walking Streak Master`;
+
+        // Render user's actual profile photo / avatar
+        const avatarContainer = document.getElementById('share-card-avatar');
+        if (avatarContainer) {
+          avatarContainer.innerHTML = getAvatarHTML(currentUser.profilePic, '40px', '28px', currentUser.gender);
+        }
       }
 
       modal.classList.add('active');
@@ -3181,7 +3205,10 @@ ${shareUrl}?invite=BADASPEED`;
 
   if (linkBtn) {
     linkBtn.onclick = () => {
-      navigator.clipboard.writeText(window.location.href);
+      const shareUrl = window.location.origin.includes('localhost')
+        ? 'https://badakadam-fitness.vercel.app'
+        : window.location.origin;
+      navigator.clipboard.writeText(`${shareUrl}?invite=BADASPEED`);
       showToast('📋 Achievement Link copied to clipboard!');
     };
   }
