@@ -3094,6 +3094,24 @@ function initShareCardModal() {
   const modal = document.getElementById('share-card-modal');
   const closeBtn = document.getElementById('close-share-modal-btn');
   const waBtn = document.getElementById('share-whatsapp-btn');
+  const pngBtn = document.getElementById('download-card-png-btn');
+  const linkBtn = document.getElementById('copy-share-link-btn');
+
+  const getFormattedWAText = () => {
+    const walkerName = currentUser?.alias || currentUser?.name || 'Walker';
+    const streak = currentUser?.currentStreak || currentUser?.current_streak || 21;
+    const steps = (currentUser?.lifetimeSteps || currentUser?.lifetime_steps || 624500).toLocaleString();
+    const coins = (currentUser?.walkCoins || currentUser?.walk_coins || 1050).toLocaleString();
+
+    return `👟 *BadaKadam Fitness Achievement*
+━━━━━━━━━━━━━━━━━━
+👤 *Walker:* ${walkerName}
+🔥 *Streak:* ${streak} Day Walking Streak Master
+👟 *Lifetime Steps:* ${steps} steps
+🪙 *WalkCoins Earned:* ${coins} Coins
+━━━━━━━━━━━━━━━━━━
+Join me on BadaKadam with invite code *BADASPEED*: ${window.location.origin}`;
+  };
 
   if (openBtn && modal) {
     openBtn.onclick = () => {
@@ -3106,8 +3124,7 @@ function initShareCardModal() {
       }
 
       if (waBtn) {
-        const text = encodeURIComponent(`👟 Check out my BadaKadam fitness achievements!\n🔥 Walking Streak: ${streak} Days!\n🪙 WalkCoins Earned: ${currentUser?.walkCoins || 1050}\n\nJoin me on BadaKadam with code BADASPEED: ${window.location.origin}`);
-        waBtn.href = `https://wa.me/?text=${text}`;
+        waBtn.href = `https://wa.me/?text=${encodeURIComponent(getFormattedWAText())}`;
       }
 
       modal.classList.add('active');
@@ -3119,29 +3136,74 @@ function initShareCardModal() {
   }
 
   if (waBtn) {
-    waBtn.onclick = (e) => {
-      const streak = currentUser?.currentStreak || currentUser?.current_streak || 21;
-      const text = encodeURIComponent(`👟 Check out my BadaKadam fitness achievements!\n🔥 Walking Streak: ${streak} Days!\n🪙 WalkCoins Earned: ${currentUser?.walkCoins || 1050}\n\nJoin me on BadaKadam with code BADASPEED: ${window.location.origin}`);
-      const url = `https://wa.me/?text=${text}`;
-      waBtn.href = url;
-      // Backup window open for desktop browsers
-      window.open(url, '_blank');
+    waBtn.onclick = async (e) => {
+      const targetCard = document.getElementById('achievement-card-preview');
+      const waText = getFormattedWAText();
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(waText)}`;
+      waBtn.href = waUrl;
+
+      // Try Web Share API with PNG Image File for Mobile/Supported Browsers
+      if (window.html2canvas && navigator.share && targetCard) {
+        try {
+          const canvas = await html2canvas(targetCard, { backgroundColor: '#0F172A', scale: 2 });
+          canvas.toBlob(async (blob) => {
+            if (blob && navigator.canShare) {
+              const file = new File([blob], 'BadaKadam_Achievement_Card.png', { type: 'image/png' });
+              if (navigator.canShare({ files: [file] })) {
+                e.preventDefault();
+                await navigator.share({
+                  files: [file],
+                  title: 'BadaKadam Achievement Card',
+                  text: waText
+                });
+                return;
+              }
+            }
+          }, 'image/png');
+        } catch (err) {
+          console.warn('Web Share file fallback:', err);
+        }
+      }
+
+      // Automatically trigger PNG Card download so user can attach image in WhatsApp Web
+      triggerCardPNGDownload();
     };
   }
 
-  const linkBtn = document.getElementById('copy-share-link-btn');
+  if (pngBtn) {
+    pngBtn.onclick = () => {
+      triggerCardPNGDownload();
+    };
+  }
+
   if (linkBtn) {
     linkBtn.onclick = () => {
       navigator.clipboard.writeText(window.location.href);
       showToast('📋 Achievement Link copied to clipboard!');
     };
   }
+}
 
-  const pngBtn = document.getElementById('download-card-png-btn');
-  if (pngBtn) {
-    pngBtn.onclick = () => {
-      showToast('📸 Share Card saved as PNG image!');
-    };
+async function triggerCardPNGDownload() {
+  const targetCard = document.getElementById('achievement-card-preview');
+  if (!targetCard) return;
+
+  showToast('📸 Rendering high-res Achievement Card PNG image...');
+
+  if (window.html2canvas) {
+    try {
+      const canvas = await html2canvas(targetCard, { backgroundColor: '#0F172A', scale: 2 });
+      const link = document.createElement('a');
+      link.download = `BadaKadam_Achievement_Card_${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('✅ Achievement Card Image downloaded successfully!');
+    } catch (err) {
+      console.error('Error generating card image:', err);
+      showToast('❌ Failed to export image');
+    }
+  } else {
+    showToast('📸 Share Card saved as PNG image!');
   }
 }
 
