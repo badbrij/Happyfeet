@@ -3102,6 +3102,9 @@ function initShareCardModal() {
     const streak = currentUser?.currentStreak || currentUser?.current_streak || 21;
     const steps = (currentUser?.lifetimeSteps || currentUser?.lifetime_steps || 624500).toLocaleString();
     const coins = (currentUser?.walkCoins || currentUser?.walk_coins || 1050).toLocaleString();
+    const shareUrl = window.location.origin.includes('localhost')
+      ? 'https://badakadam-fitness.vercel.app'
+      : window.location.origin;
 
     return `👟 *BadaKadam Fitness Achievement*
 ━━━━━━━━━━━━━━━━━━
@@ -3110,7 +3113,8 @@ function initShareCardModal() {
 👟 *Lifetime Steps:* ${steps} steps
 🪙 *WalkCoins Earned:* ${coins} Coins
 ━━━━━━━━━━━━━━━━━━
-Join me on BadaKadam with invite code *BADASPEED*: ${window.location.origin}`;
+👉 *Click link below to join & view profile:*
+${shareUrl}?invite=BADASPEED`;
   };
 
   if (openBtn && modal) {
@@ -3123,10 +3127,6 @@ Join me on BadaKadam with invite code *BADASPEED*: ${window.location.origin}`;
         document.getElementById('share-card-badge-title').innerText = `🔥 ${streak} Day Walking Streak Master`;
       }
 
-      if (waBtn) {
-        waBtn.href = `https://wa.me/?text=${encodeURIComponent(getFormattedWAText())}`;
-      }
-
       modal.classList.add('active');
     };
   }
@@ -3137,12 +3137,11 @@ Join me on BadaKadam with invite code *BADASPEED*: ${window.location.origin}`;
 
   if (waBtn) {
     waBtn.onclick = async (e) => {
+      e.preventDefault();
       const targetCard = document.getElementById('achievement-card-preview');
       const waText = getFormattedWAText();
-      const waUrl = `https://wa.me/?text=${encodeURIComponent(waText)}`;
-      waBtn.href = waUrl;
 
-      // Try Web Share API with PNG Image File for Mobile/Supported Browsers
+      // Try Web Share API for Mobile devices to share the PNG Image file directly
       if (window.html2canvas && navigator.share && targetCard) {
         try {
           const canvas = await html2canvas(targetCard, { backgroundColor: '#0F172A', scale: 2 });
@@ -3150,7 +3149,6 @@ Join me on BadaKadam with invite code *BADASPEED*: ${window.location.origin}`;
             if (blob && navigator.canShare) {
               const file = new File([blob], 'BadaKadam_Achievement_Card.png', { type: 'image/png' });
               if (navigator.canShare({ files: [file] })) {
-                e.preventDefault();
                 await navigator.share({
                   files: [file],
                   title: 'BadaKadam Achievement Card',
@@ -3159,14 +3157,19 @@ Join me on BadaKadam with invite code *BADASPEED*: ${window.location.origin}`;
                 return;
               }
             }
+            // Fallback for non-image share
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`, '_blank');
           }, 'image/png');
+          triggerCardPNGDownload();
+          return;
         } catch (err) {
           console.warn('Web Share file fallback:', err);
         }
       }
 
-      // Automatically trigger PNG Card download so user can attach image in WhatsApp Web
+      // Download PNG Card image & open WhatsApp Web with formatted hyperlinked text
       triggerCardPNGDownload();
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`, '_blank');
     };
   }
 
