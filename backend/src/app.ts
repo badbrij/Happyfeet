@@ -39,7 +39,8 @@ app.use(cors({
 }));
 
 // 3. Payload Size Limitation & XSS Sanitization
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(sanitizeInputs);
 
 // 4. Global API Rate Limiting

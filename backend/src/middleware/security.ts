@@ -52,6 +52,9 @@ export const sanitizeInputs = (req: Request, _res: Response, next: NextFunction)
 
     for (const key in obj) {
       if (typeof obj[key] === 'string') {
+        // Skip base64 image data strings to preserve image performance
+        if (obj[key].startsWith('data:image/')) continue;
+        
         // Strip dangerous script tags and inline event handlers
         obj[key] = obj[key]
           .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
