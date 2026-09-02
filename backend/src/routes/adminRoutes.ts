@@ -508,4 +508,61 @@ router.get('/flagged-logs', authMiddleware, async (req: AuthRequest, res: Respon
   }
 });
 
+// GET /api/v1/admin/export/csv
+router.get('/export/csv', authMiddleware, adminRateLimiter, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const { data: userRecord } = await supabase.from('users').select('email').eq('id', userId).maybeSingle();
+    const isWhitelisted = await checkIsAdmin(userId, userRecord?.email || '');
+    if (!isWhitelisted) {
+      return res.status(403).json({ error: 'Access Denied: Admin privileges required.' });
+    }
+
+    const exportType = (req.query.type as string) || 'flagged_logs';
+
+    if (exportType === 'flagged_logs') {
+      const { data: logs } = await supabase
+        .from('step_logs')
+        .select('id, user_id, count, source, timestamp, is_flagged')
+        .eq('is_flagged', true)
+        .order('timestamp', { ascending: false });
+
+      const userIds = Array.from(new Set((logs || []).map(l => l.user_id)));
+      const { data: users } = userIds.length > 0
+        ? await supabase.from('users').select('id, name, email').in('id', userIds)
+        : { data: [] };
+
+      const userMap: Record<string, any> = {};
+      users?.forEach(u => { userMap[u.id] = u; });
+
+      let csv = 'Log ID,User Name,User Email,Step Count,Source,Flag Status,Timestamp\n';
+      (logs || []).forEach(l => {
+        const u = userMap[l.user_id] || { name: 'Walker', email: 'N/A' };
+        csv += `"${l.id}","${u.name}","${u.email}",${l.count},"${l.source || 'HealthKit'}","FLAGGED","${l.timestamp}"\n`;
+      });
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="badakadam_flagged_logs.csv"');
+      return res.status(200).send(csv);
+    } else {
+      const { data: allUsers } = await supabase
+        .from('users')
+        .select('id, name, email, phone, walk_coins, current_streak, lifetime_steps, created_at')
+        .order('created_at', { ascending: false });
+
+      let csv = 'User ID,Name,Email,Phone,WalkCoins,Current Streak,Lifetime Steps,Joined Date\n';
+      (allUsers || []).forEach(u => {
+        csv += `"${u.id}","${u.name}","${u.email}","${u.phone}",${u.walk_coins},${u.current_streak},${u.lifetime_steps},"${u.created_at}"\n`;
+      });
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="badakadam_user_audit.csv"');
+      return res.status(200).send(csv);
+    }
+  } catch (err: any) {
+    console.error('CSV Export Error:', err);
+    return res.status(500).json({ error: 'Failed to generate CSV export report' });
+  }
+});
+
 export default router;

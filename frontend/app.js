@@ -155,6 +155,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initNotificationDrawer();
   initShareCardModal();
   initUserDashboardTileModals();
+  initRealtimeStepStream();
+  initAdminExportHandlers();
   initPWAServiceWorker();
 });
 
@@ -3409,6 +3411,82 @@ function openBadgesDrillDown() {
     `).join('');
   }
 
-  modal.classList.add('active');
+}
+
+function initRealtimeStepStream() {
+  if (!('EventSource' in window)) return;
+
+  const streamUrl = `${API_BASE}/steps/stream`;
+  let eventSource = null;
+
+  try {
+    eventSource = new EventSource(streamUrl);
+  } catch (e) {
+    console.error('Failed to initialize EventSource stream:', e);
+    return;
+  }
+
+  eventSource.onopen = () => {
+    console.log('✅ BadaKadam Real-Time SSE Stream Connected');
+    const badge = document.getElementById('sse-stream-badge');
+    if (badge) {
+      badge.style.background = 'rgba(16, 185, 129, 0.15)';
+      badge.style.color = '#10B981';
+      badge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+      badge.innerHTML = '<i class="fa-solid fa-circle-dot fa-pulse" style="font-size: 8px;"></i> LIVE STREAM';
+    }
+  };
+
+  eventSource.onmessage = (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      if (data.type === 'LIVE_STEP_SYNC') {
+        const walkerName = data.user ? (data.user.alias || data.user.name) : 'A Walker';
+        showToast(`⚡ Real-Time Stream: ${walkerName} just synced +${data.count.toLocaleString()} steps!`);
+
+        const activeTab = document.querySelector('.nav-btn.active')?.getAttribute('data-tab');
+        if (activeTab === 'rankings-view') {
+          fetchRankings();
+        } else if (activeTab === 'admin-view') {
+          fetchAdminDashboard();
+        }
+      }
+    } catch (err) {
+      console.error('Error parsing SSE event data:', err);
+    }
+  };
+
+  eventSource.onerror = () => {
+    const badge = document.getElementById('sse-stream-badge');
+    if (badge) {
+      badge.style.background = 'rgba(239, 68, 68, 0.15)';
+      badge.style.color = '#EF4444';
+      badge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+      badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="font-size: 8px;"></i> RECONNECTING';
+    }
+  };
+}
+
+function initAdminExportHandlers() {
+  const csvBtn = document.getElementById('export-admin-csv-btn');
+  const pdfBtn = document.getElementById('export-admin-pdf-btn');
+
+  if (csvBtn) {
+    csvBtn.onclick = () => {
+      if (!authToken) {
+        showToast('❌ Access Denied: Login required for admin CSV export');
+        return;
+      }
+      showToast('📥 Downloading BadaKadam Flagged Logs CSV Audit...');
+      window.open(`${API_BASE}/admin/export/csv?type=flagged_logs`, '_blank');
+    };
+  }
+
+  if (pdfBtn) {
+    pdfBtn.onclick = () => {
+      showToast('📄 Opening Print & Executive PDF Report layout...');
+      window.print();
+    };
+  }
 }
 

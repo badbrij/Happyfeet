@@ -6,6 +6,37 @@ import { stepSyncRateLimiter } from '../middleware/security';
 
 const router = Router();
 
+// SSE Client Manager for Real-Time Live Stream
+const sseClients = new Set<Response>();
+
+export function broadcastSSE(data: any) {
+  const payload = `data: ${JSON.stringify(data)}\n\n`;
+  sseClients.forEach(client => {
+    try {
+      client.write(payload);
+    } catch (e) {
+      sseClients.delete(client);
+    }
+  });
+}
+
+// GET /api/v1/steps/stream (Server-Sent Events)
+router.get('/stream', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+
+  // Initial connection handshake
+  res.write(`data: ${JSON.stringify({ type: 'CONNECTED', message: 'BadaKadam Live Real-Time Stream Connected' })}\n\n`);
+
+  sseClients.add(res);
+
+  req.on('close', () => {
+    sseClients.delete(res);
+  });
+});
+
 // POST /api/v1/steps/sync
 router.post('/sync', authMiddleware, stepSyncRateLimiter, async (req: AuthRequest, res: Response) => {
   const userId = req.userId!;
@@ -197,6 +228,20 @@ router.post('/sync', authMiddleware, stepSyncRateLimiter, async (req: AuthReques
       .eq('id', userId);
 
     if (userUpdateError) console.error(userUpdateError);
+
+    // Broadcast Real-Time Live Sync Event to connected SSE clients
+    broadcastSSE({
+      type: 'LIVE_STEP_SYNC',
+      user: {
+        id: user.id,
+        name: user.name,
+        alias: user.alias,
+        location: user.location,
+      },
+      count: totalNewSteps,
+      source: source || 'HealthKit',
+      timestamp: new Date().toISOString()
+    });
 
     return res.json({
       message: 'Steps synced successfully',
