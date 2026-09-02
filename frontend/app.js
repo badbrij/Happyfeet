@@ -3390,6 +3390,7 @@ function initUserDashboardTileModals() {
   const distCard = document.getElementById('tile-distance-card');
   const coinsCard = document.getElementById('tile-coins-card');
   const badgesCard = document.getElementById('tile-achievements-card');
+  const anticheatCard = document.getElementById('tile-anticheat-card');
 
   if (calCard) {
     calCard.onclick = () => openCalorieDrillDown();
@@ -3403,6 +3404,22 @@ function initUserDashboardTileModals() {
   if (badgesCard) {
     badgesCard.onclick = () => openBadgesDrillDown();
   }
+  if (anticheatCard) {
+    anticheatCard.onclick = () => openAntiCheatDrillDown();
+  }
+}
+
+function openAntiCheatDrillDown() {
+  const modal = document.getElementById('modal-tile-anticheat');
+  if (!modal) return;
+
+  const scoreEl = document.getElementById('dashboard-fraud-badge');
+  const drillScore = document.getElementById('drill-anticheat-score');
+  if (drillScore && scoreEl) {
+    drillScore.innerText = scoreEl.innerText.split(' ')[0] + ' / 100';
+  }
+
+  modal.classList.add('active');
 }
 
 function openCalorieDrillDown() {

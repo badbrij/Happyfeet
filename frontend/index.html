@@ -365,11 +365,13 @@
               </div>
 
               <!-- Anti-Cheat and verification status -->
-              <div class="glass-card" style="padding: 16px;">
-                <h3 style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Anti-Cheat Status</h3>
+              <div class="glass-card" id="tile-anticheat-card" style="padding: 16px; cursor: pointer;" title="Click to view Anti-Cheat Fraud Engine rules & verification breakdown">
+                <h3 style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: space-between;">
+                  Anti-Cheat Status <i class="fa-solid fa-circle-info" style="color: var(--accent-cyan);"></i>
+                </h3>
                 <div style="display: flex; align-items: center; justify-content: space-between;">
                   <span style="font-size: 13px; font-weight: 600;">Fraud Score:</span>
-                  <span class="rank-badge" style="background: rgba(16,185,129,0.2); color: #10B981; font-size: 11px;">0 / 100 (Verified Clean)</span>
+                  <span class="rank-badge" id="dashboard-fraud-badge" style="background: rgba(16,185,129,0.2); color: #10B981; font-size: 11px;">0 / 100 (Verified Clean)</span>
                 </div>
               </div>
 
@@ -1477,6 +1479,64 @@
 
       <div id="drill-badges-showcase" style="display: flex; flex-direction: column; gap: 10px; max-height: 320px; overflow-y: auto;">
         <!-- Loaded dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- DRILL DOWN MODAL 5: ANTI-CHEAT STATUS & RISK AUDIT -->
+  <div class="modal-overlay" id="modal-tile-anticheat">
+    <div class="modal-card" style="max-width: 520px; width: 90%; background: #0F172A; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-shield-halved" style="color: #10B981; font-size: 22px;"></i>
+          <h2 style="font-size: 18px; margin: 0; color: white;">Anti-Cheat Verification Engine</h2>
+        </div>
+        <button class="close-modal-btn" onclick="document.getElementById('modal-tile-anticheat').classList.remove('active')">&times;</button>
+      </div>
+
+      <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); padding: 16px; border-radius: 12px; text-align: center; margin-bottom: 16px;">
+        <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Your Account Fraud Risk Score</div>
+        <div style="font-size: 28px; font-weight: 900; color: #10B981; margin: 4px 0;" id="drill-anticheat-score">0 / 100</div>
+        <span style="font-size: 11px; background: rgba(16,185,129,0.2); color: #34D399; padding: 3px 10px; border-radius: 12px; font-weight: 700;">🟢 Verified Clean & Trustworthy</span>
+      </div>
+
+      <h4 style="font-size: 13px; color: white; margin-bottom: 8px;">Active Quantitative Verification Rules</h4>
+      <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; margin-bottom: 16px;">
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; font-weight: 700; color: white; margin-bottom: 2px;">
+            <span>⚡ Cadence / Velocity Limit</span>
+            <span style="color: #10B981;">Max 260 steps/min</span>
+          </div>
+          <div style="color: var(--text-muted); font-size: 11px;">Prevents automated phone shakers & mechanical rotators (+40 risk points if exceeded).</div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; font-weight: 700; color: white; margin-bottom: 2px;">
+            <span>🚀 Single Batch Spike Check</span>
+            <span style="color: #10B981;">Max 15,000 steps / 30m</span>
+          </div>
+          <div style="color: var(--text-muted); font-size: 11px;">Flags sudden impossible step injection spikes (+50 risk points if exceeded).</div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; font-weight: 700; color: white; margin-bottom: 2px;">
+            <span>⏱️ Rapid Sync Window</span>
+            <span style="color: #10B981;">Min 60s window</span>
+          </div>
+          <div style="color: var(--text-muted); font-size: 11px;">Flags multiple large step sync calls inside 60 seconds (+30 risk points).</div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; font-weight: 700; color: white; margin-bottom: 2px;">
+            <span>📐 Stride Length & Distance Anomaly</span>
+            <span style="color: #10B981;">0.20m - 2.50m / step</span>
+          </div>
+          <div style="color: var(--text-muted); font-size: 11px;">Verifies movement ratio to catch vehicle transport artifacts (+20 risk points).</div>
+        </div>
+      </div>
+
+      <div style="background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.2); padding: 12px; border-radius: 10px; font-size: 11px; color: var(--text-muted); line-height: 1.4;">
+        🛡️ <strong style="color: var(--accent-cyan);">Enterprise Guarantee:</strong> Verified clean accounts (0-29 Fraud Score) receive instant WalkCoin rewards and battle leaderboard ranking accreditation.
       </div>
     </div>
   </div>
