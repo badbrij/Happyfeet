@@ -3,6 +3,7 @@ import { supabase } from '../database/supabase';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { getFraudRules, updateFraudRules } from '../utils/antiCheat';
 import { adminRateLimiter } from '../middleware/security';
+import { broadcastSSE } from './stepRoutes';
 
 const router = Router();
 
@@ -562,6 +563,94 @@ router.get('/export/csv', authMiddleware, adminRateLimiter, async (req: AuthRequ
   } catch (err: any) {
     console.error('CSV Export Error:', err);
     return res.status(500).json({ error: 'Failed to generate CSV export report' });
+  }
+});
+
+// POST /api/v1/admin/reset-fraud-account
+router.post('/reset-fraud-account', authMiddleware, adminRateLimiter, async (req: AuthRequest, res: Response) => {
+  try {
+    const adminUserId = req.userId!;
+    const { data: adminUser } = await supabase.from('users').select('email').eq('id', adminUserId).maybeSingle();
+    const isWhitelisted = await checkIsAdmin(adminUserId, adminUser?.email || '');
+    if (!isWhitelisted) {
+      return res.status(403).json({ error: 'Access Denied: Admin privileges required.' });
+    }
+
+    const { targetUserId } = req.body;
+    if (!targetUserId) {
+      return res.status(400).json({ error: 'targetUserId is required' });
+    }
+
+    const { data: targetUser, error: fetchErr } = await supabase
+      .from('users')
+      .select('id, name, email, fraud_score, walk_coins, lifetime_steps')
+      .eq('id', targetUserId)
+      .maybeSingle();
+
+    if (fetchErr || !targetUser) {
+      return res.status(404).json({ error: 'Target user account not found' });
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    // 1. Reset user metrics to ZERO & clear fraud score
+    const { error: updateErr } = await supabase
+      .from('users')
+      .update({
+        lifetime_steps: 0,
+        walk_coins: 0,
+        current_streak: 0,
+        fraud_score: 0,
+      })
+      .eq('id', targetUserId);
+
+    if (updateErr) {
+      console.error('Error resetting user metrics:', updateErr);
+      return res.status(500).json({ error: 'Failed to reset user account metrics' });
+    }
+
+    // 2. Wipe today's step logs & daily summaries
+    await supabase.from('daily_summaries').delete().eq('user_id', targetUserId).eq('date', todayStr);
+    await supabase.from('step_logs').delete().eq('user_id', targetUserId);
+
+    // 3. Log coin penalty transaction record
+    await supabase.from('coin_transactions').insert([{
+      id: `tx_reset_${targetUserId}_${Date.now()}`,
+      user_id: targetUserId,
+      amount: -(targetUser.walk_coins || 0),
+      transaction_type: 'Fraud Penalty Wipe',
+      description: `Admin Fraud Account Reset: Wiped ${(targetUser.lifetime_steps || 0).toLocaleString()} steps and ${targetUser.walk_coins || 0} WalkCoins to 0 due to Fraud Score (${targetUser.fraud_score || 0}/100)`
+    }]);
+
+    // 4. Broadcast Real-Time SSE Event to all clients to refresh leaderboards live!
+    broadcastSSE({
+      type: 'ACCOUNT_FRAUD_RESET',
+      user: {
+        id: targetUser.id,
+        name: targetUser.name,
+        email: targetUser.email,
+      },
+      message: `Account for ${targetUser.name} reset by Admin. Steps & WalkCoins wiped to ZERO.`,
+      timestamp: new Date().toISOString()
+    });
+
+    return res.json({
+      success: true,
+      message: `Account for ${targetUser.name} (${targetUser.email}) successfully reset. Steps, WalkCoins & Streak wiped to ZERO.`,
+      resetUser: {
+        id: targetUser.id,
+        name: targetUser.name,
+        email: targetUser.email,
+        lifetime_steps: 0,
+        walk_coins: 0,
+        current_streak: 0,
+        fraud_score: 0
+      }
+    });
+
+  } catch (err: any) {
+    console.error('Reset Fraud Account Error:', err);
+    return res.status(500).json({ error: 'Server error resetting fraud account' });
   }
 });
 

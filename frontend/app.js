@@ -1417,12 +1417,19 @@ window.toggleGroupLeaderboard = async function(groupId) {
         }
 
         const isCurrentUser = currentUser && (currentUser.name === m.name || currentUser.alias === m.name);
-        const highlightStyle = isCurrentUser 
-          ? 'background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.25);' 
-          : 'background: rgba(255,255,255,0.02);';
+        const isFraudFlagged = (m.fraudScore || 0) >= 80;
+        const highlightStyle = isFraudFlagged
+          ? 'background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.4);'
+          : (isCurrentUser 
+              ? 'background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.25);' 
+              : 'background: rgba(255,255,255,0.02);');
 
         const avatarHTML = getAvatarHTML(m.profilePic, '28px', '18px', m.gender);
         const widthPercent = Math.min(100, Math.round((m.battleSteps / maxSteps) * 100));
+
+        const fraudBadgeHTML = isFraudFlagged
+          ? `<span style="font-size: 9px; padding: 1px 6px; background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); border-radius: 4px; margin-left: 6px; color: #F87171; font-weight: 800;"><i class="fa-solid fa-triangle-exclamation"></i> FLAGGED CHEATER (${m.fraudScore}/100)</span>`
+          : '';
 
         return `
           <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 8px; ${highlightStyle} ${glowBorder}">
@@ -1432,9 +1439,10 @@ window.toggleGroupLeaderboard = async function(groupId) {
                 ${avatarHTML}
               </div>
               <div style="display: flex; flex-direction: column; gap: 2px;">
-                <div style="display: flex; align-items: center;">
+                <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
                   <span style="font-size: 13px; font-weight: 700; color: white;">${m.name}</span>
-                  ${m.role !== 'Member' ? `<span style="font-size: 9px; padding: 1px 4px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-left: 6px; color: var(--text-muted); font-weight: 600;">${m.role}</span>` : ''}
+                  ${m.role !== 'Member' ? `<span style="font-size: 9px; padding: 1px 4px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-left: 2px; color: var(--text-muted); font-weight: 600;">${m.role}</span>` : ''}
+                  ${fraudBadgeHTML}
                 </div>
                 
                 <!-- Visualized progress comparison bar -->
@@ -2882,6 +2890,14 @@ function renderAuditedUsersTable(usersList) {
       }
     }
 
+    const fraudScoreVal = u.fraud_score || 0;
+    const isFraudFlagged = fraudScoreVal >= 80;
+    const fraudBadgeHTML = isFraudFlagged
+      ? `<div style="font-size: 10px; padding: 2px 6px; background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); color: #F87171; border-radius: 4px; font-weight: 800; margin-top: 4px; display: inline-block;"><i class="fa-solid fa-triangle-exclamation"></i> Fraud Score: ${fraudScoreVal}/100</div>`
+      : `<div style="font-size: 10px; color: #10B981; margin-top: 2px;">Fraud Score: ${fraudScoreVal}/100</div>`;
+
+    const resetBtnHTML = `<button onclick="resetFraudAccount('${u.id}', '${(u.name || 'Walker').replace(/'/g, "\\'")}')" class="register-hero-btn" style="height: 24px; padding: 0 8px; margin-top: 4px; font-size: 10px; background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #F87171; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 800;"><i class="fa-solid fa-user-slash"></i> Reset to 0</button>`;
+
     tr.innerHTML = `
       <td style="padding: 12px 16px; display: flex; align-items: center; gap: 10px;">
         <div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); font-size: 18px;">
@@ -2893,6 +2909,7 @@ function renderAuditedUsersTable(usersList) {
             ${statusBadge}
           </div>
           <div style="font-size: 11px; color: var(--text-muted);">${aliasText}</div>
+          ${fraudBadgeHTML}
         </div>
       </td>
       <td style="padding: 12px 16px;">
@@ -2918,16 +2935,50 @@ function renderAuditedUsersTable(usersList) {
         </div>
       </td>
       <td style="padding: 12px 16px; text-align: right;">
-        <div style="font-weight: 700; color: var(--accent-cyan);"><i class="fa-solid fa-coins"></i> ${u.walk_coins.toLocaleString()}</div>
-        <div style="font-size: 11px; color: var(--text-muted);">🔥 Streak: ${u.current_streak} days</div>
+        <div style="font-weight: 700; color: var(--accent-cyan);"><i class="fa-solid fa-coins"></i> ${(u.walk_coins || 0).toLocaleString()}</div>
+        <div style="font-size: 11px; color: var(--text-muted);">🔥 Streak: ${u.current_streak || 0} days</div>
       </td>
       <td style="padding: 12px 16px; text-align: center;">
-        ${actionHTML}
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+          ${actionHTML}
+          ${resetBtnHTML}
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
   });
 }
+
+window.resetFraudAccount = async function(targetUserId, userName) {
+  if (!confirm(`⚠️ ARE YOU SURE YOU WANT TO RESET ACCOUNT FOR "${userName}"?\n\nThis will permanently wipe their:\n• Lifetime Steps to ZERO\n• WalkCoins Balance to ZERO\n• Daily Streak to ZERO\n• Fraud Score to ZERO\n\nThis action cannot be undone.`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/reset-fraud-account`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({ targetUserId })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      showToast(`🔥 Account for ${userName} reset! Steps & WalkCoins wiped to 0.`);
+      fetchAdminDashboard();
+      if (typeof currentAuditedGroupType !== 'undefined' && currentAuditedGroupType) {
+        fetchAuditedGroupUsers(currentAuditedGroupType);
+      }
+    } else {
+      showToast(`❌ Error: ${data.error || 'Operation failed'}`);
+    }
+  } catch (err) {
+    console.error('Error resetting fraud account:', err);
+    showToast('❌ Connection error resetting account.');
+  }
+};
 
 async function toggleAdminStatus(targetUserId, action) {
   try {
@@ -3570,6 +3621,32 @@ function initRealtimeStepStream() {
         } else if (activeTab === 'admin-view') {
           fetchAdminDashboard();
         }
+      } else if (data.type === 'ACCOUNT_FRAUD_RESET') {
+        showToast(`⚠️ Admin Alert: ${data.message || 'Account reset by Admin'}`);
+
+        if (currentUser && currentUser.id === data.user?.id) {
+          currentUser.lifetimeSteps = 0;
+          currentUser.walkCoins = 0;
+          currentUser.currentStreak = 0;
+          currentUser.fraudScore = 0;
+          
+          const stepDisplay = document.getElementById('step-count-display');
+          const coinsDisplay = document.getElementById('dashboard-coins-display');
+          const marketCoins = document.getElementById('marketplace-coins');
+          const fraudBadge = document.getElementById('dashboard-fraud-badge');
+
+          if (stepDisplay) stepDisplay.innerText = '0';
+          if (coinsDisplay) coinsDisplay.innerText = '0';
+          if (marketCoins) marketCoins.innerText = '0';
+          if (fraudBadge) {
+            fraudBadge.innerText = '0 / 100 (Verified Clean)';
+            fraudBadge.style.background = 'rgba(16,185,129,0.2)';
+            fraudBadge.style.color = '#10B981';
+          }
+        }
+
+        fetchRankings();
+        fetchUserGroups();
       }
     } catch (err) {
       console.error('Error parsing SSE event data:', err);

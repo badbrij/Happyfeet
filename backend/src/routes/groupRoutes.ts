@@ -312,7 +312,7 @@ router.get('/:id/leaderboard', authMiddleware, async (req: AuthRequest, res: Res
 
     const { data: members, error: membersError } = await supabase
       .from('group_members')
-      .select('user_id, role, users(name, alias, email, current_streak, profile_pic, gender)')
+      .select('user_id, role, users(name, alias, email, current_streak, profile_pic, gender, fraud_score)')
       .eq('group_id', id);
 
     if (membersError) {
@@ -357,6 +357,7 @@ router.get('/:id/leaderboard', authMiddleware, async (req: AuthRequest, res: Res
         todaySteps: todaySummary?.total_steps || 0,
         battleSteps: cumulativeSteps,
         streak: u.current_streak || 0,
+        fraudScore: u.fraud_score || 0,
       });
     }
 
