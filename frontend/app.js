@@ -1576,11 +1576,33 @@ function updateAdminTabVisibility() {
   const adminTab = document.getElementById('nav-admin-tab');
   if (!adminTab) return;
 
-  // Always show Admin Dashboard tab when user is logged in so admin testing works seamlessly via mobile login
-  if (currentUser) {
-    adminTab.classList.remove('admin-hidden');
+  const allowedAdminEmails = [
+    'brijesh@badakadam.com',
+    'superadmin@badakadam.com',
+    'developer@badakadam.com',
+    'admin@badakadam.com'
+  ];
+
+  const hasAccess = currentUser && (
+    (currentUser.email && allowedAdminEmails.includes(currentUser.email.toLowerCase())) ||
+    currentUser.isAdmin ||
+    currentUser.is_admin
+  );
+
+  adminTab.classList.remove('admin-hidden');
+
+  if (hasAccess) {
+    adminTab.classList.remove('admin-disabled');
+    adminTab.style.opacity = '1';
+    adminTab.style.filter = 'none';
+    adminTab.style.cursor = 'pointer';
+    adminTab.title = 'Admin Analytics & Governance Dashboard';
   } else {
-    adminTab.classList.remove('admin-hidden'); // Show tab for instant access
+    adminTab.classList.add('admin-disabled');
+    adminTab.style.opacity = '0.35';
+    adminTab.style.filter = 'grayscale(100%)';
+    adminTab.style.cursor = 'not-allowed';
+    adminTab.title = '🔒 Admin privileges required. Log in as Admin to access.';
   }
 }
 

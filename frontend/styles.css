@@ -799,21 +799,37 @@ input:focus, select:focus {
   flex-direction: column !important;
 }
 
-.app-viewport-wrapper.view-mode-mobile .header-top-row {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  width: 100% !important;
-}
-
-.app-viewport-wrapper.view-mode-mobile .logo-text {
-  font-size: 18px !important;
+.app-viewport-wrapper.view-mode-mobile .logo-image {
+  height: 36px !important;
 }
 
 .app-viewport-wrapper.view-mode-mobile .header-actions-right {
   display: flex !important;
   align-items: center !important;
-  gap: 6px !important;
+  gap: 4px !important;
+  flex-shrink: 0 !important;
+}
+
+.app-viewport-wrapper.view-mode-mobile .register-hero-btn {
+  padding: 5px 8px !important;
+  font-size: 10.5px !important;
+  border-radius: 12px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.nav-btn.admin-disabled {
+  opacity: 0.35 !important;
+  filter: grayscale(100%) !important;
+  cursor: not-allowed !important;
+}
+
+.app-viewport-wrapper.view-mode-mobile .header-top-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  gap: 4px !important;
 }
 
 .app-viewport-wrapper.view-mode-mobile .header-scroll-row {
