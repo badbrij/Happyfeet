@@ -1072,19 +1072,31 @@ async function fetchRankings() {
 
     if (res.ok) {
       // AI Insight Update
-      document.getElementById('ai-message-text').innerText = `"${data.aiInsight.message}"`;
-      document.getElementById('ai-nudge-text').innerText = `"${data.aiInsight.nudge}"`;
+      const aiMsg = document.getElementById('ai-message-text');
+      if (aiMsg) aiMsg.innerText = `"${data.aiInsight.message}"`;
+
+      const aiNudge = document.getElementById('ai-nudge-text');
+      if (aiNudge) aiNudge.innerText = `"${data.aiInsight.nudge}"`;
 
       // Update Premium City stats on dashboard
       const cityRank = data.rankings.city.rank;
       const cityTotal = data.rankings.city.total;
       const cityName = data.rankings.city.name;
       
-      document.getElementById('relative-rank-display').innerText = `#${cityRank}`;
-      document.getElementById('city-rank-headline').innerText = `${cityName} Rank #${cityRank}`;
-      document.getElementById('city-trend-display').innerText = `Up ${15 - (cityRank % 4)} positions today`;
-      document.getElementById('city-tier-display').innerText = `Top ${data.fitnessPercentile}`;
-      document.getElementById('city-total-walkers').innerText = `${cityTotal.toLocaleString()} users`;
+      const relRank = document.getElementById('relative-rank-display');
+      if (relRank) relRank.innerText = `#${cityRank}`;
+
+      const cityRankHead = document.getElementById('city-rank-headline');
+      if (cityRankHead) cityRankHead.innerText = `${cityName} Rank #${cityRank}`;
+
+      const cityTrend = document.getElementById('city-trend-display');
+      if (cityTrend) cityTrend.innerText = `Up ${15 - (cityRank % 4)} positions today`;
+
+      const cityTier = document.getElementById('city-tier-display');
+      if (cityTier) cityTier.innerText = `Top ${data.fitnessPercentile}`;
+
+      const cityWalkers = document.getElementById('city-total-walkers');
+      if (cityWalkers) cityWalkers.innerText = `${cityTotal.toLocaleString()} users`;
 
       const formatRank = (rank, total) => {
         let prefix = '';
@@ -1096,20 +1108,22 @@ async function fetchRankings() {
 
       // Quick Rank Summary
       const quickContainer = document.getElementById('quick-rank-summary');
-      quickContainer.innerHTML = `
-        <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom: 8px;">
-          <span>Category (${data.rankings.sameAgeAndGender.category}):</span>
-          ${formatRank(data.rankings.sameAgeAndGender.rank, data.rankings.sameAgeAndGender.total)}
-        </div>
-        <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom: 8px;">
-          <span>Locality (${data.rankings.locality.name}):</span>
-          ${formatRank(data.rankings.locality.rank, data.rankings.locality.total)}
-        </div>
-        <div style="display:flex; justify-content:space-between; font-size:14px;">
-          <span>City (${data.rankings.city.name}):</span>
-          ${formatRank(data.rankings.city.rank, data.rankings.city.total)}
-        </div>
-      `;
+      if (quickContainer) {
+        quickContainer.innerHTML = `
+          <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom: 8px;">
+            <span>Category (${data.rankings.sameAgeAndGender.category}):</span>
+            ${formatRank(data.rankings.sameAgeAndGender.rank, data.rankings.sameAgeAndGender.total)}
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom: 8px;">
+            <span>Locality (${data.rankings.locality.name}):</span>
+            ${formatRank(data.rankings.locality.rank, data.rankings.locality.total)}
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:14px;">
+            <span>City (${data.rankings.city.name}):</span>
+            ${formatRank(data.rankings.city.rank, data.rankings.city.total)}
+          </div>
+        `;
+      }
 
       const getMedalHTML = (rank) => {
         if (rank === 1) return '<span style="font-size: 20px; margin-right: 4px;">🥇</span>';
@@ -1127,7 +1141,8 @@ async function fetchRankings() {
 
       // Full Rankings Universe Grid
       const container = document.getElementById('rankings-container');
-      container.innerHTML = `
+      if (container) {
+        container.innerHTML = `
         <div class="rank-tile ${getTileClass(data.rankings.sameAgeAndGender.rank)}">
           <div class="rank-tile-title">Same Age + Same Gender (${data.rankings.sameAgeAndGender.category})</div>
           <div class="rank-number" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
@@ -1162,6 +1177,7 @@ async function fetchRankings() {
           <div class="rank-badge" style="background:rgba(245,158,11,0.2); color:#F59E0B;">Top Performing Tier</div>
         </div>
       `;
+      }
 
       // Render Achievements & Milestones (Cult.fit Inspired)
       if (currentUser) {
