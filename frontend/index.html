@@ -18,6 +18,7 @@
   <meta property="og:image" content="https://raw.githubusercontent.com/badbrij/Happyfeet/main/frontend/logo.png">
   <meta property="twitter:card" content="summary_large_image">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -1160,9 +1161,12 @@
               <i class="fa-brands fa-apple" style="font-size: 24px; color: #ff2d55;"></i>
               <span style="font-size: 13px; font-weight: 600; color: white;">Apple Health</span>
             </div>
-            <div class="provider-card" data-provider="GoogleFit" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s;">
+            <div class="provider-card active" data-provider="GoogleFit" style="background: rgba(66, 133, 244, 0.1); border: 1px solid rgba(66, 133, 244, 0.4); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s;">
               <i class="fa-brands fa-google" style="font-size: 20px; color: #4285f4;"></i>
-              <span style="font-size: 13px; font-weight: 600; color: white;">Google Fit</span>
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-size: 13px; font-weight: 700; color: white;">Google Fit</span>
+                <span style="font-size: 9px; color: #60A5FA; font-weight: 600;">OAuth 2.0 Web API</span>
+              </div>
             </div>
             <div class="provider-card" data-provider="Fitbit" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s;">
               <i class="fa-solid fa-heart" style="font-size: 20px; color: #00b0b9;"></i>
@@ -1172,6 +1176,25 @@
               <i class="fa-solid fa-mobile-screen" style="font-size: 20px; color: #ff8c00;"></i>
               <span style="font-size: 13px; font-weight: 600; color: white;">Samsung Health</span>
             </div>
+          </div>
+        </div>
+
+        <!-- Google Fit OAuth 2.0 Direct Web Integration Section -->
+        <div id="google-fit-oauth-card" style="background: rgba(66, 133, 244, 0.08); border: 1px solid rgba(66, 133, 244, 0.3); padding: 16px; border-radius: 12px; text-align: center; display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <i class="fa-brands fa-google" style="font-size: 24px; color: #4285f4;"></i>
+            <h3 style="font-size: 14px; font-weight: 800; color: white; margin: 0;">Google Fit REST API OAuth 2.0 Web Connector</h3>
+          </div>
+          <p style="font-size: 11px; color: rgba(255,255,255,0.8); margin: 0; line-height: 1.4;">
+            Authenticate with Google to auto-fetch your live step count directly from Google Fitness REST API (<code style="background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 4px; color: #60A5FA;">fitness.activity.read</code>) without manual entry.
+          </p>
+
+          <button type="button" id="btn-google-fit-oauth" class="submit-btn" style="width: 100%; margin-top: 4px; background: #4285f4; color: white; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; cursor: pointer;">
+            <i class="fa-brands fa-google" style="font-size: 16px;"></i> Sign in & Auto-Sync Google Fit Steps
+          </button>
+
+          <div id="google-fit-status-banner" style="display: none; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); padding: 10px; border-radius: 8px; font-size: 12px; color: #34D399; font-weight: 600;">
+            <i class="fa-solid fa-circle-check"></i> <span id="google-fit-status-msg">Connected to Google Fitness API</span>
           </div>
         </div>
 
