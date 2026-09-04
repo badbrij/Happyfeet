@@ -1093,8 +1093,73 @@ async function refreshAllData() {
   initDailyChallenge();
 }
 
+function renderActivityStats(steps = 0, goal = 10000, calories = 0, distanceMeters = 0, streakDays = 0) {
+  const percent = goal > 0 ? Math.round((steps / goal) * 100) : 0;
+  
+  const stepCountEl = document.getElementById('step-count-display');
+  const stepGoalEl = document.getElementById('step-goal-target');
+  const goalPercentEl = document.getElementById('goal-percent');
+  const caloriesEl = document.getElementById('calories-display');
+  const distanceEl = document.getElementById('distance-display');
+  const streakEl = document.getElementById('streak-display');
+  const userCoinsEl = document.getElementById('user-coins');
+  const marketCoinsEl = document.getElementById('marketplace-coins');
+  const dashCoinsEl = document.getElementById('dashboard-coins-display');
+  const badgesCountEl = document.getElementById('dashboard-badges-count');
+
+  if (stepCountEl) stepCountEl.innerText = steps.toLocaleString();
+  if (stepGoalEl) stepGoalEl.innerText = goal.toLocaleString();
+  if (goalPercentEl) goalPercentEl.innerText = `${percent}%`;
+  if (caloriesEl) caloriesEl.innerText = `${calories} kcal`;
+  if (distanceEl) distanceEl.innerText = `${(distanceMeters / 1000).toFixed(1)} km`;
+  if (streakEl) streakEl.innerText = `${streakDays}`;
+
+  const coinsVal = currentUser ? (currentUser.walkCoins || currentUser.walk_coins || 0) : 0;
+  if (userCoinsEl) userCoinsEl.innerText = coinsVal.toLocaleString();
+  if (marketCoinsEl) marketCoinsEl.innerText = coinsVal.toLocaleString();
+  if (dashCoinsEl) dashCoinsEl.innerText = coinsVal.toLocaleString();
+
+  const unlockedBadgesCount = (steps >= 10000 ? 1 : 0) + (streakDays >= 7 ? 1 : 0);
+  if (badgesCountEl) badgesCountEl.innerText = `${unlockedBadgesCount} Badge${unlockedBadgesCount === 1 ? '' : 's'}`;
+
+  // Circular Ring offset animation (Iron Man Arc Reactor Style)
+  const ringFill = document.getElementById('step-ring-fill');
+  if (ringFill) {
+    const circumference = 502.6; // 2 * pi * 80
+    let currentCirclePercent = percent;
+    if (percent > 0) {
+      currentCirclePercent = percent % 100;
+      if (currentCirclePercent === 0 && percent >= 100) {
+        currentCirclePercent = 100;
+      }
+    }
+    
+    const offset = circumference - (currentCirclePercent / 100) * circumference;
+    ringFill.style.strokeDashoffset = offset;
+
+    if (percent >= 200) {
+      ringFill.setAttribute('stroke', 'url(#neon-purple-grad)');
+      ringFill.style.filter = 'drop-shadow(0 0 16px rgba(217, 70, 239, 0.9)) drop-shadow(0 0 4px rgba(217, 70, 239, 0.5))';
+    } else if (percent >= 100) {
+      ringFill.setAttribute('stroke', 'url(#neon-blue-grad)');
+      ringFill.style.filter = 'drop-shadow(0 0 16px rgba(6, 182, 212, 0.9)) drop-shadow(0 0 4px rgba(6, 182, 212, 0.5))';
+    } else {
+      ringFill.setAttribute('stroke', 'url(#gold-grad)');
+      const glow = Math.max(3, (percent / 100) * 12);
+      ringFill.style.filter = `drop-shadow(0 0 ${glow}px rgba(245, 158, 11, 0.8)) drop-shadow(0 0 3px rgba(239, 68, 68, 0.4))`;
+    }
+  }
+
+  updateChallengeProgress(steps);
+}
+
 // Fetch Today's Steps
 async function fetchTodayActivity() {
+  if (!currentUser) {
+    renderActivityStats(0, 10000, 0, 0, 0);
+    return;
+  }
+
   try {
     const res = await fetch(`${API_BASE}/steps/today`, {
       headers: { Authorization: `Bearer ${authToken}` },
@@ -1104,58 +1169,26 @@ async function fetchTodayActivity() {
     if (res.ok) {
       const steps = data.summary.totalSteps;
       const goal = data.dailyGoal;
-      const percent = data.completionPercentage;
-
-      document.getElementById('step-count-display').innerText = steps.toLocaleString();
-      document.getElementById('step-goal-target').innerText = goal.toLocaleString();
-      document.getElementById('goal-percent').innerText = `${percent}%`;
-      document.getElementById('calories-display').innerText = `${data.summary.totalCalories} kcal`;
-      document.getElementById('distance-display').innerText = `${(data.summary.totalDistanceMeters / 1000).toFixed(1)} km`;
-      document.getElementById('streak-display').innerText = `${data.streakDays}`;
-      const userCoinsVal = currentUser ? (currentUser.walkCoins || 0) : 0;
-      document.getElementById('user-coins').innerText = userCoinsVal.toLocaleString();
-      document.getElementById('marketplace-coins').innerText = userCoinsVal.toLocaleString();
-      document.getElementById('dashboard-coins-display').innerText = userCoinsVal.toLocaleString();
-
-      // Circular Ring offset animation (Iron Man Arc Reactor Style)
-      const ringFill = document.getElementById('step-ring-fill');
-      if (ringFill) {
-        const circumference = 502.6; // 2 * pi * 80
-        
-        // Calculate the percentage of the current 100% loop
-        let currentCirclePercent = percent;
-        if (percent > 0) {
-          currentCirclePercent = percent % 100;
-          if (currentCirclePercent === 0 && percent >= 100) {
-            currentCirclePercent = 100;
-          }
-        }
-        
-        const offset = circumference - (currentCirclePercent / 100) * circumference;
-        ringFill.style.strokeDashoffset = offset;
-
-        // Apply Iron Man style color shifts and glowing drop-shadows
-        if (percent >= 200) {
-          // Supercharged Reactor Purple
-          ringFill.setAttribute('stroke', 'url(#neon-purple-grad)');
-          ringFill.style.filter = 'drop-shadow(0 0 16px rgba(217, 70, 239, 0.9)) drop-shadow(0 0 4px rgba(217, 70, 239, 0.5))';
-        } else if (percent >= 100) {
-          // Core Active Bright Neon Blue
-          ringFill.setAttribute('stroke', 'url(#neon-blue-grad)');
-          ringFill.style.filter = 'drop-shadow(0 0 16px rgba(6, 182, 212, 0.9)) drop-shadow(0 0 4px rgba(6, 182, 212, 0.5))';
-        } else {
-          // Charging/Warm-up Golden Red
-          ringFill.setAttribute('stroke', 'url(#gold-grad)');
-          const glow = Math.max(3, (percent / 100) * 12);
-          ringFill.style.filter = `drop-shadow(0 0 ${glow}px rgba(245, 158, 11, 0.8)) drop-shadow(0 0 3px rgba(239, 68, 68, 0.4))`;
-        }
-      }
-
-      // Update Daily Challenge progress if active
-      updateChallengeProgress(steps);
+      const calories = data.summary.totalCalories;
+      const distanceMeters = data.summary.totalDistanceMeters;
+      const streakDays = data.streakDays;
+      renderActivityStats(steps, goal, calories, distanceMeters, streakDays);
+    } else {
+      const userGoal = currentUser.healthProfile?.dailyStepGoal || currentUser.dailyStepGoal || 10000;
+      const userSteps = currentUser.todaySteps || 0;
+      const calories = Math.round(userSteps * 0.04);
+      const distanceMeters = Math.round(userSteps * 0.7);
+      const streak = currentUser.currentStreak || 0;
+      renderActivityStats(userSteps, userGoal, calories, distanceMeters, streak);
     }
   } catch (err) {
-    console.error(err);
+    console.warn('Backend API unreachable for today activity, rendering local user stats:', err);
+    const userGoal = currentUser.healthProfile?.dailyStepGoal || currentUser.dailyStepGoal || 10000;
+    const userSteps = currentUser.todaySteps || 0;
+    const calories = Math.round(userSteps * 0.04);
+    const distanceMeters = Math.round(userSteps * 0.7);
+    const streak = currentUser.currentStreak || 0;
+    renderActivityStats(userSteps, userGoal, calories, distanceMeters, streak);
   }
 }
 
@@ -1318,7 +1351,22 @@ async function fetchRankings() {
       }
     }
   } catch (err) {
-    console.error(err);
+    console.warn('Backend API unreachable for rankings, rendering local defaults:', err);
+    const userCity = currentUser?.location?.city || 'City';
+    const relRank = document.getElementById('relative-rank-display');
+    if (relRank) relRank.innerText = '#--';
+
+    const cityRankHead = document.getElementById('city-rank-headline');
+    if (cityRankHead) cityRankHead.innerText = `${userCity} Rank #--`;
+
+    const cityTrend = document.getElementById('city-trend-display');
+    if (cityTrend) cityTrend.innerText = 'Sync steps to record rank';
+
+    const cityTier = document.getElementById('city-tier-display');
+    if (cityTier) cityTier.innerText = 'Top 100% of walkers';
+
+    const cityWalkers = document.getElementById('city-total-walkers');
+    if (cityWalkers) cityWalkers.innerText = '-- users';
   }
 }
 

@@ -158,7 +158,7 @@
         <div class="header-scroll-row">
           <!-- WalkCoins Badge -->
           <div class="coins-badge" id="header-coins-badge" style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-            <i class="fa-solid fa-coins"></i> <span><strong id="user-coins">1,450</strong> WalkCoins</span>
+            <i class="fa-solid fa-coins"></i> <span><strong id="user-coins">0</strong> WalkCoins</span>
             <i class="fa-solid fa-circle-question" id="show-coins-guide-btn" style="cursor: pointer; font-size: 14px; color: var(--accent-cyan);" title="How to earn WalkCoins?"></i>
           </div>
 
@@ -226,19 +226,19 @@
                     <circle class="step-progress-circle-fill" id="step-ring-fill" cx="90" cy="90" r="80" />
                   </svg>
                   <div class="step-circle-inner-text">
-                    <div class="step-circle-val" id="step-count-display">14,521</div>
+                    <div class="step-circle-val" id="step-count-display">0</div>
                     <div class="step-circle-label">Steps</div>
                   </div>
                 </div>
 
                 <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">
-                  Daily Goal: <strong id="step-goal-target" style="color: white;">10,000</strong> steps (<span id="goal-percent" style="color: var(--primary-emerald); font-weight: 700;">145%</span> completed)
+                  Daily Goal: <strong id="step-goal-target" style="color: white;">10,000</strong> steps (<span id="goal-percent" style="color: var(--primary-emerald); font-weight: 700;">0%</span> completed)
                 </div>
 
                 <div style="display: flex; gap: 24px; align-items: center; background: rgba(255,255,255,0.03); padding: 8px 20px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 16px;">
-                  <span style="font-size: 13px; font-weight: 700; color: #EF4444;"><i class="fa-solid fa-fire"></i> <span id="streak-display">21</span> Day Streak</span>
+                  <span style="font-size: 13px; font-weight: 700; color: #EF4444;"><i class="fa-solid fa-fire"></i> <span id="streak-display">0</span> Day Streak</span>
                   <span style="width: 1px; height: 12px; background: rgba(255,255,255,0.15);"></span>
-                  <span style="font-size: 13px; font-weight: 700; color: #F59E0B;"><i class="fa-solid fa-trophy"></i> Rank <span id="relative-rank-display">#48</span></span>
+                  <span style="font-size: 13px; font-weight: 700; color: #F59E0B;"><i class="fa-solid fa-trophy"></i> Rank <span id="relative-rank-display">#--</span></span>
                 </div>
 
                 <div style="display: flex; gap: 10px; justify-content: center; width: 100%;">
@@ -259,7 +259,7 @@
                   </div>
                   <div>
                     <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Calories <i class="fa-solid fa-chevron-right" style="font-size: 9px; opacity: 0.6;"></i></div>
-                    <div style="font-size: 16px; font-weight: 800; color: white;" id="calories-display">581 kcal</div>
+                    <div style="font-size: 16px; font-weight: 800; color: white;" id="calories-display">0 kcal</div>
                   </div>
                 </div>
                 
@@ -269,7 +269,7 @@
                   </div>
                   <div>
                     <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Distance <i class="fa-solid fa-chevron-right" style="font-size: 9px; opacity: 0.6;"></i></div>
-                    <div style="font-size: 16px; font-weight: 800; color: white;" id="distance-display">12.4 km</div>
+                    <div style="font-size: 16px; font-weight: 800; color: white;" id="distance-display">0.0 km</div>
                   </div>
                 </div>
 
@@ -279,7 +279,7 @@
                   </div>
                   <div>
                     <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">WalkCoins <i class="fa-solid fa-chevron-right" style="font-size: 9px; opacity: 0.6;"></i></div>
-                    <div style="font-size: 16px; font-weight: 800; color: white;"><span id="dashboard-coins-display">1,450</span> Coins</div>
+                    <div style="font-size: 16px; font-weight: 800; color: white;"><span id="dashboard-coins-display">0</span> Coins</div>
                   </div>
                 </div>
 
@@ -289,7 +289,7 @@
                   </div>
                   <div>
                     <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Achievements <i class="fa-solid fa-chevron-right" style="font-size: 9px; opacity: 0.6;"></i></div>
-                    <div style="font-size: 16px; font-weight: 800; color: white;" id="dashboard-badges-count">2 Badges</div>
+                    <div style="font-size: 16px; font-weight: 800; color: white;" id="dashboard-badges-count">0 Badges</div>
                   </div>
                 </div>
               </div>
@@ -306,7 +306,7 @@
                 </div>
                 
                 <p style="font-size: 13px; color: var(--text-main); margin-bottom: 8px; font-weight: 600;" id="challenge-text">
-                  Walk 2,000 more steps today.
+                  Walk 2,000 steps today.
                 </p>
                 <div style="font-size: 12px; color: var(--accent-amber); font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 4px;">
                   <i class="fa-solid fa-coins"></i> Reward: 50 WalkCoins
@@ -340,20 +340,20 @@
                 </h3>
                 
                 <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 12px; text-align: center; margin-bottom: 16px;">
-                  <div style="font-size: 24px; font-weight: 800; color: white; margin-bottom: 4px;" id="city-rank-headline">Hyderabad Rank #48</div>
+                  <div style="font-size: 24px; font-weight: 800; color: white; margin-bottom: 4px;" id="city-rank-headline">City Rank #--</div>
                   <div style="font-size: 13px; color: #10B981; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                    <i class="fa-solid fa-arrow-trend-up"></i> <span id="city-trend-display">Up 12 positions today</span>
+                    <i class="fa-solid fa-arrow-trend-up"></i> <span id="city-trend-display">Sync steps to view rank</span>
                   </div>
                 </div>
 
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                   <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 8px 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
                     <span style="color: var(--text-muted);">Performance Tier:</span>
-                    <strong style="color: #F59E0B;" id="city-tier-display">Top 5% of walkers</strong>
+                    <strong style="color: #F59E0B;" id="city-tier-display">Top 100% of walkers</strong>
                   </div>
                   <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 8px 12px; background: rgba(255,255,255,0.02); border-radius: 8px;">
                     <span style="color: var(--text-muted);">Active Walks in City:</span>
-                    <strong style="color: white;" id="city-total-walkers">12,420 users</strong>
+                    <strong style="color: white;" id="city-total-walkers">-- users</strong>
                   </div>
                 </div>
               </div>
