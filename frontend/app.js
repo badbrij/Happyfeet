@@ -3779,6 +3779,10 @@ function initViewportSwitcher() {
   const switchMobileBtn = document.getElementById('switch-mobile-btn');
   const viewportWrapper = document.getElementById('viewport-wrapper');
   const switcherBar = document.querySelector('.viewport-switcher-bar');
+  const header = document.getElementById('app-header');
+  const main = document.getElementById('app-main');
+  const webContainer = document.getElementById('web-container');
+  const mobileScreen = document.getElementById('mobile-screen');
 
   const isActualMobileDevice = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
@@ -3788,24 +3792,44 @@ function initViewportSwitcher() {
       viewportWrapper.classList.remove('view-mode-web');
       viewportWrapper.classList.add('view-mode-mobile');
     }
+    if (header && main && webContainer) {
+      if (header.parentElement !== webContainer) webContainer.appendChild(header);
+      if (main.parentElement !== webContainer) webContainer.appendChild(main);
+    }
     return;
+  }
+
+  function setViewportMode(mode) {
+    if (!viewportWrapper) return;
+    if (mode === 'mobile') {
+      if (switchMobileBtn) switchMobileBtn.classList.add('active');
+      if (switchWebBtn) switchWebBtn.classList.remove('active');
+      viewportWrapper.classList.remove('view-mode-web');
+      viewportWrapper.classList.add('view-mode-mobile');
+      if (header && main && mobileScreen) {
+        mobileScreen.appendChild(header);
+        mobileScreen.appendChild(main);
+      }
+    } else {
+      if (switchWebBtn) switchWebBtn.classList.add('active');
+      if (switchMobileBtn) switchMobileBtn.classList.remove('active');
+      viewportWrapper.classList.remove('view-mode-mobile');
+      viewportWrapper.classList.add('view-mode-web');
+      if (header && main && webContainer) {
+        webContainer.appendChild(header);
+        webContainer.appendChild(main);
+      }
+    }
   }
 
   // Desktop Viewport Switcher Controls
   if (switchWebBtn && switchMobileBtn && viewportWrapper) {
-    switchWebBtn.onclick = () => {
-      switchWebBtn.classList.add('active');
-      switchMobileBtn.classList.remove('active');
-      viewportWrapper.classList.remove('view-mode-mobile');
-      viewportWrapper.classList.add('view-mode-web');
-    };
+    switchWebBtn.onclick = () => setViewportMode('web');
+    switchMobileBtn.onclick = () => setViewportMode('mobile');
 
-    switchMobileBtn.onclick = () => {
-      switchMobileBtn.classList.add('active');
-      switchWebBtn.classList.remove('active');
-      viewportWrapper.classList.remove('view-mode-web');
-      viewportWrapper.classList.add('view-mode-mobile');
-    };
+    if (viewportWrapper.classList.contains('view-mode-mobile')) {
+      setViewportMode('mobile');
+    }
   }
 }
 
