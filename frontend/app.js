@@ -2592,16 +2592,22 @@ function initHealthSyncSetup() {
     });
   }
 
-  let selectedProvider = localStorage.getItem('happyfeet_sync_provider') || 'Apple Health';
+  let selectedProvider = 'GoogleFit';
   let selectedSteps = 0;
 
   providerCards.forEach(card => {
     card.addEventListener('click', () => {
+      if (card.classList.contains('disabled-tile')) {
+        const provName = card.getAttribute('data-provider') === 'AppleHealthKit' ? 'Apple Health (HealthKit)' : card.getAttribute('data-provider');
+        showToast(`📱 ${provName} will sync natively on the iOS / Android Mobile App.`);
+        return;
+      }
+
       providerCards.forEach(c => c.classList.remove('active'));
       card.classList.add('active');
       selectedProvider = card.getAttribute('data-provider');
 
-      // Trigger simulated connection loading
+      // Trigger connection loading
       document.getElementById('sync-conn-status').style.display = 'block';
       document.getElementById('conn-loading').style.display = 'block';
       document.getElementById('conn-loading-text').innerText = `Establishing encrypted synchronization tunnel with ${selectedProvider}...`;

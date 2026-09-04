@@ -1157,24 +1157,40 @@
         <div id="sync-provider-select">
           <label style="font-weight: 700; font-size: 13px; color: white; display: block; margin-bottom: 12px;">Choose your Health Platform</label>
           <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-            <div class="provider-card" data-provider="AppleHealthKit" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s;">
-              <i class="fa-brands fa-apple" style="font-size: 24px; color: #ff2d55;"></i>
-              <span style="font-size: 13px; font-weight: 600; color: white;">Apple Health</span>
-            </div>
-            <div class="provider-card active" data-provider="GoogleFit" style="background: rgba(66, 133, 244, 0.1); border: 1px solid rgba(66, 133, 244, 0.4); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s;">
-              <i class="fa-brands fa-google" style="font-size: 20px; color: #4285f4;"></i>
+            <!-- Active Google Fit Web Provider Tile -->
+            <div class="provider-card active" data-provider="GoogleFit" style="background: rgba(66, 133, 244, 0.12); border: 1.5px solid rgba(66, 133, 244, 0.6); padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s; box-shadow: 0 0 12px rgba(66, 133, 244, 0.2);">
+              <i class="fa-brands fa-google" style="font-size: 22px; color: #4285f4;"></i>
               <div style="display: flex; flex-direction: column;">
-                <span style="font-size: 13px; font-weight: 700; color: white;">Google Fit</span>
-                <span style="font-size: 9px; color: #60A5FA; font-weight: 600;">OAuth 2.0 Web API</span>
+                <span style="font-size: 13px; font-weight: 800; color: white;">Google Fit</span>
+                <span style="font-size: 9px; color: #60A5FA; font-weight: 700;">🟢 Active (Web REST API)</span>
               </div>
             </div>
-            <div class="provider-card" data-provider="Fitbit" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s;">
-              <i class="fa-solid fa-heart" style="font-size: 20px; color: #00b0b9;"></i>
-              <span style="font-size: 13px; font-weight: 600; color: white;">Fitbit Tracker</span>
+            
+            <!-- Disabled Apple Health Tile -->
+            <div class="provider-card disabled-tile" data-provider="AppleHealthKit" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px; opacity: 0.45; filter: grayscale(70%); cursor: not-allowed; pointer-events: none; display: flex; align-items: center; gap: 10px;">
+              <i class="fa-brands fa-apple" style="font-size: 24px; color: #ff2d55;"></i>
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-size: 13px; font-weight: 600; color: white;">Apple Health</span>
+                <span style="font-size: 9px; color: var(--text-muted); font-weight: 600;">📱 iOS Native App Only</span>
+              </div>
             </div>
-            <div class="provider-card" data-provider="SamsungHealth" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s;">
+
+            <!-- Disabled Fitbit Tile -->
+            <div class="provider-card disabled-tile" data-provider="Fitbit" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px; opacity: 0.45; filter: grayscale(70%); cursor: not-allowed; pointer-events: none; display: flex; align-items: center; gap: 10px;">
+              <i class="fa-solid fa-heart" style="font-size: 20px; color: #00b0b9;"></i>
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-size: 13px; font-weight: 600; color: white;">Fitbit Tracker</span>
+                <span style="font-size: 9px; color: var(--text-muted); font-weight: 600;">🔒 Coming Soon</span>
+              </div>
+            </div>
+
+            <!-- Disabled Samsung Health Tile -->
+            <div class="provider-card disabled-tile" data-provider="SamsungHealth" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px; opacity: 0.45; filter: grayscale(70%); cursor: not-allowed; pointer-events: none; display: flex; align-items: center; gap: 10px;">
               <i class="fa-solid fa-mobile-screen" style="font-size: 20px; color: #ff8c00;"></i>
-              <span style="font-size: 13px; font-weight: 600; color: white;">Samsung Health</span>
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-size: 13px; font-weight: 600; color: white;">Samsung Health</span>
+                <span style="font-size: 9px; color: var(--text-muted); font-weight: 600;">🔒 Coming Soon</span>
+              </div>
             </div>
           </div>
         </div>
