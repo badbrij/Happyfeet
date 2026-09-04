@@ -1665,18 +1665,22 @@ function renderFilteredRewards() {
   }
 
   container.innerHTML = filtered.map((r) => `
-    <div class="glass-card reward-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+    <div class="reward-card">
       <div>
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-          <div class="reward-brand">${r.brand}</div>
-          <span style="font-size: 10px; background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 10px; color: var(--accent-cyan); border: 1px solid rgba(255,255,255,0.1);">${r.category || 'Voucher'}</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span class="reward-brand-badge">${r.brand}</span>
+          <span class="reward-category-badge">${r.category || 'Voucher'}</span>
         </div>
-        <div class="reward-title">${r.title}</div>
-        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">${r.description}</p>
+        <h3 class="reward-title">${r.title}</h3>
+        <p class="reward-description">${r.description}</p>
       </div>
       <div>
-        <div class="reward-cost"><i class="fa-solid fa-coins"></i> ${r.costWalkCoins} WalkCoins</div>
-        <button class="redeem-btn" onclick="redeemReward('${r.id}')">Redeem Voucher</button>
+        <div class="reward-cost-badge">
+          <i class="fa-solid fa-coins"></i> <span>${r.costWalkCoins} WalkCoins</span>
+        </div>
+        <button class="redeem-btn" onclick="redeemReward('${r.id}')">
+          <i class="fa-solid fa-gift"></i> Redeem Voucher
+        </button>
       </div>
     </div>
   `).join('');
