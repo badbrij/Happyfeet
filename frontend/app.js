@@ -3774,3 +3774,38 @@ function initAdminExportHandlers() {
   }
 }
 
+function initViewportSwitcher() {
+  const switchWebBtn = document.getElementById('switch-web-btn');
+  const switchMobileBtn = document.getElementById('switch-mobile-btn');
+  const viewportWrapper = document.getElementById('viewport-wrapper');
+  const switcherBar = document.querySelector('.viewport-switcher-bar');
+
+  const isActualMobileDevice = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  if (isActualMobileDevice) {
+    if (switcherBar) switcherBar.style.display = 'none';
+    if (viewportWrapper) {
+      viewportWrapper.classList.remove('view-mode-web');
+      viewportWrapper.classList.add('view-mode-mobile');
+    }
+    return;
+  }
+
+  // Desktop Viewport Switcher Controls
+  if (switchWebBtn && switchMobileBtn && viewportWrapper) {
+    switchWebBtn.onclick = () => {
+      switchWebBtn.classList.add('active');
+      switchMobileBtn.classList.remove('active');
+      viewportWrapper.classList.remove('view-mode-mobile');
+      viewportWrapper.classList.add('view-mode-web');
+    };
+
+    switchMobileBtn.onclick = () => {
+      switchMobileBtn.classList.add('active');
+      switchWebBtn.classList.remove('active');
+      viewportWrapper.classList.remove('view-mode-web');
+      viewportWrapper.classList.add('view-mode-mobile');
+    };
+  }
+}
+

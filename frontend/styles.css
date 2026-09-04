@@ -1517,4 +1517,38 @@ input:focus, select:focus {
   }
 }
 
+/* Automatic Mobile Device Native Layout Rules (< 768px) */
+@media (max-width: 768px) {
+  .viewport-switcher-bar,
+  .mobile-phone-frame {
+    display: none !important;
+  }
+
+  .app-viewport-wrapper {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .web-layout-container {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  #app-header {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+    background: rgba(15, 23, 42, 0.95) !important;
+    backdrop-filter: blur(12px) !important;
+    padding: 10px 14px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+  }
+
+  #app-main {
+    padding: 14px 12px !important;
+  }
+}
+
 
