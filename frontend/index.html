@@ -713,13 +713,13 @@
         <form id="quick-login-form">
           <div class="form-group">
             <label>Mobile Number</label>
-            <input type="text" id="ql-phone" placeholder="+919876543210" required>
+            <input type="text" id="ql-phone" placeholder="e.g. +91 98123 45678" required>
           </div>
           <button type="submit" class="submit-btn" style="width: 100%;"><i class="fa-solid fa-paper-plane"></i> Send Verification Code</button>
         </form>
 
         <form id="quick-login-otp-form" style="display: none; flex-direction: column; gap: 20px; align-items: center; text-align: center;">
-          <p style="color: var(--text-muted); font-size: 13px;">We sent a 6-digit verification code to <span id="ql-otp-phone-display" style="color: var(--accent-cyan); font-weight: 600;">+91 9876543210</span></p>
+          <p style="color: var(--text-muted); font-size: 13px;">We sent a 6-digit verification code to <span id="ql-otp-phone-display" style="color: var(--accent-cyan); font-weight: 600;">+91 Mobile</span></p>
           
           <div class="otp-inputs-container" style="display: flex; gap: 8px; justify-content: center; margin: 12px 0;">
             <input type="text" maxlength="1" class="otp-input-box" id="ql-otp-1" style="width: 42px; height: 46px; text-align: center; font-size: 20px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; outline: none; transition: border 0.2s;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
@@ -1375,17 +1375,17 @@
           👤
         </div>
 
-        <h2 id="share-card-walker-name" style="font-size: 20px; color: white; margin-bottom: 4px; font-weight: 800;">Brijesh Sharma</h2>
-        <p id="share-card-badge-title" style="font-size: 13px; color: var(--accent-amber); font-weight: 700; margin-bottom: 16px;">🔥 21 Day Walking Streak Master</p>
+        <h2 id="share-card-walker-name" style="font-size: 20px; color: white; margin-bottom: 4px; font-weight: 800;">Walker</h2>
+        <p id="share-card-badge-title" style="font-size: 13px; color: var(--accent-amber); font-weight: 700; margin-bottom: 16px;">🔥 0 Day Walking Streak</p>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(0,0,0,0.35); padding: 14px; border-radius: 12px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.06);">
           <div>
             <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Lifetime Steps</div>
-            <div id="share-card-steps" style="font-size: 18px; font-weight: 800; color: white;">624,500</div>
+            <div id="share-card-steps" style="font-size: 18px; font-weight: 800; color: white;">0</div>
           </div>
           <div>
             <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">WalkCoins Earned</div>
-            <div id="share-card-coins" style="font-size: 18px; font-weight: 800; color: var(--accent-cyan);">1,050</div>
+            <div id="share-card-coins" style="font-size: 18px; font-weight: 800; color: var(--accent-cyan);">0</div>
           </div>
         </div>
 

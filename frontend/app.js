@@ -603,10 +603,18 @@ async function handleQuickLogin(e) {
     console.warn('Backend API unreachable, using client-side simulated OTP fallback:', err);
   }
 
-  // Show simulated OTP banner
-  showToast(`💬 Simulated SMS: Your verification code is ${simulatedOtp}`, 15000);
-  document.getElementById('ql-otp-sim-code').innerText = simulatedOtp;
-  document.getElementById('ql-otp-sim-hint').style.display = 'block';
+  const isAdminPhone = normalizedPhone.includes('9876543210') || normalizedPhone.includes('brijesh');
+
+  if (isAdminPhone) {
+    // Security Guard: Hide on-screen simulated OTP for Admin Accounts
+    document.getElementById('ql-otp-sim-hint').style.display = 'none';
+    showToast('📨 Verification SMS dispatched to Admin handset.');
+  } else {
+    // Show simulated OTP banner for regular soft launch signups
+    showToast(`💬 Verification Code: ${simulatedOtp}`, 15000);
+    document.getElementById('ql-otp-sim-code').innerText = simulatedOtp;
+    document.getElementById('ql-otp-sim-hint').style.display = 'block';
+  }
   
   // Transition forms inside modal
   document.getElementById('quick-login-form').style.display = 'none';
@@ -651,7 +659,10 @@ async function handleQuickLoginOtpSubmit(e) {
     }
   } catch (err) {
     console.warn('Backend API unreachable, verifying OTP locally:', err);
-    if (otp === savedOtp || otp === '123456') {
+    const isAdminPhone = quickLoginPhone.includes('9876543210') || quickLoginPhone.includes('brijesh');
+    const isValidOtp = isAdminPhone ? (otp === savedOtp && savedOtp !== '123456') : (otp === savedOtp || otp === '123456');
+
+    if (isValidOtp) {
       isVerified = true;
       const localUsers = JSON.parse(localStorage.getItem('happyfeet_local_users') || '[]');
       existingUser = localUsers.find(u => u.phone === quickLoginPhone) || null;
@@ -3608,9 +3619,9 @@ function initShareCardModal() {
 
   const getFormattedWAText = () => {
     const walkerName = currentUser?.alias || currentUser?.name || 'Walker';
-    const streak = currentUser?.currentStreak || currentUser?.current_streak || 21;
-    const steps = (currentUser?.lifetimeSteps || currentUser?.lifetime_steps || 624500).toLocaleString();
-    const coins = (currentUser?.walkCoins || currentUser?.walk_coins || 1050).toLocaleString();
+    const streak = currentUser?.currentStreak ?? currentUser?.current_streak ?? 0;
+    const steps = (currentUser?.lifetimeSteps ?? currentUser?.lifetime_steps ?? 0).toLocaleString();
+    const coins = (currentUser?.walkCoins ?? currentUser?.walk_coins ?? 0).toLocaleString();
     const shareUrl = window.location.origin.includes('localhost')
       ? 'https://badakadam-fitness.vercel.app'
       : window.location.origin;
@@ -3628,11 +3639,14 @@ ${shareUrl}?invite=BADASPEED`;
 
   if (openBtn && modal) {
     openBtn.onclick = () => {
-      const streak = currentUser?.currentStreak || currentUser?.current_streak || 21;
+      const streak = currentUser?.currentStreak ?? currentUser?.current_streak ?? 0;
+      const steps = currentUser?.lifetimeSteps ?? currentUser?.lifetime_steps ?? 0;
+      const coins = currentUser?.walkCoins ?? currentUser?.walk_coins ?? 0;
+
       if (currentUser) {
-        document.getElementById('share-card-walker-name').innerText = currentUser.alias || currentUser.name;
-        document.getElementById('share-card-steps').innerText = (currentUser.lifetimeSteps || currentUser.lifetime_steps || 624500).toLocaleString();
-        document.getElementById('share-card-coins').innerText = (currentUser.walkCoins || currentUser.walk_coins || 1050).toLocaleString();
+        document.getElementById('share-card-walker-name').innerText = currentUser.alias || currentUser.name || 'Walker';
+        document.getElementById('share-card-steps').innerText = steps.toLocaleString();
+        document.getElementById('share-card-coins').innerText = coins.toLocaleString();
         document.getElementById('share-card-badge-title').innerText = `🔥 ${streak} Day Walking Streak Master`;
 
         // Render user's actual profile photo / avatar
