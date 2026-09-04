@@ -2665,6 +2665,45 @@ function initHealthSyncSetup() {
     });
   }
 
+  const commitAndRedirectToDashboard = (stepsCount) => {
+    if (currentUser) {
+      currentUser.todaySteps = stepsCount;
+      currentUser.lifetimeSteps = (currentUser.lifetimeSteps || 0) + stepsCount;
+      
+      const userGoal = currentUser.healthProfile?.dailyStepGoal || currentUser.dailyStepGoal || 10000;
+      if (stepsCount >= userGoal && !currentUser.goalReachedToday) {
+        currentUser.goalReachedToday = true;
+        currentUser.walkCoins = (currentUser.walkCoins || 0) + 50;
+        currentUser.currentStreak = (currentUser.currentStreak || 0) + 1;
+      }
+
+      localStorage.setItem('happyfeet_current_user', JSON.stringify(currentUser));
+
+      const localUsers = JSON.parse(localStorage.getItem('happyfeet_local_users') || '[]');
+      const idx = localUsers.findIndex(u => u.id === currentUser.id || u.phone === currentUser.phone);
+      if (idx !== -1) {
+        localUsers[idx] = currentUser;
+        localStorage.setItem('happyfeet_local_users', JSON.stringify(localUsers));
+      }
+    }
+
+    const goal = currentUser?.healthProfile?.dailyStepGoal || currentUser?.dailyStepGoal || 10000;
+    const calories = Math.round(stepsCount * 0.04);
+    const distanceMeters = Math.round(stepsCount * 0.7);
+    const streak = currentUser?.currentStreak || 0;
+
+    renderActivityStats(stepsCount, goal, calories, distanceMeters, streak);
+
+    // Close Modal & Redirect to Dashboard view
+    const modal = document.getElementById('health-sync-modal');
+    if (modal) modal.classList.remove('active');
+
+    const dashboardTab = document.querySelector('[data-tab="dashboard-view"]');
+    if (dashboardTab) dashboardTab.click();
+
+    showToast(`✅ Synced ${stepsCount.toLocaleString()} steps via Google Fit! Dashboard updated.`);
+  };
+
   const fetchGoogleFitnessSteps = async (accessToken, userEmail = '') => {
     const now = new Date();
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -2707,23 +2746,16 @@ function initHealthSyncSetup() {
         statusBanner.style.display = 'block';
       }
 
-      if (customStepInput) customStepInput.value = fetchedSteps;
-      selectedSteps = fetchedSteps;
-      if (submitBtn) submitBtn.removeAttribute('disabled');
-      
-      showToast(`✅ Connected Google Fit API! Auto-fetched ${fetchedSteps.toLocaleString()} steps.`);
-      
-      setTimeout(() => {
-        if (submitBtn) submitBtn.click();
-        if (googleFitOAuthBtn) {
-          googleFitOAuthBtn.removeAttribute('disabled');
-          googleFitOAuthBtn.innerHTML = '<i class="fa-brands fa-google"></i> Google OAuth Sign-In';
-        }
-        if (googleFitDirectBtn) {
-          googleFitDirectBtn.removeAttribute('disabled');
-          googleFitDirectBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> 1-Click Direct Fetch';
-        }
-      }, 800);
+      commitAndRedirectToDashboard(fetchedSteps);
+
+      if (googleFitOAuthBtn) {
+        googleFitOAuthBtn.removeAttribute('disabled');
+        googleFitOAuthBtn.innerHTML = '<i class="fa-brands fa-google"></i> Google OAuth Sign-In';
+      }
+      if (googleFitDirectBtn) {
+        googleFitDirectBtn.removeAttribute('disabled');
+        googleFitDirectBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> 1-Click Direct Fetch';
+      }
 
     } catch (err) {
       console.warn('Google Fitness REST API Query Error:', err);
@@ -2736,23 +2768,16 @@ function initHealthSyncSetup() {
         statusBanner.style.display = 'block';
       }
 
-      if (customStepInput) customStepInput.value = fetchedSteps;
-      selectedSteps = fetchedSteps;
-      if (submitBtn) submitBtn.removeAttribute('disabled');
-      
-      showToast(`✅ Connected Google Fit API! Auto-fetched ${fetchedSteps.toLocaleString()} steps.`);
-      
-      setTimeout(() => {
-        if (submitBtn) submitBtn.click();
-        if (googleFitOAuthBtn) {
-          googleFitOAuthBtn.removeAttribute('disabled');
-          googleFitOAuthBtn.innerHTML = '<i class="fa-brands fa-google"></i> Google OAuth Sign-In';
-        }
-        if (googleFitDirectBtn) {
-          googleFitDirectBtn.removeAttribute('disabled');
-          googleFitDirectBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> 1-Click Direct Fetch';
-        }
-      }, 800);
+      commitAndRedirectToDashboard(fetchedSteps);
+
+      if (googleFitOAuthBtn) {
+        googleFitOAuthBtn.removeAttribute('disabled');
+        googleFitOAuthBtn.innerHTML = '<i class="fa-brands fa-google"></i> Google OAuth Sign-In';
+      }
+      if (googleFitDirectBtn) {
+        googleFitDirectBtn.removeAttribute('disabled');
+        googleFitDirectBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> 1-Click Direct Fetch';
+      }
     }
   };
 

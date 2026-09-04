@@ -1237,27 +1237,6 @@
             <a href="#" id="change-sync-provider-btn" style="color: var(--accent-cyan); font-size: 11px; font-weight: 600; text-decoration: underline; display: inline-block;">Change Health Source</a>
           </div>
         </div>
-
-        <!-- Steps Simulation Control (Shown after connecting) -->
-        <div id="sync-sim-controls" style="display: none; flex-direction: column; gap: 12px;">
-          <label style="font-weight: 700; font-size: 13px; color: white; display: block; margin-bottom: 0;">Step Synchronization & Data Import</label>
-          <p style="font-size: 11px; color: var(--text-muted); margin: 0; line-height: 1.4;">Enter or select the step count recorded by your health device to synchronize with BadaKadam:</p>
-          
-          <div style="display: flex; flex-direction: column; gap: 6px;">
-            <label style="font-size: 11px; color: var(--accent-cyan); font-weight: 700;">Exact Steps Count from Health App</label>
-            <input type="number" id="sync-custom-steps-input" placeholder="e.g. 9660" min="1" max="50000" style="width: 100%; height: 42px; padding: 0 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(6,182,212,0.4); border-radius: 8px; color: white; font-size: 15px; font-weight: 700; outline: none; box-sizing: border-box;">
-          </div>
-          
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px;">
-            <button type="button" class="form-btn secondary sim-step-btn" data-steps="9660" style="margin-top: 0; padding: 8px 0; font-size: 11px;">⌚ 9,660 steps</button>
-            <button type="button" class="form-btn secondary sim-step-btn" data-steps="12500" style="margin-top: 0; padding: 8px 0; font-size: 11px;">🏃 12,500 steps</button>
-            <button type="button" class="form-btn secondary sim-step-btn" data-steps="18500" style="margin-top: 0; padding: 8px 0; font-size: 11px;">⚡ 18,500 steps</button>
-          </div>
-
-          <button id="sync-action-submit-btn" class="submit-btn" style="width: 100%; margin-top: 10px;">
-            <i class="fa-solid fa-arrows-rotate"></i> Synchronize Health Data
-          </button>
-        </div>
       </div>
     </div>
   </div>
