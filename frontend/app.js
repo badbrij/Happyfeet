@@ -1102,6 +1102,7 @@ async function refreshAllData() {
   await fetchMarketplace();
   await fetchWalletHistory();
   initDailyChallenge();
+  refreshUserNotifications();
 }
 
 function renderActivityStats(steps = 0, goal = 10000, calories = 0, distanceMeters = 0, streakDays = 0) {
@@ -3544,11 +3545,66 @@ function exportAuditedUsersToCSV() {
 }
 
 // In-App Notification Engine & Drawer
-let userNotifications = [
-  { id: 'n1', title: '🎯 Step Goal Alert', message: 'Only 2,400 steps left to reach your 12,000 daily goal!', time: '10 mins ago', type: 'goal', unread: true },
-  { id: 'n2', title: '🔥 Streak Safeguard', message: 'Keep your 21-day streak alive before midnight tonight!', time: '1 hour ago', type: 'streak', unread: true },
-  { id: 'n3', title: '⚔️ Battle Rank Shift', message: 'Priya Verma reached 18,000 steps in Hyderabad City Leaderboard!', time: '3 hours ago', type: 'battle', unread: true },
-];
+let userNotifications = [];
+
+function refreshUserNotifications() {
+  if (!currentUser) {
+    userNotifications = [];
+    renderNotifications();
+    return;
+  }
+
+  const notifications = [];
+  const dailyGoal = currentUser.healthProfile?.dailyStepGoal || currentUser.daily_step_goal || 10000;
+  const todaySteps = currentUser.todaySteps || 0;
+  const streakDays = currentUser.streak || currentUser.streak_days || 0;
+
+  if (todaySteps === 0 && streakDays === 0) {
+    notifications.push({
+      id: 'n_welcome',
+      title: '🎉 Welcome to BadaKadam!',
+      message: `Welcome aboard! Sync your steps using Google Fit to reach your daily goal of ${dailyGoal.toLocaleString()} steps and earn WalkCoins.`,
+      time: 'Just now',
+      type: 'welcome',
+      unread: true
+    });
+  } else {
+    if (todaySteps < dailyGoal) {
+      const remaining = dailyGoal - todaySteps;
+      notifications.push({
+        id: 'n_goal',
+        title: '🎯 Step Goal Alert',
+        message: `Only ${remaining.toLocaleString()} steps left to reach your ${dailyGoal.toLocaleString()} daily goal!`,
+        time: 'Today',
+        type: 'goal',
+        unread: true
+      });
+    } else {
+      notifications.push({
+        id: 'n_goal_achieved',
+        title: '🎉 Daily Goal Achieved!',
+        message: `Awesome job! You reached your target of ${dailyGoal.toLocaleString()} steps today!`,
+        time: 'Today',
+        type: 'goal',
+        unread: false
+      });
+    }
+
+    if (streakDays > 0) {
+      notifications.push({
+        id: 'n_streak',
+        title: '🔥 Streak Active',
+        message: `You are on a ${streakDays}-day streak! Keep walking before midnight to keep it alive.`,
+        time: 'Today',
+        type: 'streak',
+        unread: false
+      });
+    }
+  }
+
+  userNotifications = notifications;
+  renderNotifications();
+}
 
 function renderNotifications() {
   const container = document.getElementById('notif-list-container');
@@ -3559,6 +3615,17 @@ function renderNotifications() {
   if (badge) {
     badge.innerText = unreadCount;
     badge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+  }
+
+  if (userNotifications.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; color: var(--text-muted); padding: 30px 15px;">
+        <div style="font-size: 28px; margin-bottom: 8px; opacity: 0.4;">🔔</div>
+        <div style="font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.7);">No new notifications</div>
+        <div style="font-size: 11px; opacity: 0.5; margin-top: 4px;">Updates about your step goals and activity will appear here.</div>
+      </div>
+    `;
+    return;
   }
 
   container.innerHTML = userNotifications.map(n => `
@@ -3606,7 +3673,7 @@ function initNotificationDrawer() {
     };
   }
 
-  renderNotifications();
+  refreshUserNotifications();
 }
 
 function initShareCardModal() {
