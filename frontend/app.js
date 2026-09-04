@@ -1529,9 +1529,11 @@ function updateAuthUI() {
   if (authBtn) {
     if (currentUser) {
       authBtn.innerHTML = '<i class="fa-solid fa-right-from-bracket"></i> Sign Out';
+      authBtn.title = 'Sign Out of Account';
       authBtn.onclick = handleSignOut;
     } else {
-      authBtn.innerHTML = '<i class="fa-solid fa-user"></i> Login / Signup';
+      authBtn.innerHTML = '<i class="fa-solid fa-user"></i> Login';
+      authBtn.title = 'Login or Signup';
       authBtn.onclick = () => {
         document.getElementById('quick-login-modal').classList.add('active');
       };

@@ -800,7 +800,28 @@ input:focus, select:focus {
 }
 
 .app-viewport-wrapper.view-mode-mobile .logo-image {
-  height: 36px !important;
+  height: 32px !important;
+}
+
+.app-viewport-wrapper.view-mode-mobile .logo-container {
+  gap: 6px !important;
+  flex-shrink: 1 !important;
+  min-width: 0 !important;
+}
+
+.app-viewport-wrapper.view-mode-mobile .logo-text {
+  font-size: 16px !important;
+  line-height: 1 !important;
+}
+
+.app-viewport-wrapper.view-mode-mobile .logo-text + span {
+  font-size: 7.5px !important;
+  letter-spacing: 0.5px !important;
+  margin-top: 1px !important;
+}
+
+.app-viewport-wrapper.view-mode-mobile #sse-stream-badge {
+  display: none !important;
 }
 
 .app-viewport-wrapper.view-mode-mobile .header-actions-right {
@@ -810,9 +831,20 @@ input:focus, select:focus {
   flex-shrink: 0 !important;
 }
 
+.app-viewport-wrapper.view-mode-mobile #open-notif-drawer-btn {
+  height: 30px !important;
+  padding: 4px 8px !important;
+  border-radius: 8px !important;
+}
+
+.app-viewport-wrapper.view-mode-mobile .avatar-circle {
+  width: 28px !important;
+  height: 28px !important;
+}
+
 .app-viewport-wrapper.view-mode-mobile .register-hero-btn {
-  padding: 5px 8px !important;
-  font-size: 10.5px !important;
+  padding: 6px 10px !important;
+  font-size: 11px !important;
   border-radius: 12px !important;
   white-space: nowrap !important;
   flex-shrink: 0 !important;
@@ -830,6 +862,7 @@ input:focus, select:focus {
   align-items: center !important;
   width: 100% !important;
   gap: 4px !important;
+  overflow: hidden !important;
 }
 
 .app-viewport-wrapper.view-mode-mobile .header-scroll-row {
