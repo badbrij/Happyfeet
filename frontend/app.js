@@ -221,6 +221,14 @@ function initModal() {
   const headerAvatar = document.getElementById('header-user-avatar');
   const editProfileModal = document.getElementById('edit-profile-modal');
   const closeEditProfileBtn = document.getElementById('close-edit-profile-btn');
+  const openQrBtn = document.getElementById('open-qr-modal-btn');
+  const qrModal = document.getElementById('qr-code-modal');
+
+  if (openQrBtn && qrModal) {
+    openQrBtn.addEventListener('click', () => {
+      qrModal.classList.add('active');
+    });
+  }
 
   if (headerAvatar) {
     headerAvatar.style.cursor = 'pointer';

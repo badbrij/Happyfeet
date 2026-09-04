@@ -136,6 +136,10 @@
           </div>
           
           <div class="header-actions-right" style="display: flex; align-items: center; gap: 8px;">
+            <!-- QR CODE BUTTON -->
+            <button id="open-qr-modal-btn" style="padding: 6px 10px; background: rgba(6,182,212,0.12); border-radius: 10px; border: 1px solid rgba(6,182,212,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; height: 36px; color: var(--accent-cyan);" title="Scan QR Code to open BadaKadam on Mobile">
+              <i class="fa-solid fa-qrcode" style="font-size: 15px;"></i>
+            </button>
             <!-- NOTIFICATION BELL WIDGET -->
             <button id="open-notif-drawer-btn" style="position: relative; padding: 6px 10px; background: rgba(255,255,255,0.06); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; height: 36px;" title="Notifications">
               <i class="fa-solid fa-bell" style="font-size: 15px; color: var(--accent-cyan);"></i>
@@ -671,6 +675,26 @@
 
   <!-- 3. Modals Wrapper Container -->
   <div id="app-modals">
+    <!-- QR CODE SCAN MODAL -->
+    <div class="modal-overlay" id="qr-code-modal">
+      <div class="modal-card" style="max-width: 420px; text-align: center; padding: 28px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
+          <h3 style="font-size: 17px; color: white; margin: 0; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-qrcode" style="color: var(--accent-cyan);"></i> Scan to Open on Mobile
+          </h3>
+          <button class="close-modal-btn" onclick="document.getElementById('qr-code-modal').classList.remove('active')">&times;</button>
+        </div>
+        <div style="background: white; padding: 14px; border-radius: 16px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 16px;">
+          <img src="badakadam_qr_code.png" alt="Scan QR Code to open BadaKadam on Mobile" style="width: 220px; height: 220px; display: block; object-fit: contain;">
+        </div>
+        <div style="font-size: 14px; font-weight: 700; color: white; margin-bottom: 4px;">Point your phone camera to scan</div>
+        <div style="font-size: 11px; color: var(--accent-cyan); font-weight: 600; margin-bottom: 18px; word-break: break-all;">https://happyfeet-tau.vercel.app/</div>
+        <a href="badakadam_qr_code.png" download="BadaKadam_QR_Code.png" class="sync-action-btn" style="text-decoration: none; display: inline-flex; justify-content: center; width: 100%; border-radius: 10px; padding: 10px; font-size: 13px;">
+          <i class="fa-solid fa-download"></i> Download High-Res QR Code PNG
+        </a>
+      </div>
+    </div>
+
     <!-- QUICK LOGIN MODAL -->
     <div class="modal-overlay" id="quick-login-modal">
     <div class="modal-card">
