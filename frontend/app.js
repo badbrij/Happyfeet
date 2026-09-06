@@ -1577,16 +1577,16 @@ window.toggleGroupLeaderboard = async function(groupId) {
         let medal = '';
         let glowBorder = '';
         if (rank === 1) {
-          medal = '🥇 ';
+          medal = '<span style="font-size: 22px; line-height: 1; display: inline-block; margin-right: 6px;">🥇</span>';
           if (isConcluded) glowBorder = 'box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); border: 1px solid rgba(245, 158, 11, 0.5);';
         } else if (rank === 2) {
-          medal = '🥈 ';
+          medal = '<span style="font-size: 22px; line-height: 1; display: inline-block; margin-right: 6px;">🥈</span>';
           if (isConcluded) glowBorder = 'box-shadow: 0 0 10px rgba(148, 163, 184, 0.25); border: 1px solid rgba(148, 163, 184, 0.35);';
         } else if (rank === 3) {
-          medal = '🥉 ';
+          medal = '<span style="font-size: 22px; line-height: 1; display: inline-block; margin-right: 6px;">🥉</span>';
           if (isConcluded) glowBorder = 'box-shadow: 0 0 10px rgba(180, 83, 9, 0.25); border: 1px solid rgba(180, 83, 9, 0.35);';
         } else {
-          medal = `#${rank} `;
+          medal = `<span style="font-size: 14px; font-weight: 800; color: var(--text-muted); display: inline-block; width: 24px; text-align: center; margin-right: 6px;">#${rank}</span>`;
         }
 
         const isCurrentUser = currentUser && (currentUser.name === m.name || currentUser.alias === m.name);
