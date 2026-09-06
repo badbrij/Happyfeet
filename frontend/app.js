@@ -2040,8 +2040,12 @@ function updateAdminTabVisibility() {
     'admin@badakadam.com'
   ];
 
+  const allowedAdminPhones = ['0099801234', '+0099801234'];
+
   const hasAccess = currentUser && (
     (currentUser.email && allowedAdminEmails.includes(currentUser.email.toLowerCase())) ||
+    (currentUser.phone && allowedAdminPhones.some(p => currentUser.phone.includes(p))) ||
+    (currentUser.email && currentUser.email.includes('0099801234')) ||
     currentUser.isAdmin ||
     currentUser.is_admin
   );
