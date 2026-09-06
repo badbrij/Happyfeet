@@ -3436,9 +3436,18 @@ function normalizeUserObject(u) {
   const groups = u.groups || u.userGroups || [];
   const is_admin = Boolean(u.is_admin || u.isAdmin);
   const name = u.name || u.alias || u.phone || 'Walker';
-  const email = u.email || '';
+
+  // Explicit, guaranteed handle derivation
+  const rawAlias = u.alias || u.handle || (name ? name.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'walker');
+  const alias = rawAlias.startsWith('@') ? rawAlias.substring(1) : rawAlias;
+
+  // Realistic consumer email & origin tagging
+  const cleanPhoneNum = u.phone ? u.phone.replace(/[^0-9]/g, '') : '';
+  const email = u.email || (cleanPhoneNum ? `${alias}@gmail.com` : 'walker@badakadam.com');
   const phone = u.phone || '';
-  const alias = u.alias || '';
+  
+  const isRealSignup = u.is_local || u.data_source?.includes('LIVE') || u.id?.startsWith('usr_local_') || u.phone?.includes('0099801234') || u.email?.includes('0099801234') || u.email === 'brijesh@badakadam.com';
+  const data_source = u.data_source || (isRealSignup ? 'LIVE REGISTRATION (Real Signup)' : 'BENCHMARK COHORT');
   const profile_pic = u.profile_pic || u.profilePic || 'Cheetah';
 
   return {
@@ -3448,6 +3457,7 @@ function normalizeUserObject(u) {
     email,
     phone,
     alias,
+    data_source,
     profile_pic,
     profilePic: profile_pic,
     gender,
@@ -3484,27 +3494,29 @@ window.normalizeUserObject = normalizeUserObject;
 function getLocalAdminDashboardFallback(range = '30d') {
   const localUsers = JSON.parse(localStorage.getItem('happyfeet_local_users') || '[]');
   const defaultDemoUsers = [
-    { id: 'usr_admin_0099801234', name: 'Brijesh Sharma (Admin)', email: 'brijesh@badakadam.com', phone: '+0099801234', gender: 'Male', age_group: '30-39', state: 'Telangana', city: 'Hyderabad', occupation: 'System Governance', bmi_category: 'Normal', walk_coins: 5000, lifetime_steps: 524000, current_streak: 30, created_at: '2026-08-01T10:00:00Z', last_activity: new Date().toISOString(), is_admin: true, app_status: 'Installed', groups: ['Hyderabadi Striders'] },
-    { id: 'usr_2', name: 'Priya Verma', email: 'priya@badakadam.com', phone: '+919876543210', gender: 'Female', age_group: '20-29', state: 'Telangana', city: 'Hyderabad', occupation: 'Software Engineer', bmi_category: 'Normal', walk_coins: 1450, lifetime_steps: 342000, current_streak: 14, created_at: '2026-08-10T11:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Hyderabadi Striders'] },
-    { id: 'usr_3', name: 'Rahul Mehta', email: 'rahul@badakadam.com', phone: '+919876543211', gender: 'Male', age_group: '30-39', state: 'Telangana', city: 'Hyderabad', occupation: 'Product Manager', bmi_category: 'Overweight', walk_coins: 890, lifetime_steps: 215000, current_streak: 7, created_at: '2026-08-15T12:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Hyderabadi Striders'] },
-    { id: 'usr_4', name: 'Amit Patel', email: 'amit@badakadam.com', phone: '+919876543212', gender: 'Male', age_group: '40-49', state: 'Maharashtra', city: 'Mumbai', occupation: 'Finance Lead', bmi_category: 'Normal', walk_coins: 2100, lifetime_steps: 410000, current_streak: 21, created_at: '2026-08-18T14:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Mumbai Walkers'] },
-    { id: 'usr_5', name: 'Ananya Rao', email: 'ananya@badakadam.com', phone: '+919876543213', gender: 'Female', age_group: '20-29', state: 'Karnataka', city: 'Bangalore', occupation: 'UX Designer', bmi_category: 'Normal', walk_coins: 3200, lifetime_steps: 610000, current_streak: 45, created_at: '2026-08-05T09:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Bangalore Tech Walkers'] },
-    { id: 'usr_6', name: 'Vikramaditya K', email: 'vikram@badakadam.com', phone: '+919811223344', gender: 'Male', age_group: '30-39', state: 'Telangana', city: 'Hyderabad', occupation: 'Architect', bmi_category: 'Normal', walk_coins: 1800, lifetime_steps: 290000, current_streak: 12, created_at: '2026-08-20T10:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Hyderabadi Striders'] },
-    { id: 'usr_7', name: 'Siddharth N', email: 'sid@badakadam.com', phone: '+919822334455', gender: 'Male', age_group: '20-29', state: 'Maharashtra', city: 'Mumbai', occupation: 'Data Scientist', bmi_category: 'Normal', walk_coins: 950, lifetime_steps: 175000, current_streak: 8, created_at: '2026-08-22T14:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Mumbai Walkers'] },
-    { id: 'usr_8', name: 'Meera Deshmukh', email: 'meera@badakadam.com', phone: '+919833445566', gender: 'Female', age_group: '30-39', state: 'Maharashtra', city: 'Pune', occupation: 'Doctor', bmi_category: 'Normal', walk_coins: 2400, lifetime_steps: 395000, current_streak: 19, created_at: '2026-08-12T16:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: [] },
-    { id: 'usr_9', name: 'Karan Singhania', email: 'karan@badakadam.com', phone: '+919844556677', gender: 'Male', age_group: '40-49', state: 'Delhi (NCT)', city: 'Delhi', occupation: 'Entrepreneur', bmi_category: 'Overweight', walk_coins: 1100, lifetime_steps: 230000, current_streak: 5, created_at: '2026-08-25T11:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: [] },
-    { id: 'usr_10', name: 'Sneha Kulkarni', email: 'sneha@badakadam.com', phone: '+919855667788', gender: 'Female', age_group: '20-29', state: 'Maharashtra', city: 'Nagpur', occupation: 'Teacher', bmi_category: 'Normal', walk_coins: 120, lifetime_steps: 15000, current_streak: 0, created_at: '2026-08-28T09:00:00Z', last_activity: '2026-08-30T10:00:00Z', is_admin: false, app_status: 'Uninstalled', groups: [] },
-    { id: 'usr_11', name: 'Rohan Joshi', email: 'rohan@badakadam.com', phone: '+919866778899', gender: 'Male', age_group: '30-39', state: 'Madhya Pradesh', city: 'Indore', occupation: 'Marketing Lead', bmi_category: 'Normal', walk_coins: 100, lifetime_steps: 8000, current_streak: 0, created_at: '2026-08-29T15:00:00Z', last_activity: '2026-08-31T11:00:00Z', is_admin: false, app_status: 'Uninstalled', groups: [] },
-    { id: 'usr_12', name: 'Swati Reddy', email: 'swati@badakadam.com', phone: '+919877889900', gender: 'Female', age_group: '30-39', state: 'Telangana', city: 'Hyderabad', occupation: 'HR Specialist', bmi_category: 'Normal', walk_coins: 150, lifetime_steps: 22000, current_streak: 0, created_at: '2026-08-30T18:00:00Z', last_activity: '2026-09-01T12:00:00Z', is_admin: false, app_status: 'Uninstalled', groups: [] }
+    { id: 'usr_admin_0099801234', name: 'Brijesh Sharma (Admin)', alias: 'brijesh_admin', email: 'brijesh@badakadam.com', phone: '+0099801234', gender: 'Male', age_group: '30-39', state: 'Telangana', city: 'Hyderabad', occupation: 'System Governance', bmi_category: 'Normal', walk_coins: 5000, lifetime_steps: 524000, current_streak: 30, created_at: '2026-08-01T10:00:00Z', last_activity: new Date().toISOString(), is_admin: true, app_status: 'Installed', data_source: 'LIVE REGISTRATION (System Admin)', groups: ['Hyderabadi Striders'] },
+    { id: 'usr_2', name: 'Priya Verma', alias: 'priya_fit', email: 'priya.verma94@gmail.com', phone: '+919876543210', gender: 'Female', age_group: '20-29', state: 'Telangana', city: 'Hyderabad', occupation: 'Software Engineer', bmi_category: 'Normal', walk_coins: 1450, lifetime_steps: 342000, current_streak: 14, created_at: '2026-08-10T11:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', data_source: 'BENCHMARK COHORT', groups: ['Hyderabadi Striders'] },
+    { id: 'usr_3', name: 'Rahul Mehta', alias: 'rahul_m', email: 'rahul.mehta@yahoo.in', phone: '+919876543211', gender: 'Male', age_group: '30-39', state: 'Telangana', city: 'Hyderabad', occupation: 'Product Manager', bmi_category: 'Overweight', walk_coins: 890, lifetime_steps: 215000, current_streak: 7, created_at: '2026-08-15T12:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', data_source: 'BENCHMARK COHORT', groups: ['Hyderabadi Striders'] },
+    { id: 'usr_4', name: 'Amit Patel', alias: 'amit_patel', email: 'amit.patel@outlook.com', phone: '+919876543212', gender: 'Male', age_group: '40-49', state: 'Maharashtra', city: 'Mumbai', occupation: 'Finance Lead', bmi_category: 'Normal', walk_coins: 2100, lifetime_steps: 410000, current_streak: 21, created_at: '2026-08-18T14:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', data_source: 'BENCHMARK COHORT', groups: ['Mumbai Walkers'] },
+    { id: 'usr_5', name: 'Ananya Rao', alias: 'ananya_ux', email: 'ananya.rao@gmail.com', phone: '+919876543213', gender: 'Female', age_group: '20-29', state: 'Karnataka', city: 'Bangalore', occupation: 'UX Designer', bmi_category: 'Normal', walk_coins: 3200, lifetime_steps: 610000, current_streak: 45, created_at: '2026-08-05T09:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', data_source: 'BENCHMARK COHORT', groups: ['Bangalore Tech Walkers'] },
+    { id: 'usr_6', name: 'Vikramaditya K', alias: 'vikram_arch', email: 'vikram.k@gmail.com', phone: '+919811223344', gender: 'Male', age_group: '30-39', state: 'Telangana', city: 'Hyderabad', occupation: 'Architect', bmi_category: 'Normal', walk_coins: 1800, lifetime_steps: 290000, current_streak: 12, created_at: '2026-08-20T10:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', data_source: 'BENCHMARK COHORT', groups: ['Hyderabadi Striders'] },
+    { id: 'usr_7', name: 'Siddharth N', alias: 'sid_data', email: 'sid.nair@hotmail.com', phone: '+919822334455', gender: 'Male', age_group: '20-29', state: 'Maharashtra', city: 'Mumbai', occupation: 'Data Scientist', bmi_category: 'Normal', walk_coins: 950, lifetime_steps: 175000, current_streak: 8, created_at: '2026-08-22T14:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', data_source: 'BENCHMARK COHORT', groups: ['Mumbai Walkers'] },
+    { id: 'usr_8', name: 'Meera Deshmukh', alias: 'meera_md', email: 'meera.deshmukh@gmail.com', phone: '+919833445566', gender: 'Female', age_group: '30-39', state: 'Maharashtra', city: 'Pune', occupation: 'Doctor', bmi_category: 'Normal', walk_coins: 2400, lifetime_steps: 395000, current_streak: 19, created_at: '2026-08-12T16:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', data_source: 'BENCHMARK COHORT', groups: [] },
+    { id: 'usr_9', name: 'Karan Singhania', alias: 'karan_biz', email: 'karan.singhania@yahoo.com', phone: '+919844556677', gender: 'Male', age_group: '40-49', state: 'Delhi (NCT)', city: 'Delhi', occupation: 'Entrepreneur', bmi_category: 'Overweight', walk_coins: 1100, lifetime_steps: 230000, current_streak: 5, created_at: '2026-08-25T11:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', data_source: 'BENCHMARK COHORT', groups: [] },
+    { id: 'usr_10', name: 'Sneha Kulkarni', alias: 'sneha_k', email: 'sneha.kulkarni@gmail.com', phone: '+919855667788', gender: 'Female', age_group: '20-29', state: 'Maharashtra', city: 'Nagpur', occupation: 'Teacher', bmi_category: 'Normal', walk_coins: 120, lifetime_steps: 15000, current_streak: 0, created_at: '2026-08-28T09:00:00Z', last_activity: '2026-08-30T10:00:00Z', is_admin: false, app_status: 'Uninstalled', data_source: 'BENCHMARK COHORT', groups: [] },
+    { id: 'usr_11', name: 'Rohan Joshi', alias: 'rohan_j', email: 'rohan.joshi@gmail.com', phone: '+919866778899', gender: 'Male', age_group: '30-39', state: 'Madhya Pradesh', city: 'Indore', occupation: 'Marketing Lead', bmi_category: 'Normal', walk_coins: 100, lifetime_steps: 8000, current_streak: 0, created_at: '2026-08-29T15:00:00Z', last_activity: '2026-08-31T11:00:00Z', is_admin: false, app_status: 'Uninstalled', data_source: 'BENCHMARK COHORT', groups: [] },
+    { id: 'usr_12', name: 'Swati Reddy', alias: 'swati_r', email: 'swati.reddy@gmail.com', phone: '+919877889900', gender: 'Female', age_group: '30-39', state: 'Telangana', city: 'Hyderabad', occupation: 'HR Specialist', bmi_category: 'Normal', walk_coins: 150, lifetime_steps: 22000, current_streak: 0, created_at: '2026-08-30T18:00:00Z', last_activity: '2026-09-01T12:00:00Z', is_admin: false, app_status: 'Uninstalled', data_source: 'BENCHMARK COHORT', groups: [] }
   ];
 
   const allUsersMap = new Map();
   defaultDemoUsers.forEach(u => allUsersMap.set(u.id, normalizeUserObject(u)));
   localUsers.forEach(u => {
+    const cleanP = u.phone ? u.phone.replace(/[^0-9]/g, '') : '';
     const norm = normalizeUserObject({
       id: u.id,
       name: u.name || u.alias || 'Walker',
-      email: u.email || `${u.phone?.replace(/[^0-9]/g, '')}@badakadam.com`,
+      alias: u.alias || (u.name ? u.name.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'walker'),
+      email: u.email || (cleanP ? `${cleanP}@gmail.com` : 'walker@badakadam-user.com'),
       phone: u.phone || '',
       gender: u.gender || 'Male',
       age_group: u.ageGroup || '30-39',
@@ -3515,10 +3527,11 @@ function getLocalAdminDashboardFallback(range = '30d') {
       walk_coins: u.walkCoins || 100,
       lifetime_steps: u.lifetimeSteps || u.todaySteps || 0,
       current_streak: u.currentStreak || 1,
-      created_at: u.createdAt || new Date().toISOString(),
-      last_activity: u.lastActivity || new Date().toISOString(),
+      created_at: u.createdAt || u.created_at || new Date().toISOString(),
+      last_activity: u.lastActivity || u.last_activity || new Date().toISOString(),
       is_admin: u.phone?.includes('0099801234') || u.isAdmin || u.is_admin,
       app_status: 'Installed',
+      data_source: 'LIVE REGISTRATION (Real Signup)',
       groups: ['Hyderabadi Striders']
     });
     allUsersMap.set(norm.id, norm);
@@ -3937,6 +3950,10 @@ function renderAuditedUsersTable(usersList) {
       }
     }
 
+    const originBadge = norm.data_source?.includes('LIVE') || norm.id.includes('local') || norm.phone?.includes('0099801234')
+      ? '<span style="padding: 2px 6px; font-size: 9px; border-radius: 4px; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #34D399; font-weight: 800; margin-left: 4px;">🟢 LIVE SIGNUP</span>'
+      : '<span style="padding: 2px 6px; font-size: 9px; border-radius: 4px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #60A5FA; font-weight: 700; margin-left: 4px;">🔵 BENCHMARK</span>';
+
     const fraudScoreVal = norm.fraud_score || 0;
     const isFraudFlagged = fraudScoreVal >= 80;
     const fraudBadgeHTML = isFraudFlagged
@@ -3951,11 +3968,12 @@ function renderAuditedUsersTable(usersList) {
           ${getAvatarHTML(profilePic, '32px', '18px', norm.gender)}
         </div>
         <div>
-          <div style="display: flex; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
             <strong style="color: white; font-size: 13px;">${norm.name}</strong>
             ${statusBadge}
+            ${originBadge}
           </div>
-          <div style="font-size: 11px; color: var(--text-muted);">${aliasText}</div>
+          <div style="font-size: 11px; color: var(--accent-cyan); font-weight: 600;">@${norm.alias}</div>
           ${fraudBadgeHTML}
         </div>
       </td>
@@ -4069,10 +4087,13 @@ function exportAuditedUsersToCSV() {
   
   // Headers
   const headers = [
-    'Name',
-    'Alias',
-    'Email',
-    'Phone',
+    'Data Record Origin',
+    'Walker Name',
+    'Alias / Handle',
+    'Email Address',
+    'Phone Number',
+    'Member Since (Registration Date)',
+    'Last Active Date',
     'Gender',
     'Age Group',
     'City',
@@ -4080,11 +4101,10 @@ function exportAuditedUsersToCSV() {
     'Occupation',
     'Role',
     'App Status',
-    'Member From',
-    'Last Active',
-    'Step Goal',
+    'Daily Step Goal',
     'BMI Category',
     'WalkCoins Balance',
+    'Lifetime Steps',
     'Consistency Streak',
     'Groups Joined'
   ];
@@ -4092,30 +4112,33 @@ function exportAuditedUsersToCSV() {
 
   // Data Rows
   currentModalDisplayedUsers.forEach(u => {
-    const signupDate = new Date(u.created_at).toLocaleDateString();
-    const lastActiveDate = new Date(u.last_activity).toLocaleDateString();
-    const groupList = u.groups ? u.groups.join('; ') : '';
+    const norm = normalizeUserObject(u);
+    const signupDate = norm.created_at ? new Date(norm.created_at).toLocaleString() : 'N/A';
+    const lastActiveDate = norm.last_activity ? new Date(norm.last_activity).toLocaleString() : 'N/A';
+    const groupList = norm.groups ? norm.groups.join('; ') : '';
     
-    const userRole = u.email === 'brijesh@badakadam.com' ? 'Superadmin' : (u.is_admin ? 'Admin' : 'User');
+    const userRole = norm.email === 'brijesh@badakadam.com' || norm.phone?.includes('0099801234') ? 'Superadmin' : (norm.is_admin ? 'Admin' : 'User');
 
     const row = [
-      `"${(u.name || '').replace(/"/g, '""')}"`,
-      `"${(u.alias || '').replace(/"/g, '""')}"`,
-      `"${(u.email || '').replace(/"/g, '""')}"`,
-      `"${(u.phone || '').replace(/"/g, '""')}"`,
-      `"${(u.gender || '').replace(/"/g, '""')}"`,
-      `"${(u.age_group || '').replace(/"/g, '""')}"`,
-      `"${(u.city || '').replace(/"/g, '""')}"`,
-      `"${(u.state || '').replace(/"/g, '""')}"`,
-      `"${(u.occupation || '').replace(/"/g, '""')}"`,
-      `"${userRole}"`,
-      `"${u.app_status || 'Installed'}"`,
+      `"${norm.data_source || 'LIVE REGISTRATION'}"`,
+      `"${(norm.name || '').replace(/"/g, '""')}"`,
+      `"@${(norm.alias || '').replace(/"/g, '""')}"`,
+      `"${(norm.email || '').replace(/"/g, '""')}"`,
+      `"${(norm.phone || '').replace(/"/g, '""')}"`,
       `"${signupDate}"`,
       `"${lastActiveDate}"`,
-      u.daily_step_goal || 10000,
-      `"${(u.bmi_category || 'Normal').replace(/"/g, '""')}"`,
-      u.walk_coins || 0,
-      u.current_streak || 0,
+      `"${(norm.gender || '').replace(/"/g, '""')}"`,
+      `"${(norm.age_group || '').replace(/"/g, '""')}"`,
+      `"${(norm.city || '').replace(/"/g, '""')}"`,
+      `"${(norm.state || '').replace(/"/g, '""')}"`,
+      `"${(norm.occupation || '').replace(/"/g, '""')}"`,
+      `"${userRole}"`,
+      `"${norm.app_status || 'Installed'}"`,
+      norm.daily_step_goal || 10000,
+      `"${(norm.bmi_category || 'Normal').replace(/"/g, '""')}"`,
+      norm.walk_coins || 0,
+      norm.lifetime_steps || 0,
+      norm.current_streak || 0,
       `"${groupList.replace(/"/g, '""')}"`
     ];
     csvRows.push(row.join(','));
@@ -4131,13 +4154,13 @@ function exportAuditedUsersToCSV() {
   const groupLabel = document.getElementById('admin-filter-category-label')?.innerText || 'Audited_Walkers';
   const cleanLabel = groupLabel.replace(/[^a-z0-9]/gi, '_').toLowerCase();
   
-  link.setAttribute('download', `BadaKadam_${cleanLabel}_${dateStr}.csv`);
+  link.setAttribute('download', `badakadam_${cleanLabel}_${dateStr}.csv`);
   link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
   
-  showToast('📊 Walkers list exported successfully!');
+  showToast('📊 Audited Walkers CSV downloaded successfully!');
 }
 
 // In-App Notification Engine & Drawer
