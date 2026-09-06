@@ -3488,7 +3488,14 @@ function getLocalAdminDashboardFallback(range = '30d') {
     { id: 'usr_2', name: 'Priya Verma', email: 'priya@badakadam.com', phone: '+919876543210', gender: 'Female', age_group: '20-29', state: 'Telangana', city: 'Hyderabad', occupation: 'Software Engineer', bmi_category: 'Normal', walk_coins: 1450, lifetime_steps: 342000, current_streak: 14, created_at: '2026-08-10T11:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Hyderabadi Striders'] },
     { id: 'usr_3', name: 'Rahul Mehta', email: 'rahul@badakadam.com', phone: '+919876543211', gender: 'Male', age_group: '30-39', state: 'Telangana', city: 'Hyderabad', occupation: 'Product Manager', bmi_category: 'Overweight', walk_coins: 890, lifetime_steps: 215000, current_streak: 7, created_at: '2026-08-15T12:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Hyderabadi Striders'] },
     { id: 'usr_4', name: 'Amit Patel', email: 'amit@badakadam.com', phone: '+919876543212', gender: 'Male', age_group: '40-49', state: 'Maharashtra', city: 'Mumbai', occupation: 'Finance Lead', bmi_category: 'Normal', walk_coins: 2100, lifetime_steps: 410000, current_streak: 21, created_at: '2026-08-18T14:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Mumbai Walkers'] },
-    { id: 'usr_5', name: 'Ananya Rao', email: 'ananya@badakadam.com', phone: '+919876543213', gender: 'Female', age_group: '20-29', state: 'Karnataka', city: 'Bangalore', occupation: 'UX Designer', bmi_category: 'Normal', walk_coins: 3200, lifetime_steps: 610000, current_streak: 45, created_at: '2026-08-05T09:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Bangalore Tech Walkers'] }
+    { id: 'usr_5', name: 'Ananya Rao', email: 'ananya@badakadam.com', phone: '+919876543213', gender: 'Female', age_group: '20-29', state: 'Karnataka', city: 'Bangalore', occupation: 'UX Designer', bmi_category: 'Normal', walk_coins: 3200, lifetime_steps: 610000, current_streak: 45, created_at: '2026-08-05T09:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Bangalore Tech Walkers'] },
+    { id: 'usr_6', name: 'Vikramaditya K', email: 'vikram@badakadam.com', phone: '+919811223344', gender: 'Male', age_group: '30-39', state: 'Telangana', city: 'Hyderabad', occupation: 'Architect', bmi_category: 'Normal', walk_coins: 1800, lifetime_steps: 290000, current_streak: 12, created_at: '2026-08-20T10:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Hyderabadi Striders'] },
+    { id: 'usr_7', name: 'Siddharth N', email: 'sid@badakadam.com', phone: '+919822334455', gender: 'Male', age_group: '20-29', state: 'Maharashtra', city: 'Mumbai', occupation: 'Data Scientist', bmi_category: 'Normal', walk_coins: 950, lifetime_steps: 175000, current_streak: 8, created_at: '2026-08-22T14:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Mumbai Walkers'] },
+    { id: 'usr_8', name: 'Meera Deshmukh', email: 'meera@badakadam.com', phone: '+919833445566', gender: 'Female', age_group: '30-39', state: 'Maharashtra', city: 'Pune', occupation: 'Doctor', bmi_category: 'Normal', walk_coins: 2400, lifetime_steps: 395000, current_streak: 19, created_at: '2026-08-12T16:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: [] },
+    { id: 'usr_9', name: 'Karan Singhania', email: 'karan@badakadam.com', phone: '+919844556677', gender: 'Male', age_group: '40-49', state: 'Delhi (NCT)', city: 'Delhi', occupation: 'Entrepreneur', bmi_category: 'Overweight', walk_coins: 1100, lifetime_steps: 230000, current_streak: 5, created_at: '2026-08-25T11:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: [] },
+    { id: 'usr_10', name: 'Sneha Kulkarni', email: 'sneha@badakadam.com', phone: '+919855667788', gender: 'Female', age_group: '20-29', state: 'Maharashtra', city: 'Nagpur', occupation: 'Teacher', bmi_category: 'Normal', walk_coins: 120, lifetime_steps: 15000, current_streak: 0, created_at: '2026-08-28T09:00:00Z', last_activity: '2026-08-30T10:00:00Z', is_admin: false, app_status: 'Uninstalled', groups: [] },
+    { id: 'usr_11', name: 'Rohan Joshi', email: 'rohan@badakadam.com', phone: '+919866778899', gender: 'Male', age_group: '30-39', state: 'Madhya Pradesh', city: 'Indore', occupation: 'Marketing Lead', bmi_category: 'Normal', walk_coins: 100, lifetime_steps: 8000, current_streak: 0, created_at: '2026-08-29T15:00:00Z', last_activity: '2026-08-31T11:00:00Z', is_admin: false, app_status: 'Uninstalled', groups: [] },
+    { id: 'usr_12', name: 'Swati Reddy', email: 'swati@badakadam.com', phone: '+919877889900', gender: 'Female', age_group: '30-39', state: 'Telangana', city: 'Hyderabad', occupation: 'HR Specialist', bmi_category: 'Normal', walk_coins: 150, lifetime_steps: 22000, current_streak: 0, created_at: '2026-08-30T18:00:00Z', last_activity: '2026-09-01T12:00:00Z', is_admin: false, app_status: 'Uninstalled', groups: [] }
   ];
 
   const allUsersMap = new Map();
@@ -4845,12 +4852,7 @@ function initAdminExportHandlers() {
 
   if (csvBtn) {
     csvBtn.onclick = () => {
-      if (!authToken) {
-        showToast('❌ Access Denied: Login required for admin CSV export');
-        return;
-      }
-      showToast('📥 Downloading BadaKadam Flagged Logs CSV Audit...');
-      window.open(`${API_BASE}/admin/export/csv?type=flagged_logs`, '_blank');
+      exportAdminFullMetricsCSV();
     };
   }
 
@@ -4861,6 +4863,364 @@ function initAdminExportHandlers() {
     };
   }
 }
+
+// -------------------------------------------------------------
+// Admin Dashboard Comprehensive CSV & Drilldown Modal Functions
+// -------------------------------------------------------------
+
+function exportAdminFullMetricsCSV() {
+  showToast('📥 Generating BadaKadam Platform Comprehensive CSV Audit...');
+
+  const fallback = getLocalAdminDashboardFallback(activeAdminRange || '30d');
+  const usersList = (auditedUsers && auditedUsers.length > 0) ? auditedUsers : fallback.users;
+
+  const csvRows = [];
+  csvRows.push('=== BADAKADAM FITNESS - EXECUTIVE PLATFORM AUDIT REPORT ===');
+  csvRows.push(`Generated At,${new Date().toLocaleString()}`);
+  csvRows.push(`Timeline Window,${activeAdminRange || '30d'}`);
+  csvRows.push('');
+
+  // Section 1: Executive Summary
+  csvRows.push('=== EXECUTIVE SUMMARY METRICS ===');
+  csvRows.push('Metric,Value');
+  csvRows.push(`Total Platform Registered Walkers,${fallback.summary.totalUsers}`);
+  csvRows.push(`Total Platform Steps Synced,${fallback.summary.totalPlatformSteps}`);
+  csvRows.push(`WalkCoins Circulation,${fallback.summary.totalCoinsEarned}`);
+  csvRows.push(`WalkCoins Spent,${fallback.summary.totalCoinsSpent}`);
+  csvRows.push(`Active Group Battles,${fallback.summary.activeBattles}`);
+  csvRows.push(`Store Downloads (30-Day Trial),${fallback.summary.downloads}`);
+  csvRows.push(`Store Installs,${fallback.summary.installs}`);
+  csvRows.push(`Store Uninstalls,${fallback.summary.uninstalls}`);
+  csvRows.push(`Conversion Acceptance Rate,${Math.round((fallback.summary.installs / fallback.summary.downloads) * 100)}%`);
+  csvRows.push('');
+
+  // Section 2: Store Funnel Daily History
+  csvRows.push('=== STORE TRIAL & FUNNEL DAILY TIMELINE ===');
+  csvRows.push('Date,Downloads,Installs,Uninstalls,Conversion Rate %');
+  fallback.funnel.timeline.forEach(t => {
+    const conv = Math.round((t.installs / Math.max(1, t.downloads)) * 100);
+    csvRows.push(`${t.date},${t.downloads},${t.installs},${t.uninstalls},${conv}%`);
+  });
+  csvRows.push('');
+
+  // Section 3: Registered Walkers Audit
+  csvRows.push('=== REGISTERED WALKERS COHORT AUDIT ===');
+  csvRows.push('Name,Alias,Email,Phone,Gender,Age Group,City,State,Occupation,App Status,Role,Fraud Score,Step Goal,BMI Category,WalkCoins,Lifetime Steps,Groups Joined');
+  
+  usersList.forEach(u => {
+    const norm = normalizeUserObject(u);
+    const role = norm.email === 'brijesh@badakadam.com' || norm.phone?.includes('0099801234') ? 'Superadmin' : (norm.is_admin ? 'Admin' : 'User');
+    const grps = norm.groups ? norm.groups.join('; ') : 'Hyderabadi Striders';
+
+    csvRows.push([
+      `"${(norm.name || '').replace(/"/g, '""')}"`,
+      `"${(norm.alias || '').replace(/"/g, '""')}"`,
+      `"${(norm.email || '').replace(/"/g, '""')}"`,
+      `"${(norm.phone || '').replace(/"/g, '""')}"`,
+      `"${norm.gender || 'Male'}"`,
+      `"${norm.age_group || '30-39'}"`,
+      `"${norm.city || 'Hyderabad'}"`,
+      `"${norm.state || 'Telangana'}"`,
+      `"${norm.occupation || 'Software Engineer'}"`,
+      `"${norm.app_status || 'Installed'}"`,
+      `"${role}"`,
+      norm.fraud_score || 0,
+      norm.daily_step_goal || 10000,
+      `"${norm.bmi_category || 'Normal'}"`,
+      norm.walk_coins || 0,
+      norm.lifetime_steps || 0,
+      `"${grps.replace(/"/g, '""')}"`
+    ].join(','));
+  });
+
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `badakadam_full_platform_analytics_${Date.now()}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  showToast('✅ Full Platform CSV Audit exported successfully!');
+}
+
+let funnelWalkerFilterState = 'all';
+
+function openFunnelDrillDownModal() {
+  const modal = document.getElementById('admin-funnel-drilldown-modal');
+  if (!modal) return;
+
+  const fallback = getLocalAdminDashboardFallback(activeAdminRange || '30d');
+  const d = fallback.summary.downloads || 1420;
+  const i = fallback.summary.installs || 1180;
+  const u = fallback.summary.uninstalls || 65;
+  const conv = Math.round((i / d) * 100);
+
+  if (document.getElementById('funnel-kpi-downloads')) document.getElementById('funnel-kpi-downloads').innerText = d.toLocaleString();
+  if (document.getElementById('funnel-kpi-installs')) document.getElementById('funnel-kpi-installs').innerText = i.toLocaleString();
+  if (document.getElementById('funnel-kpi-uninstalls')) document.getElementById('funnel-kpi-uninstalls').innerText = u.toLocaleString();
+  if (document.getElementById('funnel-kpi-conv')) document.getElementById('funnel-kpi-conv').innerText = `${conv}%`;
+
+  // Populate Daily Store Trial History Table
+  const historyTbody = document.getElementById('funnel-trial-history-tbody');
+  if (historyTbody) {
+    historyTbody.innerHTML = fallback.funnel.timeline.map(t => {
+      const dayConv = Math.round((t.installs / t.downloads) * 100);
+      const churn = Math.round((t.uninstalls / t.installs) * 100);
+      return `
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+          <td style="padding: 10px 14px; font-weight: 600; color: white;">📅 ${t.date}</td>
+          <td style="padding: 10px 14px; color: var(--accent-cyan); font-weight: 700;">📥 ${t.downloads.toLocaleString()}</td>
+          <td style="padding: 10px 14px; color: var(--primary-emerald); font-weight: 700;">📲 ${t.installs.toLocaleString()}</td>
+          <td style="padding: 10px 14px; color: #EF4444; font-weight: 700;">🗑️ ${t.uninstalls.toLocaleString()}</td>
+          <td style="padding: 10px 14px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-weight: 700; color: white;">${dayConv}%</span>
+              <div style="flex-grow: 1; background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; overflow: hidden; width: 60px;">
+                <div style="width: ${dayConv}%; background: var(--primary-emerald); height: 100%;"></div>
+              </div>
+            </div>
+          </td>
+          <td style="padding: 10px 14px; color: rgba(255,255,255,0.7); font-size: 11px;">${churn}% churn rate</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Populate Walker Cohort Table
+  filterFunnelWalkerTable('all');
+
+  // Search input handler
+  const searchInput = document.getElementById('funnel-walker-search-input');
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.oninput = (e) => {
+      filterFunnelWalkerTable(funnelWalkerFilterState, e.target.value);
+    };
+  }
+
+  modal.classList.add('active');
+}
+
+function filterFunnelWalkerTable(status = 'all', searchQuery = '') {
+  funnelWalkerFilterState = status;
+
+  // Update chip active styles
+  const chips = document.querySelectorAll('#admin-funnel-drilldown-modal .range-chip');
+  chips.forEach(c => {
+    if (c.getAttribute('onclick')?.includes(`'${status}'`)) {
+      c.classList.add('active');
+      c.style.background = 'var(--accent-cyan)';
+      c.style.color = '#000';
+    } else {
+      c.classList.remove('active');
+      c.style.background = 'rgba(255,255,255,0.06)';
+      c.style.color = 'var(--text-muted)';
+    }
+  });
+
+  const fallback = getLocalAdminDashboardFallback(activeAdminRange || '30d');
+  let usersList = (auditedUsers && auditedUsers.length > 0) ? auditedUsers : fallback.users;
+
+  if (status === 'Installed') {
+    usersList = usersList.filter(u => (u.app_status || u.appStatus || 'Installed') === 'Installed');
+  } else if (status === 'Uninstalled') {
+    usersList = usersList.filter(u => (u.app_status || u.appStatus) === 'Uninstalled');
+  }
+
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase().trim();
+    usersList = usersList.filter(u =>
+      (u.name && u.name.toLowerCase().includes(q)) ||
+      (u.alias && u.alias.toLowerCase().includes(q)) ||
+      (u.email && u.email.toLowerCase().includes(q)) ||
+      (u.phone && u.phone.toLowerCase().includes(q)) ||
+      (u.city && u.city.toLowerCase().includes(q))
+    );
+  }
+
+  const tbody = document.getElementById('funnel-walkers-tbody');
+  if (!tbody) return;
+
+  if (usersList.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="padding: 20px; text-align: center; color: var(--text-muted);">No walkers found matching filter criteria</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = usersList.map(u => {
+    const norm = normalizeUserObject(u);
+    const isUninstalled = norm.app_status === 'Uninstalled';
+    const statusBadge = isUninstalled
+      ? `<span style="padding: 3px 8px; font-size: 10px; border-radius: 6px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239,68,68,0.3); color: #EF4444; font-weight: 700;">Uninstalled</span>`
+      : `<span style="padding: 3px 8px; font-size: 10px; border-radius: 6px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--primary-emerald); font-weight: 700;">Installed</span>`;
+
+    const osBadge = norm.id.includes('ios') || norm.id.includes('apple')
+      ? `<span style="color: #60A5FA; font-weight: 600;"><i class="fa-brands fa-apple"></i> iOS</span>`
+      : `<span style="color: #34D399; font-weight: 600;"><i class="fa-brands fa-android"></i> Android</span>`;
+
+    return `
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <td style="padding: 10px 14px;">
+          <div style="font-weight: 700; color: white;">${norm.name}</div>
+          <div style="font-size: 11px; color: var(--text-muted);">@${norm.alias || 'walker'}</div>
+        </td>
+        <td style="padding: 10px 14px;">
+          <div style="color: white; font-size: 12px;">${norm.email || 'N/A'}</div>
+          <div style="font-size: 11px; color: var(--text-muted);">${norm.phone || 'N/A'}</div>
+        </td>
+        <td style="padding: 10px 14px;">${osBadge}</td>
+        <td style="padding: 10px 14px;">
+          <div style="color: white;">${norm.city}</div>
+          <div style="font-size: 11px; color: var(--text-muted);">${norm.state}</div>
+        </td>
+        <td style="padding: 10px 14px; font-size: 12px; color: rgba(255,255,255,0.8);">${new Date(norm.created_at).toLocaleDateString()}</td>
+        <td style="padding: 10px 14px;">${statusBadge}</td>
+        <td style="padding: 10px 14px; text-align: right; font-weight: 700; color: var(--accent-cyan);">
+          🪙 ${(norm.walk_coins || 0).toLocaleString()}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function exportFunnelReportCSV() {
+  const fallback = getLocalAdminDashboardFallback(activeAdminRange || '30d');
+  const usersList = (auditedUsers && auditedUsers.length > 0) ? auditedUsers : fallback.users;
+
+  const csvRows = ['Name,Alias,Email,Phone,Platform OS,City,State,Install Date,App Status,WalkCoins Earned,Lifetime Steps'];
+  usersList.forEach(u => {
+    const norm = normalizeUserObject(u);
+    const os = norm.id.includes('ios') ? 'iOS' : 'Android';
+    csvRows.push([
+      `"${(norm.name || '').replace(/"/g, '""')}"`,
+      `"${(norm.alias || '').replace(/"/g, '""')}"`,
+      `"${(norm.email || '').replace(/"/g, '""')}"`,
+      `"${(norm.phone || '').replace(/"/g, '""')}"`,
+      `"${os}"`,
+      `"${norm.city || 'Hyderabad'}"`,
+      `"${norm.state || 'Telangana'}"`,
+      `"${new Date(norm.created_at).toLocaleDateString()}"`,
+      `"${norm.app_status || 'Installed'}"`,
+      norm.walk_coins || 0,
+      norm.lifetime_steps || 0
+    ].join(','));
+  });
+
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `badakadam_app_store_funnel_audit_${Date.now()}.csv`);
+  link.click();
+  showToast('📊 App Store Funnel CSV Audit downloaded!');
+}
+
+function openEconomyDrillDownModal() {
+  const modal = document.getElementById('admin-economy-drilldown-modal');
+  if (!modal) return;
+
+  const fallback = getLocalAdminDashboardFallback(activeAdminRange || '30d');
+  const minted = fallback.summary.totalCoinsEarned || 12640;
+  const spent = fallback.summary.totalCoinsSpent || 450;
+  const ratio = Math.round((spent / minted) * 100);
+
+  if (document.getElementById('economy-kpi-minted')) document.getElementById('economy-kpi-minted').innerText = `${minted.toLocaleString()} Coins`;
+  if (document.getElementById('economy-kpi-spent')) document.getElementById('economy-kpi-spent').innerText = `${spent.toLocaleString()} Coins`;
+  if (document.getElementById('economy-kpi-ratio')) document.getElementById('economy-kpi-ratio').innerText = `${ratio}% Spent`;
+
+  // Render Earning Sources Breakdown
+  const earnContainer = document.getElementById('economy-earning-channels-breakdown');
+  if (earnContainer) {
+    const earnEntries = Object.entries(fallback.economy.earnings);
+    earnContainer.innerHTML = earnEntries.map(([channel, amt]) => `
+      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+        <span style="color: white; font-weight: 600;">⚡ ${channel}</span>
+        <strong style="color: var(--accent-cyan); font-size: 14px;">+${amt.toLocaleString()} Coins</strong>
+      </div>
+    `).join('');
+  }
+
+  // Render Redemptions Breakdown
+  const redeemContainer = document.getElementById('economy-redemption-channels-breakdown');
+  if (redeemContainer) {
+    const redeemEntries = Object.entries(fallback.economy.redemptions);
+    redeemContainer.innerHTML = redeemEntries.map(([cat, amt]) => `
+      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+        <span style="color: white; font-weight: 600;">🛍️ ${cat}</span>
+        <strong style="color: var(--accent-amber); font-size: 14px;">${amt.toLocaleString()} Coins</strong>
+      </div>
+    `).join('');
+  }
+
+  // Populate Voucher Redemptions Table
+  const voucherTbody = document.getElementById('economy-vouchers-tbody');
+  if (voucherTbody) {
+    const vouchers = [
+      { user: 'Brijesh Sharma', alias: '@brijesh', title: 'Cult.fit 1-Month Pass', category: 'Vouchers', cost: 300, date: '2026-09-06 14:30', status: 'Fulfilled' },
+      { user: 'Priya Patel', alias: '@priya', title: 'Decathlon Gym Shaker', category: 'Fitness Gear', cost: 150, date: '2026-09-05 11:20', status: 'Fulfilled' },
+      { user: 'Rajesh Kumar', alias: '@rajesh', title: 'Fast&Up Electrolytes Tub', category: 'Fitness Gear', cost: 250, date: '2026-09-04 18:45', status: 'Fulfilled' },
+      { user: 'Sneha Reddy', alias: '@sneha', title: 'Amazon Gift Card ₹500', category: 'Vouchers', cost: 500, date: '2026-09-03 09:15', status: 'Fulfilled' }
+    ];
+
+    voucherTbody.innerHTML = vouchers.map(v => `
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <td style="padding: 10px 14px;">
+          <div style="font-weight: 700; color: white;">${v.user}</div>
+          <div style="font-size: 11px; color: var(--text-muted);">${v.alias}</div>
+        </td>
+        <td style="padding: 10px 14px; color: white; font-weight: 600;">🎁 ${v.title}</td>
+        <td style="padding: 10px 14px; color: var(--text-muted);">${v.category}</td>
+        <td style="padding: 10px 14px; color: var(--accent-amber); font-weight: 700;">-${v.cost} Coins</td>
+        <td style="padding: 10px 14px; font-size: 11px; color: rgba(255,255,255,0.7);">${v.date}</td>
+        <td style="padding: 10px 14px;">
+          <span style="padding: 2px 6px; font-size: 10px; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: var(--primary-emerald); font-weight: 700;">${v.status}</span>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  modal.classList.add('active');
+}
+
+function exportEconomyReportCSV() {
+  const vouchers = [
+    { user: 'Brijesh Sharma', alias: '@brijesh', title: 'Cult.fit 1-Month Pass', category: 'Vouchers', cost: 300, date: '2026-09-06 14:30', status: 'Fulfilled' },
+    { user: 'Priya Patel', alias: '@priya', title: 'Decathlon Gym Shaker', category: 'Fitness Gear', cost: 150, date: '2026-09-05 11:20', status: 'Fulfilled' },
+    { user: 'Rajesh Kumar', alias: '@rajesh', title: 'Fast&Up Electrolytes Tub', category: 'Fitness Gear', cost: 250, date: '2026-09-04 18:45', status: 'Fulfilled' },
+    { user: 'Sneha Reddy', alias: '@sneha', title: 'Amazon Gift Card ₹500', category: 'Vouchers', cost: 500, date: '2026-09-03 09:15', status: 'Fulfilled' }
+  ];
+
+  const csvRows = ['Walker Name,Alias,Voucher / Reward Title,Category,WalkCoins Spent,Redemption Date,Status'];
+  vouchers.forEach(v => {
+    csvRows.push([
+      `"${v.user}"`,
+      `"${v.alias}"`,
+      `"${v.title}"`,
+      `"${v.category}"`,
+      v.cost,
+      `"${v.date}"`,
+      `"${v.status}"`
+    ].join(','));
+  });
+
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `badakadam_token_economy_audit_${Date.now()}.csv`);
+  link.click();
+  showToast('📊 Token Economy Velocity CSV Audit downloaded!');
+}
+
+// Window global modal bindings
+window.openFunnelDrillDownModal = openFunnelDrillDownModal;
+window.filterFunnelWalkerTable = filterFunnelWalkerTable;
+window.exportFunnelReportCSV = exportFunnelReportCSV;
+window.openEconomyDrillDownModal = openEconomyDrillDownModal;
+window.exportEconomyReportCSV = exportEconomyReportCSV;
+window.exportAdminFullMetricsCSV = exportAdminFullMetricsCSV;
 
 let currentManagingGroupId = null;
 
