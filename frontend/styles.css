@@ -933,6 +933,33 @@ input:focus, select:focus {
   overflow: hidden !important;
 }
 
+.app-viewport-wrapper.view-mode-mobile .logo-image {
+  height: 34px !important;
+}
+
+.app-viewport-wrapper.view-mode-mobile .logo-text {
+  font-size: 16px !important;
+}
+
+.app-viewport-wrapper.view-mode-mobile .header-tools-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex-wrap: wrap !important;
+  margin-top: 4px !important;
+  width: 100% !important;
+}
+
+.app-viewport-wrapper.view-mode-mobile .header-tools-bar a,
+.app-viewport-wrapper.view-mode-mobile .header-tools-bar button,
+.app-viewport-wrapper.view-mode-mobile .header-tools-bar span {
+  font-size: 10px !important;
+  padding: 3px 7px !important;
+  height: 25px !important;
+  border-radius: 6px !important;
+  white-space: nowrap !important;
+}
+
 .app-viewport-wrapper.view-mode-mobile .header-scroll-row {
   display: flex !important;
   flex-wrap: wrap !important;
@@ -1552,6 +1579,57 @@ input:focus, select:focus {
     backdrop-filter: blur(12px) !important;
     padding: 10px 14px !important;
     border-bottom: 1px solid var(--border-color) !important;
+  }
+
+  .header-top-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    gap: 6px !important;
+  }
+
+  .header-actions-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .logo-image {
+    height: 34px !important;
+  }
+
+  .logo-text {
+    font-size: 16px !important;
+  }
+
+  .register-hero-btn {
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+    border-radius: 12px !important;
+    height: 32px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  .header-tools-bar {
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    flex-wrap: wrap !important;
+    margin-top: 4px !important;
+    width: 100% !important;
+  }
+
+  .header-tools-bar a,
+  .header-tools-bar button,
+  .header-tools-bar span {
+    font-size: 10px !important;
+    padding: 3px 7px !important;
+    height: 25px !important;
+    border-radius: 6px !important;
+    white-space: nowrap !important;
   }
 
   #app-main {
