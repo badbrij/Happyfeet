@@ -1,4 +1,6 @@
-const API_BASE = 'http://127.0.0.1:5000/api/v1';
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://127.0.0.1:5000/api/v1'
+  : '/api/v1';
 
 let authToken = '';
 let currentUser = null;
@@ -1050,44 +1052,50 @@ function initOtpInputs(containerClass) {
 
 // Check saved session in LocalStorage
 async function checkSavedSession() {
+  const isExplicitLoggedOut = localStorage.getItem('happyfeet_logged_out') === 'true';
+  if (isExplicitLoggedOut) {
+    currentUser = null;
+    authToken = '';
+    updateAuthUI();
+    return;
+  }
+
   const savedToken = localStorage.getItem('happyfeet_token');
   const savedUserJson = localStorage.getItem('happyfeet_current_user');
   
-  if (savedToken) {
-    authToken = savedToken;
+  if (savedUserJson) {
+    try {
+      currentUser = JSON.parse(savedUserJson);
+      authToken = savedToken || ('local_token_' + (currentUser.id || 'usr_1'));
+    } catch (e) {
+      console.error('Error parsing local user session:', e);
+    }
+  }
+
+  if (savedToken && !savedToken.startsWith('local_token_')) {
     try {
       const res = await fetch(`${API_BASE}/auth/me`, {
-        headers: { Authorization: `Bearer ${authToken}` }
+        headers: { Authorization: `Bearer ${savedToken}` }
       });
-      const data = await res.json();
       if (res.ok) {
-        currentUser = data.user;
-        updateAuthUI();
-        refreshAllData();
-        checkPendingInvite();
-        return;
-      } else {
-        localStorage.removeItem('happyfeet_token');
-        localStorage.removeItem('happyfeet_user_email');
-        localStorage.removeItem('happyfeet_current_user');
-        authToken = '';
-      }
-    } catch (err) {
-      console.warn('Backend API unreachable, attempting to restore local session:', err);
-      if (savedUserJson) {
-        try {
-          currentUser = JSON.parse(savedUserJson);
-          updateAuthUI();
-          refreshAllData();
-          checkPendingInvite();
-          return;
-        } catch (e) {
-          console.error('Error parsing local user session:', e);
+        const data = await res.json();
+        if (data.user) {
+          currentUser = data.user;
+          localStorage.setItem('happyfeet_current_user', JSON.stringify(currentUser));
         }
       }
+    } catch (err) {
+      console.warn('Backend API connection warning, retaining saved user session:', err);
     }
   }
   
+  if (currentUser) {
+    updateAuthUI();
+    refreshAllData();
+    checkPendingInvite();
+    return;
+  }
+
   // Clean default state for first-time visitors / unauthenticated users
   currentUser = null;
   authToken = '';

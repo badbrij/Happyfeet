@@ -507,18 +507,21 @@ main {
   height: 100%;
   background: rgba(9, 13, 22, 0.85);
   backdrop-filter: blur(12px);
-  display: flex;
+  display: none !important;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   opacity: 0;
-  pointer-events: none;
+  pointer-events: none !important;
+  visibility: hidden !important;
   transition: all 0.3s ease;
 }
 
 .modal-overlay.active {
-  opacity: 1;
-  pointer-events: auto;
+  display: flex !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
 }
 
 .modal-card {
@@ -1029,15 +1032,20 @@ input:focus, select:focus {
   height: 100% !important;
   background: rgba(2, 6, 17, 0.85) !important;
   z-index: 1050 !important;
-  display: none;
+  display: none !important;
   align-items: center !important;
   justify-content: center !important;
   padding: 16px !important;
   box-sizing: border-box !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 .app-viewport-wrapper.view-mode-mobile .modal-overlay.active {
   display: flex !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .app-viewport-wrapper.view-mode-mobile .modal-card {
