@@ -1774,6 +1774,62 @@ function updateAuthUI() {
       if (targetPanel) targetPanel.style.display = 'block';
     };
   });
+
+  // Start animated step counter ring loop on landing page
+  if (!currentUser) {
+    initLandingHeroAnimation();
+  }
+}
+
+// Landing Page Hero Step Ring Continuous Animation Loop (0 to 10,000 steps)
+let landingAnimationTimer = null;
+
+function initLandingHeroAnimation() {
+  const ringFill = document.getElementById('landing-hero-ring-fill');
+  const stepValEl = document.getElementById('landing-hero-step-val');
+  const percentValEl = document.getElementById('landing-hero-percent-val');
+  const coinsValEl = document.getElementById('landing-hero-coins-val');
+
+  if (!ringFill || !stepValEl) return;
+  if (landingAnimationTimer) clearInterval(landingAnimationTimer);
+
+  const circumference = 502.6; // 2 * pi * 80
+  const maxSteps = 10000;
+  let currentSteps = 0;
+  const stepIncrement = 180; // smooth step increment
+
+  landingAnimationTimer = setInterval(() => {
+    const landingView = document.getElementById('landing-view');
+    if (!landingView || !landingView.classList.contains('active')) return;
+
+    currentSteps += stepIncrement;
+    if (currentSteps > maxSteps) {
+      currentSteps = maxSteps;
+    }
+
+    const percent = Math.round((currentSteps / maxSteps) * 100);
+    const offset = circumference - (percent / 100) * circumference;
+    const earnedCoins = Math.floor(currentSteps / 100);
+
+    stepValEl.innerText = currentSteps.toLocaleString();
+    if (percentValEl) percentValEl.innerText = `${percent}%`;
+    if (coinsValEl) coinsValEl.innerText = `+${earnedCoins} WalkCoins`;
+    ringFill.style.strokeDashoffset = offset;
+
+    // Reset loop smoothly after reaching 10,000 steps
+    if (currentSteps >= maxSteps) {
+      clearInterval(landingAnimationTimer);
+      setTimeout(() => {
+        currentSteps = 0;
+        ringFill.style.strokeDashoffset = circumference;
+        if (stepValEl) stepValEl.innerText = '0';
+        if (percentValEl) percentValEl.innerText = '0%';
+        if (coinsValEl) coinsValEl.innerText = '+0 WalkCoins';
+        // Restart loop
+        initLandingHeroAnimation();
+      }, 1800); // Hold at 10,000 steps for 1.8s
+    }
+  }, 60);
 }
 
 function updateAdminTabVisibility() {

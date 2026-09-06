@@ -237,22 +237,22 @@
                   <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; padding: 24px; width: 100%; max-width: 340px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                       <span style="font-size: 11px; font-weight: 800; color: #F59E0B; background: rgba(245, 158, 11, 0.15); padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.3);"><i class="fa-solid fa-bolt"></i> Live Activity</span>
-                      <span style="font-size: 12px; font-weight: 800; color: #F59E0B;"><i class="fa-solid fa-coins"></i> +78 WalkCoins</span>
+                      <span style="font-size: 12px; font-weight: 800; color: #F59E0B;"><i class="fa-solid fa-coins"></i> <span id="landing-hero-coins-val">+0 WalkCoins</span></span>
                     </div>
                     
                     <div class="step-progress-circle-container" style="margin: 12px auto;">
                       <svg class="step-progress-svg" viewBox="0 0 180 180">
                         <circle class="step-progress-circle-bg" cx="90" cy="90" r="80" />
-                        <circle class="step-progress-circle-fill" cx="90" cy="90" r="80" style="stroke-dashoffset: 110; stroke: url(#neon-blue-grad);" />
+                        <circle class="step-progress-circle-fill" id="landing-hero-ring-fill" cx="90" cy="90" r="80" style="stroke-dashoffset: 502.6; stroke: url(#neon-blue-grad); transition: stroke-dashoffset 0.1s ease-out;" />
                       </svg>
                       <div class="step-circle-inner-text">
-                        <div class="step-circle-val" style="font-size: 28px;">7,850</div>
+                        <div class="step-circle-val" id="landing-hero-step-val" style="font-size: 28px;">0</div>
                         <div class="step-circle-label">Steps Today</div>
                       </div>
                     </div>
 
                     <div style="font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 14px;">
-                      Daily Target: <strong style="color: white;">10,000</strong> steps (78% completed)
+                      Daily Target: <strong style="color: white;">10,000</strong> steps (<span id="landing-hero-percent-val" style="color: var(--primary-emerald); font-weight: 700;">0%</span> completed)
                     </div>
 
                     <div style="display: flex; gap: 8px; justify-content: center;">
