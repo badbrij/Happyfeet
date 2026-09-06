@@ -157,6 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initDailyChallenge();
   initAvatarSetup();
+  initGroupAvatarSetup();
+  initGroupAvatarEditHandlers();
   initNotificationDrawer();
   initShareCardModal();
   initUserDashboardTileModals();
@@ -887,6 +889,7 @@ async function handleCreateGroup(e) {
   const battleDuration = document.getElementById('grp-duration').value;
   const allowedPhonesVal = document.getElementById('grp-allowed-phones').value;
   const allowedPhones = allowedPhonesVal ? allowedPhonesVal.split(',').map(p => p.trim()).filter(p => p !== '') : [];
+  const groupPic = document.getElementById('grp-avatar-data')?.value || '🏆';
 
   const createLocalFallbackGroup = () => {
     const newGroupId = `grp_${Date.now()}`;
@@ -906,6 +909,7 @@ async function handleCreateGroup(e) {
       status: 'Active',
       ownerId: currentUser ? currentUser.id : 'user_1',
       allowedPhones: allowedPhones,
+      groupPic: groupPic,
       members: currentUser ? [{ id: currentUser.id, name: currentUser.alias || currentUser.name || 'Walker', battleSteps: currentUser.todaySteps || 0, gender: currentUser.gender || 'Male' }] : []
     };
 
@@ -928,7 +932,7 @@ async function handleCreateGroup(e) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${authToken}`,
       },
-      body: JSON.stringify({ name, groupType, targetSteps, allowedPhones, battleDuration }),
+      body: JSON.stringify({ name, groupType, targetSteps, allowedPhones, battleDuration, groupPic }),
     });
 
     const data = await res.json();
@@ -1562,12 +1566,21 @@ async function fetchGroups() {
     return `
     <div class="glass-card group-item" id="group-card-${g.id}" style="display: flex; flex-direction: column; gap: 16px; padding: 20px; margin-bottom: 16px;">
       <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-        <div>
-          <div style="display: flex; align-items: center; flex-wrap: wrap;">
-            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">${g.name}</h3>
-            ${statusBadge}
+        <div style="display: flex; gap: 14px; align-items: flex-start;">
+          <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;">
+            ${getGroupAvatarHTML(g.groupPic || '🏆', '48px', '26px')}
           </div>
-          <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 8px;">${g.description}</p>
+          <div>
+            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 0;">${g.name}</h3>
+              ${statusBadge}
+              ${isOwner ? `
+                <button class="sync-action-btn" onclick="openGroupAvatarChangeModal('${g.id}', '${(g.groupPic || '🏆').replace(/'/g, "\\'")}')" style="margin-top: 0; padding: 2px 8px; font-size: 11px; background: rgba(255,255,255,0.08); color: white; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="Change Group Squad Logo">
+                  <i class="fa-solid fa-camera"></i> Logo
+                </button>
+              ` : ''}
+            </div>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 8px; margin-top: 4px;">${g.description}</p>
           <div style="font-size: 13px; color: var(--accent-cyan); font-weight: 600;">
             Collective Target: ${(g.currentSteps || 0).toLocaleString()} / ${(g.targetSteps || 100000).toLocaleString()} steps
           </div>
@@ -1576,6 +1589,7 @@ async function fetchGroups() {
           </div>
           ${dateInfo}
         </div>
+      </div>
         <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;">
           <div>
             <span class="rank-badge" style="margin-bottom: 8px; display: inline-block;">Invite Code: ${g.inviteCode}</span>
@@ -2185,6 +2199,15 @@ function getAvatarHTML(profilePic, size = '32px', fontSize = '22px', gender = 'M
   return `<div class="avatar-circle-render" style="font-size: ${fontSize}; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); font-weight: 700; border-radius: 50%;">👨</div>`;
 }
 
+// Group Avatar rendering helper
+function getGroupAvatarHTML(groupPic, size = '36px', fontSize = '20px') {
+  if (!groupPic) groupPic = '🏆';
+  if (groupPic.startsWith('http') || groupPic.startsWith('data:image')) {
+    return `<img src="${groupPic}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+  }
+  return `<div style="font-size: ${fontSize}; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.06); border-radius: 50%;">${groupPic}</div>`;
+}
+
 // Process uploaded or camera photo: center-crops to a 1:1 passport aspect ratio and resizes to 200x200
 function processUploadedImage(file, previewRender, avatarDataInput) {
   if (!file) return;
@@ -2255,6 +2278,161 @@ function initAvatarSetup() {
         }
       }
     });
+  }
+}
+
+// Initialize group squad avatar creation setup handlers
+function initGroupAvatarSetup() {
+  const fileInput = document.getElementById('grp-avatar-file');
+  const cameraTrigger = document.getElementById('camera-grp-avatar-trigger');
+  const uploadTrigger = document.getElementById('upload-grp-avatar-trigger');
+  const previewRender = document.getElementById('grp-avatar-preview-render');
+  const avatarDataInput = document.getElementById('grp-avatar-data');
+
+  if (uploadTrigger && fileInput) {
+    uploadTrigger.onclick = () => fileInput.click();
+    fileInput.onchange = (e) => {
+      processUploadedImage(e.target.files[0], previewRender, avatarDataInput);
+    };
+  }
+
+  if (cameraTrigger) {
+    cameraTrigger.onclick = () => {
+      openWebcamCapture(previewRender, avatarDataInput);
+    };
+  }
+
+  const grpAvatarOptions = document.querySelectorAll('#create-group-modal .avatar-option[data-avatar]');
+  grpAvatarOptions.forEach(opt => {
+    opt.addEventListener('click', () => {
+      grpAvatarOptions.forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      const badge = opt.getAttribute('data-avatar');
+      if (avatarDataInput) avatarDataInput.value = badge;
+      if (previewRender) {
+        previewRender.className = "avatar-circle-render";
+        previewRender.innerHTML = badge;
+      }
+    });
+  });
+}
+
+// Open Group Avatar Edit Modal for Group Owner
+window.openGroupAvatarChangeModal = function(groupId, currentPic) {
+  const modal = document.getElementById('group-avatar-modal');
+  if (!modal) return;
+
+  const idInput = document.getElementById('edit-grp-id');
+  const dataInput = document.getElementById('edit-grp-avatar-data');
+  const preview = document.getElementById('edit-grp-avatar-preview-render');
+
+  if (idInput) idInput.value = groupId;
+  if (dataInput) dataInput.value = currentPic || '🏆';
+
+  if (preview) {
+    preview.className = "avatar-circle-render";
+    preview.innerHTML = getGroupAvatarHTML(currentPic || '🏆', '90px', '45px');
+  }
+
+  // Update active option in modal presets
+  document.querySelectorAll('#group-avatar-modal .avatar-option[data-avatar]').forEach(opt => {
+    if (opt.getAttribute('data-avatar') === currentPic) {
+      opt.classList.add('active');
+    } else {
+      opt.classList.remove('active');
+    }
+  });
+
+  modal.classList.add('active');
+};
+
+// Initialize Group Avatar Edit Handlers
+function initGroupAvatarEditHandlers() {
+  const modal = document.getElementById('group-avatar-modal');
+  const closeBtn = document.getElementById('close-group-avatar-modal-btn');
+  const saveBtn = document.getElementById('save-group-avatar-btn');
+  const fileInput = document.getElementById('edit-grp-avatar-file');
+  const uploadTrigger = document.getElementById('edit-upload-grp-avatar-trigger');
+  const cameraTrigger = document.getElementById('edit-camera-grp-avatar-trigger');
+  const preview = document.getElementById('edit-grp-avatar-preview-render');
+  const dataInput = document.getElementById('edit-grp-avatar-data');
+
+  if (closeBtn && modal) {
+    closeBtn.onclick = () => modal.classList.remove('active');
+  }
+
+  if (uploadTrigger && fileInput) {
+    uploadTrigger.onclick = () => fileInput.click();
+    fileInput.onchange = (e) => {
+      processUploadedImage(e.target.files[0], preview, dataInput);
+    };
+  }
+
+  if (cameraTrigger) {
+    cameraTrigger.onclick = () => {
+      openWebcamCapture(preview, dataInput);
+    };
+  }
+
+  const modalAvatarOpts = document.querySelectorAll('#group-avatar-modal .avatar-option[data-avatar]');
+  modalAvatarOpts.forEach(opt => {
+    opt.addEventListener('click', () => {
+      modalAvatarOpts.forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      const badge = opt.getAttribute('data-avatar');
+      if (dataInput) dataInput.value = badge;
+      if (preview) {
+        preview.className = "avatar-circle-render";
+        preview.innerHTML = badge;
+      }
+    });
+  });
+
+  if (saveBtn) {
+    saveBtn.onclick = async () => {
+      const groupId = document.getElementById('edit-grp-id')?.value;
+      const groupPic = dataInput?.value || '🏆';
+
+      if (!groupId) {
+        showToast('❌ Invalid Group ID');
+        return;
+      }
+
+      showToast('💾 Updating Squad Logo...');
+
+      // Local storage fallback update
+      const localGroups = JSON.parse(localStorage.getItem('happyfeet_local_groups') || '[]');
+      const localIndex = localGroups.findIndex(g => g.id === groupId);
+      if (localIndex !== -1) {
+        localGroups[localIndex].groupPic = groupPic;
+        localStorage.setItem('happyfeet_local_groups', JSON.stringify(localGroups));
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/groups/${groupId}/avatar`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({ groupPic })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          showToast('🎉 Squad Logo Updated!');
+          if (modal) modal.classList.remove('active');
+          fetchGroups();
+        } else {
+          showToast(`❌ Error: ${data.error || 'Failed to update squad logo'}`);
+        }
+      } catch (err) {
+        console.warn('Backend avatar update endpoint failed, updated locally:', err);
+        showToast('🎉 Squad Logo Updated (Saved Locally)!');
+        if (modal) modal.classList.remove('active');
+        fetchGroups();
+      }
+    };
   }
 }
 

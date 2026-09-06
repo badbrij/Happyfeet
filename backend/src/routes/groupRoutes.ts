@@ -6,7 +6,7 @@ const router = Router();
 
 // POST /api/v1/groups - Create a group
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
-  const { name, description, groupType, targetSteps, allowedPhones, battleDuration } = req.body;
+  const { name, description, groupType, targetSteps, allowedPhones, battleDuration, groupPic, avatar } = req.body;
   const userId = req.userId!;
 
   if (!name) return res.status(400).json({ error: 'Group name is required' });
@@ -14,6 +14,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const groupId = `grp_${Date.now()}`;
     const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const pic = groupPic || avatar || '🏆';
 
     const duration = battleDuration || 'Infinite';
     const startDate = new Date().toISOString().split('T')[0];
@@ -33,7 +34,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       endDate = d.toISOString().split('T')[0];
     }
 
-    const metadata = { battleDuration: duration, startDate, endDate };
+    const metadata = { battleDuration: duration, startDate, endDate, groupPic: pic };
     const serializedDescription = `${description || ''} ||METADATA|| ${JSON.stringify(metadata)}`;
 
     const newGroup = {
@@ -89,6 +90,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         endDate,
         status: 'Active',
         daysRemaining: endDate ? 30 : null,
+        groupPic: pic,
         members: [{ userId, role: 'Owner' }] // Return mock initial members list for UI
       } 
     });
@@ -136,12 +138,15 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       let startDate = g.created_at ? g.created_at.split('T')[0] : new Date().toISOString().split('T')[0];
       let endDate: string | null = null;
 
+      let groupPic = '🏆';
+
       if (parts[1]) {
         try {
           const meta = JSON.parse(parts[1]);
           battleDuration = meta.battleDuration || 'Infinite';
           startDate = meta.startDate || startDate;
           endDate = meta.endDate || null;
+          groupPic = meta.groupPic || meta.avatar || '🏆';
         } catch (e) {
           // fallback
         }
@@ -177,6 +182,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         endDate,
         status,
         daysRemaining,
+        groupPic,
         members: new Array(count || 0).fill({}), // Populate empty objects of proper length for frontend length check
       });
     }
@@ -437,7 +443,52 @@ router.post('/leave', authMiddleware, async (req: AuthRequest, res: Response) =>
     }
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: 'Server error leaving group' });
+    return res.status(500).json({ error: 'Server error processing request' });
+  }
+});
+
+// PUT /api/v1/groups/:id/avatar - Update Group Avatar / Photo
+router.put('/:id/avatar', authMiddleware, async (req: AuthRequest, res: Response) => {
+  const groupId = String(req.params.id);
+  const { groupPic } = req.body;
+  const userId = req.userId!;
+
+  if (!groupPic) return res.status(400).json({ error: 'Group picture data is required' });
+
+  try {
+    const { data: group, error: fetchError } = await supabase
+      .from('groups')
+      .select('*')
+      .eq('id', groupId)
+      .maybeSingle();
+
+    if (fetchError || !group) return res.status(404).json({ error: 'Group not found' });
+
+    // Parse description metadata
+    const parts = (group.description || '').split(' ||METADATA|| ');
+    const descText = parts[0];
+    let meta: any = {};
+    if (parts[1]) {
+      try { meta = JSON.parse(parts[1]); } catch (e) {}
+    }
+
+    meta.groupPic = groupPic;
+    const serializedDescription = `${descText} ||METADATA|| ${JSON.stringify(meta)}`;
+
+    const { error: updateError } = await supabase
+      .from('groups')
+      .update({ description: serializedDescription })
+      .eq('id', groupId);
+
+    if (updateError) {
+      console.error(updateError);
+      return res.status(500).json({ error: 'Failed to update group logo' });
+    }
+
+    return res.json({ message: 'Group logo updated successfully', groupPic });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Server error updating group logo' });
   }
 });
 
