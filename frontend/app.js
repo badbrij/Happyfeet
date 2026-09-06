@@ -3417,20 +3417,84 @@ function initHealthSyncSetup() {
   }
 }
 
+function normalizeUserObject(u) {
+  if (!u) return {};
+  const created_at = u.created_at || u.createdAt || new Date().toISOString();
+  const last_activity = u.last_activity || u.lastActivity || u.updated_at || u.updatedAt || created_at;
+  const age_group = u.age_group || u.ageGroup || u.ageGroupStr || '30-39';
+  const bmi_category = u.bmi_category || u.bmiCategory || 'Normal';
+  const lifetime_steps = Number(u.lifetime_steps ?? u.lifetimeSteps ?? u.steps ?? 0);
+  const walk_coins = Number(u.walk_coins ?? u.walkCoins ?? u.coins ?? 0);
+  const current_streak = Number(u.current_streak ?? u.currentStreak ?? u.streak ?? 0);
+  const fraud_score = Number(u.fraud_score ?? u.fraudScore ?? 0);
+  const daily_step_goal = Number(u.daily_step_goal ?? u.dailyStepGoal ?? 10000);
+  const app_status = u.app_status || u.appStatus || 'Installed';
+  const gender = u.gender || 'PreferNotToSay';
+  const city = u.city || 'Hyderabad';
+  const state = u.state || 'Telangana';
+  const occupation = u.occupation || 'Professional';
+  const groups = u.groups || u.userGroups || [];
+  const is_admin = Boolean(u.is_admin || u.isAdmin);
+  const name = u.name || u.alias || u.phone || 'Walker';
+  const email = u.email || '';
+  const phone = u.phone || '';
+  const alias = u.alias || '';
+  const profile_pic = u.profile_pic || u.profilePic || 'Cheetah';
+
+  return {
+    ...u,
+    id: u.id || u.email || Math.random().toString(36).substring(7),
+    name,
+    email,
+    phone,
+    alias,
+    profile_pic,
+    profilePic: profile_pic,
+    gender,
+    city,
+    state,
+    occupation,
+    groups,
+    is_admin,
+    isAdmin: is_admin,
+    age_group,
+    ageGroup: age_group,
+    bmi_category,
+    bmiCategory: bmi_category,
+    lifetime_steps,
+    lifetimeSteps: lifetime_steps,
+    walk_coins,
+    walkCoins: walk_coins,
+    current_streak,
+    currentStreak: current_streak,
+    fraud_score,
+    fraudScore: fraud_score,
+    daily_step_goal,
+    dailyStepGoal: daily_step_goal,
+    app_status,
+    appStatus: app_status,
+    created_at,
+    createdAt: created_at,
+    last_activity,
+    lastActivity: last_activity
+  };
+}
+window.normalizeUserObject = normalizeUserObject;
+
 function getLocalAdminDashboardFallback(range = '30d') {
   const localUsers = JSON.parse(localStorage.getItem('happyfeet_local_users') || '[]');
   const defaultDemoUsers = [
-    { id: 'usr_admin_0099801234', name: 'Brijesh Sharma (Admin)', email: 'brijesh@badakadam.com', phone: '+0099801234', gender: 'Male', age_group: '30-39', state: 'Telangana', city: 'Hyderabad', occupation: 'System Governance', bmi_category: 'Normal', walk_coins: 5000, lifetime_steps: 524000, current_streak: 30, created_at: '2026-08-01T10:00:00Z', is_admin: true, app_status: 'Installed', groups: ['Hyderabadi Striders'] },
-    { id: 'usr_2', name: 'Priya Verma', email: 'priya@badakadam.com', phone: '+919876543210', gender: 'Female', age_group: '20-29', state: 'Telangana', city: 'Hyderabad', occupation: 'Software Engineer', bmi_category: 'Normal', walk_coins: 1450, lifetime_steps: 342000, current_streak: 14, created_at: '2026-08-10T11:00:00Z', is_admin: false, app_status: 'Installed', groups: ['Hyderabadi Striders'] },
-    { id: 'usr_3', name: 'Rahul Mehta', email: 'rahul@badakadam.com', phone: '+919876543211', gender: 'Male', age_group: '30-39', state: 'Telangana', city: 'Hyderabad', occupation: 'Product Manager', bmi_category: 'Overweight', walk_coins: 890, lifetime_steps: 215000, current_streak: 7, created_at: '2026-08-15T12:00:00Z', is_admin: false, app_status: 'Installed', groups: ['Hyderabadi Striders'] },
-    { id: 'usr_4', name: 'Amit Patel', email: 'amit@badakadam.com', phone: '+919876543212', gender: 'Male', age_group: '40-49', state: 'Maharashtra', city: 'Mumbai', occupation: 'Finance Lead', bmi_category: 'Normal', walk_coins: 2100, lifetime_steps: 410000, current_streak: 21, created_at: '2026-08-18T14:00:00Z', is_admin: false, app_status: 'Installed', groups: ['Mumbai Walkers'] },
-    { id: 'usr_5', name: 'Ananya Rao', email: 'ananya@badakadam.com', phone: '+919876543213', gender: 'Female', age_group: '20-29', state: 'Karnataka', city: 'Bangalore', occupation: 'UX Designer', bmi_category: 'Normal', walk_coins: 3200, lifetime_steps: 610000, current_streak: 45, created_at: '2026-08-05T09:00:00Z', is_admin: false, app_status: 'Installed', groups: ['Bangalore Tech Walkers'] }
+    { id: 'usr_admin_0099801234', name: 'Brijesh Sharma (Admin)', email: 'brijesh@badakadam.com', phone: '+0099801234', gender: 'Male', age_group: '30-39', state: 'Telangana', city: 'Hyderabad', occupation: 'System Governance', bmi_category: 'Normal', walk_coins: 5000, lifetime_steps: 524000, current_streak: 30, created_at: '2026-08-01T10:00:00Z', last_activity: new Date().toISOString(), is_admin: true, app_status: 'Installed', groups: ['Hyderabadi Striders'] },
+    { id: 'usr_2', name: 'Priya Verma', email: 'priya@badakadam.com', phone: '+919876543210', gender: 'Female', age_group: '20-29', state: 'Telangana', city: 'Hyderabad', occupation: 'Software Engineer', bmi_category: 'Normal', walk_coins: 1450, lifetime_steps: 342000, current_streak: 14, created_at: '2026-08-10T11:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Hyderabadi Striders'] },
+    { id: 'usr_3', name: 'Rahul Mehta', email: 'rahul@badakadam.com', phone: '+919876543211', gender: 'Male', age_group: '30-39', state: 'Telangana', city: 'Hyderabad', occupation: 'Product Manager', bmi_category: 'Overweight', walk_coins: 890, lifetime_steps: 215000, current_streak: 7, created_at: '2026-08-15T12:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Hyderabadi Striders'] },
+    { id: 'usr_4', name: 'Amit Patel', email: 'amit@badakadam.com', phone: '+919876543212', gender: 'Male', age_group: '40-49', state: 'Maharashtra', city: 'Mumbai', occupation: 'Finance Lead', bmi_category: 'Normal', walk_coins: 2100, lifetime_steps: 410000, current_streak: 21, created_at: '2026-08-18T14:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Mumbai Walkers'] },
+    { id: 'usr_5', name: 'Ananya Rao', email: 'ananya@badakadam.com', phone: '+919876543213', gender: 'Female', age_group: '20-29', state: 'Karnataka', city: 'Bangalore', occupation: 'UX Designer', bmi_category: 'Normal', walk_coins: 3200, lifetime_steps: 610000, current_streak: 45, created_at: '2026-08-05T09:00:00Z', last_activity: new Date().toISOString(), is_admin: false, app_status: 'Installed', groups: ['Bangalore Tech Walkers'] }
   ];
 
   const allUsersMap = new Map();
-  defaultDemoUsers.forEach(u => allUsersMap.set(u.id, u));
+  defaultDemoUsers.forEach(u => allUsersMap.set(u.id, normalizeUserObject(u)));
   localUsers.forEach(u => {
-    allUsersMap.set(u.id, {
+    const norm = normalizeUserObject({
       id: u.id,
       name: u.name || u.alias || 'Walker',
       email: u.email || `${u.phone?.replace(/[^0-9]/g, '')}@badakadam.com`,
@@ -3445,10 +3509,12 @@ function getLocalAdminDashboardFallback(range = '30d') {
       lifetime_steps: u.lifetimeSteps || u.todaySteps || 0,
       current_streak: u.currentStreak || 1,
       created_at: u.createdAt || new Date().toISOString(),
+      last_activity: u.lastActivity || new Date().toISOString(),
       is_admin: u.phone?.includes('0099801234') || u.isAdmin || u.is_admin,
       app_status: 'Installed',
       groups: ['Hyderabadi Striders']
     });
+    allUsersMap.set(norm.id, norm);
   });
 
   const users = Array.from(allUsersMap.values());
@@ -3558,96 +3624,24 @@ async function fetchAdminDashboard(range = activeAdminRange) {
 
   const { summary, funnel, demographics, economy, journey, users } = resData;
 
-  // Cache audited users list globally for modal filtering
-  auditedUsers = users || [];
+  // Cache audited users list globally for modal filtering with normalized properties
+  auditedUsers = (users || []).map(normalizeUserObject);
 
-    initAdminRangeChips();
-    fetchFraudRules();
-    initFraudRulesForm();
-    fetchFlaggedLogs();
+  initAdminRangeChips();
+  fetchFraudRules();
+  initFraudRulesForm();
+  fetchFlaggedLogs();
 
-    // 1. Update Hero Cards
-    document.getElementById('admin-stat-users').innerText = summary.totalUsers;
-    document.getElementById('admin-stat-steps').innerText = summary.totalPlatformSteps.toLocaleString();
-    document.getElementById('admin-stat-coins').innerText = summary.totalCoinsEarned.toLocaleString();
-    document.getElementById('admin-stat-groups').innerText = summary.totalGroups;
+  // 1. Update Hero Cards Values
+  if (document.getElementById('admin-stat-users')) document.getElementById('admin-stat-users').innerText = summary.totalUsers;
+  if (document.getElementById('admin-stat-steps')) document.getElementById('admin-stat-steps').innerText = summary.totalPlatformSteps.toLocaleString();
+  if (document.getElementById('admin-stat-coins')) document.getElementById('admin-stat-coins').innerText = summary.totalCoinsEarned.toLocaleString();
+  if (document.getElementById('admin-stat-groups')) document.getElementById('admin-stat-groups').innerText = summary.totalGroups;
 
-    // Wire up audit trail on clicking Total Users Card
-    const totalUsersCard = document.getElementById('admin-stat-users').parentElement;
-    if (totalUsersCard) {
-      totalUsersCard.style.cursor = 'pointer';
-      totalUsersCard.title = 'Click to audit all walkers';
-      
-      const newCard = totalUsersCard.cloneNode(true);
-      totalUsersCard.parentNode.replaceChild(newCard, totalUsersCard);
-      newCard.addEventListener('click', () => {
-        showAdminUserAudit('all', null);
-      });
-    }
-
-    // Platform Steps Card
-    const stepsCard = document.getElementById('admin-stat-steps').parentElement;
-    if (stepsCard) {
-      stepsCard.style.cursor = 'pointer';
-      stepsCard.title = 'Click to view top step contributors';
-      
-      const newCard = stepsCard.cloneNode(true);
-      stepsCard.parentNode.replaceChild(newCard, stepsCard);
-      newCard.addEventListener('click', () => {
-        showAdminUserAudit('all', null, 'lifetime_steps');
-      });
-    }
-
-    // WalkCoins Circulation Card
-    const coinsCard = document.getElementById('admin-stat-coins').parentElement;
-    if (coinsCard) {
-      coinsCard.style.cursor = 'pointer';
-      coinsCard.title = 'Click to view top WalkCoins holders';
-      
-      const newCard = coinsCard.cloneNode(true);
-      coinsCard.parentNode.replaceChild(newCard, coinsCard);
-      newCard.addEventListener('click', () => {
-        showAdminUserAudit('all', null, 'walk_coins');
-      });
-    }
-
-    // Group Battles Card
-    const groupsCard = document.getElementById('admin-stat-groups').parentElement;
-    if (groupsCard) {
-      groupsCard.style.cursor = 'pointer';
-      groupsCard.title = 'Click to view group battle participants';
-      
-      const newCard = groupsCard.cloneNode(true);
-      groupsCard.parentNode.replaceChild(newCard, groupsCard);
-      newCard.addEventListener('click', () => {
-        showAdminUserAudit('in_group', null);
-      });
-    }
-
-    // 2. Update Marketing Funnel
-    document.getElementById('admin-funnel-downloads').innerText = summary.downloads.toLocaleString();
-    document.getElementById('admin-funnel-installs').innerText = summary.installs.toLocaleString();
-    document.getElementById('admin-funnel-uninstalls').innerText = summary.uninstalls.toLocaleString();
-
-    // Wire up clicks for Downloads, Installs, and Uninstalls in simulated funnel
-    const dlBtn = document.getElementById('admin-funnel-downloads-btn');
-    if (dlBtn) {
-      const newBtn = dlBtn.cloneNode(true);
-      dlBtn.parentNode.replaceChild(newBtn, dlBtn);
-      newBtn.addEventListener('click', () => showAdminUserAudit('all', null));
-    }
-    const instBtn = document.getElementById('admin-funnel-installs-btn');
-    if (instBtn) {
-      const newBtn = instBtn.cloneNode(true);
-      instBtn.parentNode.replaceChild(newBtn, instBtn);
-      newBtn.addEventListener('click', () => showAdminUserAudit('app_status', 'Installed'));
-    }
-    const uninstBtn = document.getElementById('admin-funnel-uninstalls-btn');
-    if (uninstBtn) {
-      const newBtn = uninstBtn.cloneNode(true);
-      uninstBtn.parentNode.replaceChild(newBtn, uninstBtn);
-      newBtn.addEventListener('click', () => showAdminUserAudit('app_status', 'Uninstalled'));
-    }
+  // 2. Update Marketing Funnel Values
+  if (document.getElementById('admin-funnel-downloads')) document.getElementById('admin-funnel-downloads').innerText = summary.downloads.toLocaleString();
+  if (document.getElementById('admin-funnel-installs')) document.getElementById('admin-funnel-installs').innerText = summary.installs.toLocaleString();
+  if (document.getElementById('admin-funnel-uninstalls')) document.getElementById('admin-funnel-uninstalls').innerText = summary.uninstalls.toLocaleString();
 
     // Platforms
     const androidPct = summary.installs > 0 ? Math.round((funnel.platforms.Android / summary.installs) * 100) : 72;
@@ -3812,16 +3806,17 @@ function showAdminUserAudit(keyType, filterValue, sortBy = null) {
   
   if (searchInput) searchInput.value = ''; // Reset search input
 
+  let list = Array.isArray(auditedUsers) ? auditedUsers.map(u => normalizeUserObject(u)) : [];
+
   if (keyType === 'all') {
-    labelEl.innerText = sortBy === 'lifetime_steps' ? 'All Users (Sorted by Steps)' : (sortBy === 'walk_coins' ? 'All Users (Sorted by Coins)' : 'All Users');
-    activeAuditList = auditedUsers;
+    if (labelEl) labelEl.innerText = sortBy === 'lifetime_steps' ? 'All Users (Sorted by Steps)' : (sortBy === 'walk_coins' ? 'All Users (Sorted by Coins)' : 'All Users');
   } else if (keyType === 'in_group') {
-    labelEl.innerText = 'Battle & Group Participants';
-    activeAuditList = auditedUsers.filter(u => u.groups && u.groups.length > 0);
+    if (labelEl) labelEl.innerText = 'Battle & Group Participants';
+    list = list.filter(u => u.groups && u.groups.length > 0);
   } else {
-    // Normalization helper
-    labelEl.innerText = `${keyType.toUpperCase().replace('_', ' ')}: ${filterValue}`;
-    activeAuditList = auditedUsers.filter(u => {
+    const formattedKey = keyType.replace('_', ' ').toUpperCase();
+    if (labelEl) labelEl.innerText = `${formattedKey}: ${filterValue}`;
+    list = list.filter(u => {
       const userVal = u[keyType] ? String(u[keyType]).trim().toLowerCase() : '';
       const filterVal = filterValue ? String(filterValue).trim().toLowerCase() : '';
       return userVal === filterVal;
@@ -3830,23 +3825,28 @@ function showAdminUserAudit(keyType, filterValue, sortBy = null) {
 
   // Handle optional sorting (e.g. by steps or coins)
   if (sortBy) {
-    activeAuditList = [...activeAuditList].sort((a, b) => (b[sortBy] || 0) - (a[sortBy] || 0));
+    list.sort((a, b) => (Number(b[sortBy]) || 0) - (Number(a[sortBy]) || 0));
   }
 
+  activeAuditList = list;
   renderAuditedUsersTable(activeAuditList);
 
   // Wire up dynamic search within the filtered subset
   if (searchInput) {
-    // Rebind search listener by replacing clone
     const newSearch = searchInput.cloneNode(true);
-    searchInput.parentNode.replaceChild(newSearch, searchInput);
+    if (searchInput.parentNode) searchInput.parentNode.replaceChild(newSearch, searchInput);
     
     newSearch.addEventListener('input', (e) => {
-      const q = e.target.value.toLowerCase();
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) {
+        renderAuditedUsersTable(activeAuditList);
+        return;
+      }
       const searchFiltered = activeAuditList.filter(u => 
         (u.name && u.name.toLowerCase().includes(q)) ||
         (u.alias && u.alias.toLowerCase().includes(q)) ||
         (u.email && u.email.toLowerCase().includes(q)) ||
+        (u.phone && u.phone.toLowerCase().includes(q)) ||
         (u.city && u.city.toLowerCase().includes(q)) ||
         (u.state && u.state.toLowerCase().includes(q)) ||
         (u.occupation && u.occupation.toLowerCase().includes(q))
@@ -3859,6 +3859,7 @@ function showAdminUserAudit(keyType, filterValue, sortBy = null) {
   const modal = document.getElementById('admin-user-list-modal');
   if (modal) modal.classList.add('active');
 }
+window.showAdminUserAudit = showAdminUserAudit;
 
 function renderAuditedUsersTable(usersList) {
   const tbody = document.getElementById('admin-user-modal-tbody');
@@ -3868,12 +3869,19 @@ function renderAuditedUsersTable(usersList) {
   currentModalDisplayedUsers = usersList;
 
   tbody.innerHTML = '';
-  if (usersList.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="padding: 24px; text-align: center; color: var(--text-muted);">No audited users matched this group</td></tr>`;
+  if (!usersList || usersList.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="padding: 24px; text-align: center; color: var(--text-muted);">No audited users matched this group filter</td></tr>`;
     return;
   }
 
+  const parseDateSafe = (dStr) => {
+    if (!dStr) return 'Recent';
+    const d = new Date(dStr);
+    return isNaN(d.getTime()) ? 'Recent' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
   usersList.forEach(u => {
+    const norm = normalizeUserObject(u);
     const tr = document.createElement('tr');
     tr.style.borderBottom = '1px solid rgba(255, 255, 255, 0.06)';
     tr.style.transition = 'background 0.2s';
@@ -3882,19 +3890,19 @@ function renderAuditedUsersTable(usersList) {
     tr.addEventListener('mouseenter', () => tr.style.background = 'rgba(255,255,255,0.02)');
     tr.addEventListener('mouseleave', () => tr.style.background = 'transparent');
 
-    const profilePic = u.profile_pic || 'Cheetah';
-    const aliasText = u.alias ? `@${u.alias}` : '@walker';
+    const profilePic = norm.profile_pic || 'Cheetah';
+    const aliasText = norm.alias ? `@${norm.alias}` : '@walker';
     
-    const statusBadge = u.app_status === 'Uninstalled' 
+    const statusBadge = norm.app_status === 'Uninstalled' 
       ? '<span style="padding: 2px 6px; font-size: 10px; border-radius: 4px; background: rgba(239, 68, 68, 0.15); color: #EF4444; font-weight: 700; margin-left: 6px;">Uninstalled</span>'
       : '<span style="padding: 2px 6px; font-size: 10px; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: var(--primary-emerald); font-weight: 700; margin-left: 6px;">Installed</span>';
 
-    const signupDate = new Date(u.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-    const lastActiveDate = new Date(u.last_activity).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    const signupDate = parseDateSafe(norm.created_at);
+    const lastActiveDate = parseDateSafe(norm.last_activity);
 
     // Admin action button rendering
     let actionHTML = '';
-    const isSuperadmin = currentUser && currentUser.email === 'brijesh@badakadam.com';
+    const isSuperadmin = currentUser && (currentUser.email === 'brijesh@badakadam.com' || currentUser.phone === '+0099801234' || currentUser.phone === '0099801234');
     const staticAdmins = [
       'brijesh@badakadam.com',
       'superadmin@badakadam.com',
@@ -3903,41 +3911,41 @@ function renderAuditedUsersTable(usersList) {
     ];
 
     if (isSuperadmin) {
-      if (u.email === 'brijesh@badakadam.com') {
-        actionHTML = '<span style="color: var(--accent-cyan); font-weight: 700;">Superadmin</span>';
-      } else if (staticAdmins.includes(u.email.toLowerCase())) {
-        actionHTML = '<span style="color: var(--text-muted); font-weight: 700;">Static Dev</span>';
-      } else if (u.is_admin) {
-        actionHTML = `<button onclick="toggleAdminStatus('${u.id}', 'remove')" class="register-hero-btn" style="height: 28px; padding: 0 10px; margin-top: 0; font-size: 11px; background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); color: #EF4444; border-radius: 6px; cursor: pointer; transition: all 0.2s;">Revoke Admin</button>`;
+      if (norm.email === 'brijesh@badakadam.com' || norm.phone === '+0099801234' || norm.phone === '0099801234') {
+        actionHTML = '<span style="color: var(--accent-cyan); font-weight: 700; font-size: 11px;">Superadmin</span>';
+      } else if (staticAdmins.includes((norm.email || '').toLowerCase())) {
+        actionHTML = '<span style="color: var(--text-muted); font-weight: 700; font-size: 11px;">Static Dev</span>';
+      } else if (norm.is_admin) {
+        actionHTML = `<button onclick="toggleAdminStatus('${norm.id}', 'remove')" class="register-hero-btn" style="height: 28px; padding: 0 10px; margin-top: 0; font-size: 11px; background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); color: #EF4444; border-radius: 6px; cursor: pointer; transition: all 0.2s;">Revoke Admin</button>`;
       } else {
-        actionHTML = `<button onclick="toggleAdminStatus('${u.id}', 'add')" class="register-hero-btn" style="height: 28px; padding: 0 10px; margin-top: 0; font-size: 11px; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: var(--primary-emerald); border-radius: 6px; cursor: pointer; transition: all 0.2s;">Make Admin</button>`;
+        actionHTML = `<button onclick="toggleAdminStatus('${norm.id}', 'add')" class="register-hero-btn" style="height: 28px; padding: 0 10px; margin-top: 0; font-size: 11px; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: var(--primary-emerald); border-radius: 6px; cursor: pointer; transition: all 0.2s;">Make Admin</button>`;
       }
     } else {
-      if (u.email === 'brijesh@badakadam.com') {
-        actionHTML = '<span style="color: var(--accent-cyan); font-weight: 700;">Superadmin</span>';
-      } else if (u.is_admin) {
-        actionHTML = '<span style="color: var(--primary-emerald); font-weight: 700;">Admin</span>';
+      if (norm.email === 'brijesh@badakadam.com' || norm.phone === '+0099801234' || norm.phone === '0099801234') {
+        actionHTML = '<span style="color: var(--accent-cyan); font-weight: 700; font-size: 11px;">Superadmin</span>';
+      } else if (norm.is_admin) {
+        actionHTML = '<span style="color: var(--primary-emerald); font-weight: 700; font-size: 11px;">Admin</span>';
       } else {
-        actionHTML = '<span style="color: var(--text-muted);">User</span>';
+        actionHTML = '<span style="color: var(--text-muted); font-size: 11px;">User</span>';
       }
     }
 
-    const fraudScoreVal = u.fraud_score || 0;
+    const fraudScoreVal = norm.fraud_score || 0;
     const isFraudFlagged = fraudScoreVal >= 80;
     const fraudBadgeHTML = isFraudFlagged
       ? `<div style="font-size: 10px; padding: 2px 6px; background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); color: #F87171; border-radius: 4px; font-weight: 800; margin-top: 4px; display: inline-block;"><i class="fa-solid fa-triangle-exclamation"></i> Fraud Score: ${fraudScoreVal}/100</div>`
       : `<div style="font-size: 10px; color: #10B981; margin-top: 2px;">Fraud Score: ${fraudScoreVal}/100</div>`;
 
-    const resetBtnHTML = `<button onclick="resetFraudAccount('${u.id}', '${(u.name || 'Walker').replace(/'/g, "\\'")}')" class="register-hero-btn" style="height: 24px; padding: 0 8px; margin-top: 4px; font-size: 10px; background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #F87171; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 800;"><i class="fa-solid fa-user-slash"></i> Reset to 0</button>`;
+    const resetBtnHTML = `<button onclick="resetFraudAccount('${norm.id}', '${(norm.name || 'Walker').replace(/'/g, "\\'")}')" class="register-hero-btn" style="height: 24px; padding: 0 8px; margin-top: 4px; font-size: 10px; background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #F87171; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 800;"><i class="fa-solid fa-user-slash"></i> Reset to 0</button>`;
 
     tr.innerHTML = `
       <td style="padding: 12px 16px; display: flex; align-items: center; gap: 10px;">
         <div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); font-size: 18px;">
-          ${getAvatarHTML(profilePic, '32px', '18px', u.gender)}
+          ${getAvatarHTML(profilePic, '32px', '18px', norm.gender)}
         </div>
         <div>
           <div style="display: flex; align-items: center;">
-            <strong style="color: white; font-size: 13px;">${u.name}</strong>
+            <strong style="color: white; font-size: 13px;">${norm.name}</strong>
             ${statusBadge}
           </div>
           <div style="font-size: 11px; color: var(--text-muted);">${aliasText}</div>
@@ -3945,30 +3953,30 @@ function renderAuditedUsersTable(usersList) {
         </div>
       </td>
       <td style="padding: 12px 16px;">
-        <div style="color: white;">${u.email}</div>
-        <div style="font-size: 11px; color: var(--text-muted);">${u.phone}</div>
+        <div style="color: white;">${norm.email || 'N/A'}</div>
+        <div style="font-size: 11px; color: var(--text-muted);">${norm.phone || 'N/A'}</div>
       </td>
       <td style="padding: 12px 16px;">
-        <div>${u.gender}</div>
-        <div style="font-size: 11px; color: var(--text-muted);">${u.age_group}</div>
+        <div>${norm.gender}</div>
+        <div style="font-size: 11px; color: var(--text-muted);">${norm.age_group}</div>
       </td>
       <td style="padding: 12px 16px;">
-        <div style="color: white;">${u.city}</div>
-        <div style="font-size: 11px; color: var(--text-muted);">${u.state}</div>
+        <div style="color: white;">${norm.city}</div>
+        <div style="font-size: 11px; color: var(--text-muted);">${norm.state}</div>
       </td>
       <td style="padding: 12px 16px;">
         <div style="color: white;">📥 ${signupDate}</div>
         <div style="font-size: 11px; color: var(--text-muted);">⚡ Active: ${lastActiveDate}</div>
       </td>
       <td style="padding: 12px 16px;">
-        <div>🎯 Goal: ${(u.daily_step_goal || 10000).toLocaleString()} steps</div>
-        <div style="font-size: 11px; font-weight: 700; color: ${u.bmi_category?.toLowerCase() === 'normal' ? 'var(--primary-emerald)' : 'var(--accent-amber)'};">
-          BMI: ${u.bmi_category || 'Normal'}
+        <div>🎯 Goal: ${(norm.daily_step_goal || 10000).toLocaleString()} steps</div>
+        <div style="font-size: 11px; font-weight: 700; color: ${(norm.bmi_category || '').toLowerCase() === 'normal' ? 'var(--primary-emerald)' : 'var(--accent-amber)'};">
+          BMI: ${norm.bmi_category || 'Normal'}
         </div>
       </td>
       <td style="padding: 12px 16px; text-align: right;">
-        <div style="font-weight: 700; color: var(--accent-cyan);"><i class="fa-solid fa-coins"></i> ${(u.walk_coins || 0).toLocaleString()}</div>
-        <div style="font-size: 11px; color: var(--text-muted);">🔥 Streak: ${u.current_streak || 0} days</div>
+        <div style="font-weight: 700; color: var(--accent-cyan);"><i class="fa-solid fa-coins"></i> ${(norm.walk_coins || 0).toLocaleString()}</div>
+        <div style="font-size: 11px; color: var(--text-muted);">🔥 Steps: ${(norm.lifetime_steps || 0).toLocaleString()}</div>
       </td>
       <td style="padding: 12px 16px; text-align: center;">
         <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
@@ -3980,6 +3988,7 @@ function renderAuditedUsersTable(usersList) {
     tbody.appendChild(tr);
   });
 }
+window.renderAuditedUsersTable = renderAuditedUsersTable;
 
 window.resetFraudAccount = async function(targetUserId, userName) {
   if (!confirm(`⚠️ ARE YOU SURE YOU WANT TO RESET ACCOUNT FOR "${userName}"?\n\nThis will permanently wipe their:\n• Lifetime Steps to ZERO\n• WalkCoins Balance to ZERO\n• Daily Streak to ZERO\n• Fraud Score to ZERO\n\nThis action cannot be undone.`)) {
@@ -4802,14 +4811,32 @@ function initRealtimeStepStream() {
   };
 
   eventSource.onerror = () => {
-    const badge = document.getElementById('sse-stream-badge');
-    if (badge) {
-      badge.style.background = 'rgba(239, 68, 68, 0.15)';
-      badge.style.color = '#EF4444';
-      badge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
-      badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="font-size: 8px;"></i> RECONNECTING';
-    }
+    try {
+      eventSource.close();
+    } catch (e) {}
+    startLivePollingFallback();
   };
+}
+
+let livePollingInterval = null;
+function startLivePollingFallback() {
+  const badge = document.getElementById('sse-stream-badge');
+  if (badge) {
+    badge.style.background = 'rgba(16, 185, 129, 0.15)';
+    badge.style.color = '#10B981';
+    badge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+    badge.innerHTML = '<i class="fa-solid fa-circle-dot" style="font-size: 8px;"></i> LIVE DATA';
+  }
+
+  if (livePollingInterval) clearInterval(livePollingInterval);
+  livePollingInterval = setInterval(() => {
+    const activeTab = document.querySelector('.nav-btn.active')?.getAttribute('data-tab');
+    if (activeTab === 'rankings-view') {
+      fetchRankings();
+    } else if (activeTab === 'admin-view') {
+      fetchAdminDashboard();
+    }
+  }, 15000);
 }
 
 function initAdminExportHandlers() {

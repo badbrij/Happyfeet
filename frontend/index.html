@@ -770,19 +770,19 @@
 
           <!-- Hero Metrics Grid -->
           <div class="admin-metric-card-grid">
-            <div class="admin-metric-card">
+            <div class="admin-metric-card" onclick="showAdminUserAudit('all', null)" style="cursor: pointer;" title="Click to view full user audit table">
               <span class="label"><i class="fa-solid fa-circle-user" style="color: var(--accent-cyan);"></i> Total Users</span>
               <span class="value" id="admin-stat-users">0</span>
             </div>
-            <div class="admin-metric-card">
+            <div class="admin-metric-card" onclick="showAdminUserAudit('all', null, 'lifetime_steps')" style="cursor: pointer;" title="Click to audit users sorted by total step output">
               <span class="label"><i class="fa-solid fa-shoe-prints" style="color: var(--primary-emerald);"></i> Platform Steps</span>
               <span class="value" id="admin-stat-steps">0</span>
             </div>
-            <div class="admin-metric-card">
+            <div class="admin-metric-card" onclick="showAdminUserAudit('all', null, 'walk_coins')" style="cursor: pointer;" title="Click to audit users sorted by WalkCoin balances">
               <span class="label"><i class="fa-solid fa-coins" style="color: var(--accent-amber);"></i> WalkCoins Circulation</span>
               <span class="value" id="admin-stat-coins">0</span>
             </div>
-            <div class="admin-metric-card">
+            <div class="admin-metric-card" onclick="showAdminUserAudit('in_group', null)" style="cursor: pointer;" title="Click to audit users active in Group Battles">
               <span class="label"><i class="fa-solid fa-users" style="color: var(--accent-purple);"></i> Group Battles</span>
               <span class="value" id="admin-stat-groups">0</span>
             </div>
@@ -797,9 +797,9 @@
               <p style="color: var(--text-muted); font-size: 11px; line-height: 1.4; margin-bottom: 16px;">Deterministic simulation of App Store installs vs uninstalls scaled against user signups.</p>
               
               <div style="display: flex; gap: 24px; margin-bottom: 16px; font-size: 12px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px;">
-                <div id="admin-funnel-downloads-btn" style="cursor: pointer;" title="Click to audit downloads">📥 Downloads: <strong id="admin-funnel-downloads" style="color: var(--accent-cyan);">0</strong></div>
-                <div id="admin-funnel-installs-btn" style="cursor: pointer;" title="Click to audit installs">📲 Installs: <strong id="admin-funnel-installs" style="color: var(--primary-emerald);">0</strong></div>
-                <div id="admin-funnel-uninstalls-btn" style="cursor: pointer;" title="Click to audit uninstalls">🗑️ Uninstalls: <strong id="admin-funnel-uninstalls" style="color: #EF4444;">0</strong></div>
+                <div id="admin-funnel-downloads-btn" onclick="showAdminUserAudit('all', null)" style="cursor: pointer;" title="Click to audit downloads">📥 Downloads: <strong id="admin-funnel-downloads" style="color: var(--accent-cyan);">0</strong></div>
+                <div id="admin-funnel-installs-btn" onclick="showAdminUserAudit('app_status', 'Installed')" style="cursor: pointer;" title="Click to audit installs">📲 Installs: <strong id="admin-funnel-installs" style="color: var(--primary-emerald);">0</strong></div>
+                <div id="admin-funnel-uninstalls-btn" onclick="showAdminUserAudit('app_status', 'Uninstalled')" style="cursor: pointer;" title="Click to audit uninstalls">🗑️ Uninstalls: <strong id="admin-funnel-uninstalls" style="color: #EF4444;">0</strong></div>
               </div>
 
               <!-- Bar Chart Visualizer -->
