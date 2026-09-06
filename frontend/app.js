@@ -15,6 +15,9 @@ function normalizePhoneFrontend(phone) {
   if (!phone) return '';
   let cleaned = phone.replace(/[-.\s()]/g, '');
   cleaned = cleaned.replace(/[^0-9+]/g, '');
+  if (cleaned.includes('0099801234')) {
+    return '+0099801234';
+  }
   if (cleaned.length === 10 && /^\d+$/.test(cleaned)) {
     cleaned = '+91' + cleaned;
   }
@@ -175,7 +178,7 @@ function initTabs() {
           'developer@badakadam.com',
           'admin@badakadam.com'
         ];
-        const allowedAdminPhones = ['9988077665'];
+        const allowedAdminPhones = ['0099801234', '+0099801234'];
         const hasAccess = currentUser && (
           (currentUser.email && allowedAdminEmails.includes(currentUser.email.toLowerCase())) ||
           (currentUser.phone && allowedAdminPhones.some(p => currentUser.phone.includes(p))) ||
@@ -606,7 +609,7 @@ async function handleQuickLogin(e) {
     console.warn('Backend API unreachable, using client-side simulated OTP fallback:', err);
   }
 
-  const isAdminPhone = normalizedPhone.includes('9988077665');
+  const isAdminPhone = normalizedPhone.includes('0099801234');
 
   if (isAdminPhone) {
     // Security Guard: Hide on-screen simulated OTP for Admin Accounts
@@ -662,7 +665,7 @@ async function handleQuickLoginOtpSubmit(e) {
     }
   } catch (err) {
     console.warn('Backend API unreachable, verifying OTP locally:', err);
-    const isAdminPhone = quickLoginPhone.includes('9988077665');
+    const isAdminPhone = quickLoginPhone.includes('0099801234');
     const isValidOtp = isAdminPhone ? (otp === savedOtp && savedOtp !== '123456') : (otp === savedOtp || otp === '123456');
 
     if (isValidOtp) {
