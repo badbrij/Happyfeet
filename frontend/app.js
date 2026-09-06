@@ -1729,6 +1729,51 @@ function updateAuthUI() {
     selector.value = currentUser.email;
   }
   updateAdminTabVisibility();
+
+  // Handle Landing View vs Dashboard View panel visibility based on login status
+  const landingView = document.getElementById('landing-view');
+  const dashboardView = document.getElementById('dashboard-view');
+  
+  if (!currentUser) {
+    if (landingView) landingView.classList.add('active');
+    if (dashboardView) dashboardView.classList.remove('active');
+  } else {
+    // If user just logged in and is on landing view, auto-switch to dashboard
+    if (landingView && landingView.classList.contains('active')) {
+      landingView.classList.remove('active');
+      if (dashboardView) dashboardView.classList.add('active');
+    }
+  }
+
+  // Attach triggers for all landing page signup buttons
+  document.querySelectorAll('.open-quick-login-trigger').forEach(btn => {
+    btn.onclick = () => {
+      const modal = document.getElementById('quick-login-modal');
+      if (modal) modal.classList.add('active');
+    };
+  });
+
+  // Attach interactive tab switching for landing page live app previews
+  const landingTabs = document.querySelectorAll('.landing-tab-btn');
+  landingTabs.forEach(btn => {
+    btn.onclick = () => {
+      const targetId = btn.getAttribute('data-target');
+      landingTabs.forEach(b => {
+        b.classList.remove('active');
+        b.style.background = 'rgba(255, 255, 255, 0.05)';
+        b.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        b.style.color = 'var(--text-muted)';
+      });
+      btn.classList.add('active');
+      btn.style.background = 'rgba(6, 182, 212, 0.15)';
+      btn.style.borderColor = 'rgba(6, 182, 212, 0.4)';
+      btn.style.color = 'white';
+
+      document.querySelectorAll('.landing-panel').forEach(p => p.style.display = 'none');
+      const targetPanel = document.getElementById(targetId);
+      if (targetPanel) targetPanel.style.display = 'block';
+    };
+  });
 }
 
 function updateAdminTabVisibility() {
