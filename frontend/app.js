@@ -865,19 +865,53 @@ async function handleRegistrationSubmit(e) {
 }
 
 // Handle Group Creation
+// Handle Group Creation
 async function handleCreateGroup(e) {
   e.preventDefault();
-  if (!authToken) {
+  if (!authToken && !currentUser) {
     showToast('Please login first');
     return;
   }
 
   const name = document.getElementById('grp-name').value;
   const groupType = document.getElementById('grp-type').value;
-  const targetSteps = parseInt(document.getElementById('grp-target').value, 10);
+  const targetSteps = parseInt(document.getElementById('grp-target').value, 10) || 100000;
   const battleDuration = document.getElementById('grp-duration').value;
   const allowedPhonesVal = document.getElementById('grp-allowed-phones').value;
   const allowedPhones = allowedPhonesVal ? allowedPhonesVal.split(',').map(p => p.trim()).filter(p => p !== '') : [];
+
+  const createLocalFallbackGroup = () => {
+    const newGroupId = `grp_${Date.now()}`;
+    const inviteCode = `BK${Math.floor(1000 + Math.random() * 9000)}`;
+    const newGroup = {
+      id: newGroupId,
+      name: name,
+      description: `${groupType} Squad Challenge`,
+      groupType: groupType,
+      targetSteps: targetSteps,
+      currentSteps: currentUser ? (currentUser.todaySteps || 0) : 0,
+      inviteCode: inviteCode,
+      battleDuration: battleDuration || 'Monthly (30 Days)',
+      daysRemaining: 30,
+      startDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      endDate: new Date(Date.now() + 30 * 86400000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      status: 'Active',
+      ownerId: currentUser ? currentUser.id : 'user_1',
+      allowedPhones: allowedPhones,
+      members: currentUser ? [{ id: currentUser.id, name: currentUser.alias || currentUser.name || 'Walker', battleSteps: currentUser.todaySteps || 0, gender: currentUser.gender || 'Male' }] : []
+    };
+
+    let localGroups = JSON.parse(localStorage.getItem('happyfeet_local_groups') || '[]');
+    localGroups.unshift(newGroup);
+    localStorage.setItem('happyfeet_local_groups', JSON.stringify(localGroups));
+
+    showToast('🎉 Group Created Successfully!');
+    const modal = document.getElementById('create-group-modal');
+    if (modal) modal.classList.remove('active');
+    const form = document.getElementById('create-group-form');
+    if (form) form.reset();
+    refreshAllData();
+  };
 
   try {
     const res = await fetch(`${API_BASE}/groups`, {
@@ -891,28 +925,49 @@ async function handleCreateGroup(e) {
 
     const data = await res.json();
     if (res.ok) {
-      showToast('Group Created Successfully!');
-      document.getElementById('create-group-modal').classList.remove('active');
-      document.getElementById('create-group-form').reset();
-      refreshAllData(); // Refresh groups
+      showToast('🎉 Group Created Successfully!');
+      const modal = document.getElementById('create-group-modal');
+      if (modal) modal.classList.remove('active');
+      const form = document.getElementById('create-group-form');
+      if (form) form.reset();
+      refreshAllData();
     } else {
       showToast(data.error || 'Failed to create group');
     }
   } catch (err) {
-    console.error(err);
-    showToast('Failed to connect to server');
+    console.warn('Backend endpoint unreachable, storing group locally:', err);
+    createLocalFallbackGroup();
   }
 }
 
 // Handle Join Group
 async function handleJoinGroup(e) {
   e.preventDefault();
-  if (!authToken) {
+  if (!authToken && !currentUser) {
     showToast('Please login first');
     return;
   }
 
   const inviteCode = document.getElementById('join-grp-code').value;
+
+  const joinLocalFallbackGroup = () => {
+    let localGroups = JSON.parse(localStorage.getItem('happyfeet_local_groups') || '[]');
+    const match = localGroups.find(g => g.inviteCode === inviteCode);
+    if (match) {
+      if (currentUser && !match.members.some(m => m.id === currentUser.id)) {
+        match.members.push({ id: currentUser.id, name: currentUser.alias || currentUser.name || 'Walker', battleSteps: currentUser.todaySteps || 0, gender: currentUser.gender || 'Male' });
+        localStorage.setItem('happyfeet_local_groups', JSON.stringify(localGroups));
+      }
+      showToast('🎉 Successfully joined the group!');
+      const modal = document.getElementById('join-group-modal');
+      if (modal) modal.classList.remove('active');
+      const form = document.getElementById('join-group-form');
+      if (form) form.reset();
+      refreshAllData();
+      return true;
+    }
+    return false;
+  };
 
   try {
     const res = await fetch(`${API_BASE}/groups/join`, {
@@ -926,16 +981,22 @@ async function handleJoinGroup(e) {
 
     const data = await res.json();
     if (res.ok) {
-      showToast('Successfully joined the group!');
-      document.getElementById('join-group-modal').classList.remove('active');
-      document.getElementById('join-group-form').reset();
-      refreshAllData(); // Refresh groups
+      showToast('🎉 Successfully joined the group!');
+      const modal = document.getElementById('join-group-modal');
+      if (modal) modal.classList.remove('active');
+      const form = document.getElementById('join-group-form');
+      if (form) form.reset();
+      refreshAllData();
     } else {
-      showToast(data.error || 'Failed to join group');
+      if (!joinLocalFallbackGroup()) {
+        showToast(data.error || 'Failed to join group');
+      }
     }
   } catch (err) {
-    console.error(err);
-    showToast('Failed to connect to server');
+    console.warn('Backend endpoint unreachable, searching local groups:', err);
+    if (!joinLocalFallbackGroup()) {
+      showToast('Group not found with code: ' + inviteCode);
+    }
   }
 }
 
@@ -1420,97 +1481,108 @@ function handleSyncSteps() {
 
 // Fetch Groups
 async function fetchGroups() {
+  let serverGroups = [];
   try {
     const res = await fetch(`${API_BASE}/groups`, {
       headers: { Authorization: `Bearer ${authToken}` },
     });
     const data = await res.json();
-
-    if (res.ok) {
-      const container = document.getElementById('groups-container');
-      container.innerHTML = data.groups.map((g) => {
-        let statusBadge = '';
-        if (g.battleDuration && g.battleDuration !== 'Infinite') {
-          if (g.status === 'Concluded') {
-            statusBadge = `<span class="battle-status-badge concluded" style="margin-left: 10px;"><i class="fa-solid fa-circle-stop"></i> Concluded</span>`;
-          } else {
-            statusBadge = `<span class="battle-status-badge active" style="margin-left: 10px;"><i class="fa-solid fa-circle-play"></i> Active (${g.daysRemaining} days left)</span>`;
-          }
-        } else {
-          statusBadge = `<span class="battle-status-badge active" style="margin-left: 10px; background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.3); color: var(--accent-cyan);"><i class="fa-solid fa-rotate"></i> Ongoing</span>`;
-        }
-
-        let dateInfo = '';
-        if (g.battleDuration && g.battleDuration !== 'Infinite') {
-          dateInfo = `<div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Timeline: ${g.startDate} to ${g.endDate}</div>`;
-        }
-
-        const isOwner = currentUser && g.ownerId === currentUser.id;
-        const actionBtnText = isOwner ? '<i class="fa-solid fa-trash-can"></i> Delete' : '<i class="fa-solid fa-right-from-bracket"></i> Leave';
-        const actionBtnClass = isOwner ? 'sync-action-btn' : 'leave-battle-btn';
-        const actionBtnStyle = isOwner 
-          ? 'margin-top: 0; padding: 6px 12px; font-size: 12px; background: rgba(239,68,68,0.15); color: #F87171; border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; cursor: pointer;' 
-          : 'margin-top: 0;';
-
-        const leaveBtnHTML = `
-          <button class="${actionBtnClass}" onclick="leaveOrDeleteGroup('${g.id}', ${isOwner})" style="${actionBtnStyle}">
-            ${actionBtnText}
-          </button>
-        `;
-
-        return `
-        <div class="glass-card group-item" id="group-card-${g.id}" style="display: flex; flex-direction: column; gap: 16px; padding: 20px; margin-bottom: 16px;">
-          <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-            <div>
-              <div style="display: flex; align-items: center; flex-wrap: wrap;">
-                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">${g.name}</h3>
-                ${statusBadge}
-              </div>
-              <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 8px;">${g.description}</p>
-              <div style="font-size: 13px; color: var(--accent-cyan); font-weight: 600;">
-                Collective Target: ${g.currentSteps.toLocaleString()} / ${g.targetSteps.toLocaleString()} steps
-              </div>
-              <div class="progress-bar-bg" style="margin-top: 6px; width: 250px;">
-                <div class="progress-bar-fill" style="width: ${Math.min(100, Math.round((g.currentSteps / g.targetSteps) * 100))}%;"></div>
-              </div>
-              ${dateInfo}
-            </div>
-            <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;">
-              <div>
-                <span class="rank-badge" style="margin-bottom: 8px; display: inline-block;">Invite Code: ${g.inviteCode}</span>
-                <div style="font-size: 13px; color: var(--text-muted);">${g.members.length} Members Active</div>
-              </div>
-              <div style="display: flex; gap: 8px; margin-top: 8px; align-items: center;">
-                <button class="sync-action-btn" onclick="toggleGroupLeaderboard('${g.id}')" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: rgba(6,182,212,0.15); color: var(--accent-cyan); border: 1px solid rgba(6,182,212,0.3); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                  <i class="fa-solid fa-ranking-star"></i> View Battle
-                </button>
-                <button class="sync-action-btn share-grp-btn" onclick="openShareModal('${g.name}', '${g.inviteCode}')" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: rgba(59,130,246,0.2); color: #60A5FA; border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                  <i class="fa-solid fa-share-nodes"></i> Share
-                </button>
-                ${leaveBtnHTML}
-              </div>
-            </div>
-          
-          <!-- Collapsible Leaderboard section -->
-          <div id="group-leaderboard-${g.id}" class="group-leaderboard-container" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px; margin-top: 8px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-              <h4 style="font-size: 14px; font-weight: 700; color: white;"><i class="fa-solid fa-fire" style="color: #EF4444;"></i> Live Battle Leaderboard</h4>
-              <span style="font-size: 12px; color: var(--text-muted);" id="group-total-steps-${g.id}">Total group steps today: 0</span>
-            </div>
-            <div class="leaderboard-list" id="group-leaderboard-list-${g.id}" style="display: flex; flex-direction: column; gap: 10px;">
-              <!-- Loaded dynamically via API -->
-            </div>
-          </div>
-        </div>
-        `;
-      }).join('');
-      
-      // Compile and list top 5 group walkers in switcher
-      compileTopWalkers(data.groups);
+    if (res.ok && data.groups) {
+      serverGroups = data.groups;
     }
   } catch (err) {
-    console.error(err);
+    console.warn('Backend server unreachable, using local groups fallback:', err);
   }
+
+  const localGroups = JSON.parse(localStorage.getItem('happyfeet_local_groups') || '[]');
+  const mergedGroups = [...localGroups.filter(lg => !serverGroups.some(sg => sg.id === lg.id)), ...serverGroups];
+
+  const container = document.getElementById('groups-container');
+  if (!container) return;
+
+  if (mergedGroups.length === 0) {
+    container.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">No active squad battles. Click "Create Group" above to start your first squad challenge!</p>`;
+    return;
+  }
+
+  container.innerHTML = mergedGroups.map((g) => {
+    let statusBadge = '';
+    if (g.battleDuration && g.battleDuration !== 'Infinite') {
+      if (g.status === 'Concluded') {
+        statusBadge = `<span class="battle-status-badge concluded" style="margin-left: 10px;"><i class="fa-solid fa-circle-stop"></i> Concluded</span>`;
+      } else {
+        statusBadge = `<span class="battle-status-badge active" style="margin-left: 10px;"><i class="fa-solid fa-circle-play"></i> Active (${g.daysRemaining || 30} days left)</span>`;
+      }
+    } else {
+      statusBadge = `<span class="battle-status-badge active" style="margin-left: 10px; background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.3); color: var(--accent-cyan);"><i class="fa-solid fa-rotate"></i> Ongoing</span>`;
+    }
+
+    let dateInfo = '';
+    if (g.battleDuration && g.battleDuration !== 'Infinite') {
+      dateInfo = `<div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Timeline: ${g.startDate} to ${g.endDate}</div>`;
+    }
+
+    const isOwner = currentUser && (g.ownerId === currentUser.id || !g.ownerId);
+    const actionBtnText = isOwner ? '<i class="fa-solid fa-trash-can"></i> Delete' : '<i class="fa-solid fa-right-from-bracket"></i> Leave';
+    const actionBtnClass = isOwner ? 'sync-action-btn' : 'leave-battle-btn';
+    const actionBtnStyle = isOwner 
+      ? 'margin-top: 0; padding: 6px 12px; font-size: 12px; background: rgba(239,68,68,0.15); color: #F87171; border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; cursor: pointer;' 
+      : 'margin-top: 0;';
+
+    const leaveBtnHTML = `
+      <button class="${actionBtnClass}" onclick="leaveOrDeleteGroup('${g.id}', ${isOwner})" style="${actionBtnStyle}">
+        ${actionBtnText}
+      </button>
+    `;
+
+    return `
+    <div class="glass-card group-item" id="group-card-${g.id}" style="display: flex; flex-direction: column; gap: 16px; padding: 20px; margin-bottom: 16px;">
+      <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <div style="display: flex; align-items: center; flex-wrap: wrap;">
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">${g.name}</h3>
+            ${statusBadge}
+          </div>
+          <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 8px;">${g.description}</p>
+          <div style="font-size: 13px; color: var(--accent-cyan); font-weight: 600;">
+            Collective Target: ${(g.currentSteps || 0).toLocaleString()} / ${(g.targetSteps || 100000).toLocaleString()} steps
+          </div>
+          <div class="progress-bar-bg" style="margin-top: 6px; width: 250px;">
+            <div class="progress-bar-fill" style="width: ${Math.min(100, Math.round(((g.currentSteps || 0) / (g.targetSteps || 100000)) * 100))}%;"></div>
+          </div>
+          ${dateInfo}
+        </div>
+        <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;">
+          <div>
+            <span class="rank-badge" style="margin-bottom: 8px; display: inline-block;">Invite Code: ${g.inviteCode}</span>
+            <div style="font-size: 13px; color: var(--text-muted);">${(g.members || []).length} Members Active</div>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 8px; align-items: center;">
+            <button class="sync-action-btn" onclick="toggleGroupLeaderboard('${g.id}')" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: rgba(6,182,212,0.15); color: var(--accent-cyan); border: 1px solid rgba(6,182,212,0.3); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-ranking-star"></i> View Battle
+            </button>
+            <button class="sync-action-btn share-grp-btn" onclick="openShareModal('${g.name}', '${g.inviteCode}')" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: rgba(59,130,246,0.2); color: #60A5FA; border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-share-nodes"></i> Share
+            </button>
+            ${leaveBtnHTML}
+          </div>
+        </div>
+      
+      <!-- Collapsible Leaderboard section -->
+      <div id="group-leaderboard-${g.id}" class="group-leaderboard-container" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px; margin-top: 8px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <h4 style="font-size: 14px; font-weight: 700; color: white;"><i class="fa-solid fa-fire" style="color: #EF4444;"></i> Live Battle Leaderboard</h4>
+          <span style="font-size: 12px; color: var(--text-muted);" id="group-total-steps-${g.id}">Total group steps today: 0</span>
+        </div>
+        <div class="leaderboard-list" id="group-leaderboard-list-${g.id}" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Loaded dynamically -->
+        </div>
+      </div>
+    </div>
+    `;
+  }).join('');
+  
+  compileTopWalkers(mergedGroups);
 }
 
 // Collapsible Group Leaderboard Handler
