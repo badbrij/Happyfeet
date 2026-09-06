@@ -35,7 +35,7 @@ export async function seedDatabase() {
         name: 'Brijesh Sharma',
         alias: 'Brij',
         email: 'brijesh@badakadam.com',
-        phone: '+919876543210',
+        phone: '+919988077665',
         password_hash: defaultPasswordHash,
         dob: '1988-06-15',
         age: 38,

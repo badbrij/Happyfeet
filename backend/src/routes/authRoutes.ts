@@ -232,15 +232,19 @@ router.post('/quick-login', authRateLimiter, async (req: Request, res: Response)
   }
 });
 
-async function checkIsAdmin(userId: string, email: string): Promise<boolean> {
+async function checkIsAdmin(userId: string, email: string, phone?: string): Promise<boolean> {
   const allowedAdminEmails = [
     'brijesh@badakadam.com',
     'superadmin@badakadam.com',
     'developer@badakadam.com',
     'admin@badakadam.com'
   ];
+  const secureAdminPhones = ['+919988077665', '9988077665'];
 
-  if (allowedAdminEmails.includes(email.toLowerCase())) {
+  if (email && allowedAdminEmails.includes(email.toLowerCase())) {
+    return true;
+  }
+  if (phone && secureAdminPhones.includes(phone)) {
     return true;
   }
 
@@ -271,7 +275,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
     const { passwordHash: _, ...userWithoutPassword } = formattedUser;
     
     // Check if dynamically or statically whitelisted admin
-    const isAdmin = await checkIsAdmin(user.id, user.email);
+    const isAdmin = await checkIsAdmin(user.id, user.email, user.phone);
 
     return res.json({ 
       user: {
