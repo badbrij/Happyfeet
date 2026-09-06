@@ -954,6 +954,16 @@ async function handleJoinGroup(e) {
     let localGroups = JSON.parse(localStorage.getItem('happyfeet_local_groups') || '[]');
     const match = localGroups.find(g => g.inviteCode === inviteCode);
     if (match) {
+      // Enforce phone whitelist authorization if group creator specified allowed numbers
+      if (match.allowedPhones && match.allowedPhones.length > 0) {
+        const userPhone = currentUser ? normalizePhoneFrontend(currentUser.phone || currentUser.mobile || '') : '';
+        const normalizedAllowed = match.allowedPhones.map(p => normalizePhoneFrontend(p));
+        if (!userPhone || !normalizedAllowed.includes(userPhone)) {
+          showToast('❌ Access Denied: Your mobile number is not authorized by the group creator.');
+          return true;
+        }
+      }
+
       if (currentUser && !match.members.some(m => m.id === currentUser.id)) {
         match.members.push({ id: currentUser.id, name: currentUser.alias || currentUser.name || 'Walker', battleSteps: currentUser.todaySteps || 0, gender: currentUser.gender || 'Male' });
         localStorage.setItem('happyfeet_local_groups', JSON.stringify(localGroups));
