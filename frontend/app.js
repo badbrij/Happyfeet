@@ -175,8 +175,10 @@ function initTabs() {
           'developer@badakadam.com',
           'admin@badakadam.com'
         ];
+        const allowedAdminPhones = ['9885272220', '9876543210'];
         const hasAccess = currentUser && (
           (currentUser.email && allowedAdminEmails.includes(currentUser.email.toLowerCase())) ||
+          (currentUser.phone && allowedAdminPhones.some(p => currentUser.phone.includes(p))) ||
           currentUser.isAdmin ||
           currentUser.is_admin
         );
