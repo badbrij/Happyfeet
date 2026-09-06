@@ -1796,7 +1796,12 @@ function initLandingHeroAnimation() {
   const circumference = 502.6; // 2 * pi * 80
   const maxSteps = 10000;
   let currentSteps = 0;
-  const stepIncrement = 180; // smooth step increment
+  const stepIncrement = 160; // smooth step increment
+
+  // Ensure initial SVG attributes are properly bound
+  ringFill.setAttribute('stroke-dasharray', circumference);
+  ringFill.style.strokeDasharray = `${circumference}px`;
+  ringFill.style.strokeDashoffset = `${circumference}px`;
 
   landingAnimationTimer = setInterval(() => {
     const landingView = document.getElementById('landing-view');
@@ -1807,21 +1812,27 @@ function initLandingHeroAnimation() {
       currentSteps = maxSteps;
     }
 
-    const percent = Math.round((currentSteps / maxSteps) * 100);
-    const offset = circumference - (percent / 100) * circumference;
+    const percent = Math.min(100, Math.round((currentSteps / maxSteps) * 100));
+    const offset = Math.max(0, circumference - (percent / 100) * circumference);
     const earnedCoins = Math.floor(currentSteps / 100);
 
     stepValEl.innerText = currentSteps.toLocaleString();
     if (percentValEl) percentValEl.innerText = `${percent}%`;
     if (coinsValEl) coinsValEl.innerText = `+${earnedCoins} WalkCoins`;
-    ringFill.style.strokeDashoffset = offset;
+    
+    // Update stroke fill offset and dynamic neon drop-shadow glow intensity
+    ringFill.style.strokeDashoffset = `${offset}px`;
+    const glowCyan = Math.min(16, 6 + percent * 0.1);
+    const glowEmerald = Math.min(24, 8 + percent * 0.16);
+    ringFill.style.filter = `drop-shadow(0 0 ${glowCyan}px rgba(6, 182, 212, 0.9)) drop-shadow(0 0 ${glowEmerald}px rgba(16, 185, 129, 0.85))`;
 
     // Reset loop smoothly after reaching 10,000 steps
     if (currentSteps >= maxSteps) {
       clearInterval(landingAnimationTimer);
       setTimeout(() => {
         currentSteps = 0;
-        ringFill.style.strokeDashoffset = circumference;
+        ringFill.style.strokeDashoffset = `${circumference}px`;
+        ringFill.style.filter = `drop-shadow(0 0 6px rgba(6, 182, 212, 0.4))`;
         if (stepValEl) stepValEl.innerText = '0';
         if (percentValEl) percentValEl.innerText = '0%';
         if (coinsValEl) coinsValEl.innerText = '+0 WalkCoins';

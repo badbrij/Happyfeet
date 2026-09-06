@@ -241,9 +241,16 @@
                     </div>
                     
                     <div class="step-progress-circle-container" style="margin: 12px auto;">
-                      <svg class="step-progress-svg" viewBox="0 0 180 180">
+                      <svg class="step-progress-svg" viewBox="0 0 180 180" style="overflow: visible;">
+                        <defs>
+                          <linearGradient id="landing-neon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#06B6D4" />
+                            <stop offset="50%" stop-color="#22D3EE" />
+                            <stop offset="100%" stop-color="#10B981" />
+                          </linearGradient>
+                        </defs>
                         <circle class="step-progress-circle-bg" cx="90" cy="90" r="80" />
-                        <circle class="step-progress-circle-fill" id="landing-hero-ring-fill" cx="90" cy="90" r="80" style="stroke-dashoffset: 502.6; stroke: url(#neon-blue-grad); transition: stroke-dashoffset 0.1s ease-out;" />
+                        <circle class="step-progress-circle-fill" id="landing-hero-ring-fill" cx="90" cy="90" r="80" stroke-dasharray="502.6" stroke-dashoffset="502.6" style="stroke: url(#landing-neon-grad) !important; stroke-width: 12; stroke-linecap: round; fill: none; filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.8)) drop-shadow(0 0 18px rgba(16, 185, 129, 0.6)); transition: stroke-dashoffset 0.08s linear;" />
                       </svg>
                       <div class="step-circle-inner-text">
                         <div class="step-circle-val" id="landing-hero-step-val" style="font-size: 28px;">0</div>
