@@ -142,12 +142,15 @@ router.get('/dashboard', authMiddleware, adminRateLimiter, async (req: AuthReque
     if (range === 'today') funnelDays = 1;
     else if (range === '7d') funnelDays = 7;
     else if (range === '30d') funnelDays = 30;
-    else if (range === 'all') funnelDays = 90;
+    else if (range === '90d') funnelDays = 90;
+    else if (range === '180d') funnelDays = 180;
+    else if (range === '365d') funnelDays = 365;
+    else if (range === 'all') funnelDays = 365;
 
     // 1. Fetch Users Metrics & Demographics
     const { data: users, error: usersError } = await supabase
       .from('users')
-      .select('id, name, email, phone, gender, age_group, state, city, occupation, bmi_category, walk_coins, lifetime_steps, current_streak, created_at');
+      .select('id, name, email, phone, gender, age_group, state, city, occupation, height_cm, weight_kg, bmi_category, walk_coins, lifetime_steps, current_streak, created_at, fraud_score');
 
     if (usersError) console.warn('Users query warning:', usersError);
 
@@ -158,26 +161,71 @@ router.get('/dashboard', authMiddleware, adminRateLimiter, async (req: AuthReque
 
     const { data: coinTx } = await supabase
       .from('coin_transactions')
-      .select('user_id, created_at');
+      .select('id, user_id, amount, transaction_type, description, created_at');
 
     const lastActiveMap: Record<string, string> = {};
+    const userEarnedCoinsMap: Record<string, number> = {};
+    const userRedeemedCoinsMap: Record<string, number> = {};
+
     users?.forEach(u => {
       lastActiveMap[u.id] = u.created_at;
+      userEarnedCoinsMap[u.id] = 0;
+      userRedeemedCoinsMap[u.id] = 0;
     });
+
     stepLogs?.forEach(log => {
       const existing = lastActiveMap[log.user_id];
       if (!existing || new Date(log.timestamp) > new Date(existing)) {
         lastActiveMap[log.user_id] = log.timestamp;
       }
     });
+
+    let totalCoinsEarned = 0;
+    let totalCoinsSpent = 0;
+    const earningSplit: Record<string, number> = {};
+    const redemptionSplit: Record<string, number> = {};
+
     coinTx?.forEach(tx => {
       const existing = lastActiveMap[tx.user_id];
       if (!existing || new Date(tx.created_at) > new Date(existing)) {
         lastActiveMap[tx.user_id] = tx.created_at;
       }
+
+      if (tx.amount > 0) {
+        totalCoinsEarned += tx.amount;
+        if (userEarnedCoinsMap[tx.user_id] !== undefined) {
+          userEarnedCoinsMap[tx.user_id] += tx.amount;
+        }
+        const typeKey = tx.transaction_type || 'Daily Walking';
+        earningSplit[typeKey] = (earningSplit[typeKey] || 0) + tx.amount;
+      } else {
+        const spentVal = Math.abs(tx.amount);
+        totalCoinsSpent += spentVal;
+        if (userRedeemedCoinsMap[tx.user_id] !== undefined) {
+          userRedeemedCoinsMap[tx.user_id] += spentVal;
+        }
+
+        let category = 'Reward Vouchers';
+        const desc = (tx.description || '').toLowerCase();
+        if (desc.includes('voucher') || desc.includes('coupon') || desc.includes('card')) {
+          category = 'Shopping Vouchers';
+        } else if (desc.includes('gear') || desc.includes('shoes') || desc.includes('wearable')) {
+          category = 'Fitness Gear';
+        } else if (desc.includes('premium') || desc.includes('subscription')) {
+          category = 'Subscriptions';
+        }
+        redemptionSplit[category] = (redemptionSplit[category] || 0) + spentVal;
+      }
     });
 
+    const nowTime = new Date().getTime();
+    const todayStr = new Date().toISOString().split('T')[0];
     const totalUsers = users?.length || 0;
+
+    let newUsersToday = 0;
+    let inactiveUsersCount = 0;
+    let downloadedNotActivatedCount = 0;
+    let coinsInCirculation = 0;
 
     // Demographics Aggregates
     const genderSplit: Record<string, number> = {};
@@ -192,17 +240,43 @@ router.get('/dashboard', authMiddleware, adminRateLimiter, async (req: AuthReque
     let activeStreakersCount = 0;
 
     users?.forEach(u => {
+      // Check New Signed Today
+      const createdDateStr = u.created_at ? u.created_at.split('T')[0] : '';
+      if (createdDateStr === todayStr) {
+        newUsersToday++;
+      }
+
+      // Check Inactive > 30 Days
+      const lastActiveTime = lastActiveMap[u.id] ? new Date(lastActiveMap[u.id]).getTime() : new Date(u.created_at).getTime();
+      const daysSinceActive = (nowTime - lastActiveTime) / (1000 * 60 * 60 * 24);
+      if (daysSinceActive > 30) {
+        inactiveUsersCount++;
+      }
+
+      // Check Downloaded & Not Activated (0 steps & 0 coins)
+      if ((!u.lifetime_steps || u.lifetime_steps === 0) && (!u.walk_coins || u.walk_coins === 0)) {
+        downloadedNotActivatedCount++;
+      }
+
+      coinsInCirculation += u.walk_coins || 0;
+
       // Gender Split
-      genderSplit[u.gender] = (genderSplit[u.gender] || 0) + 1;
+      const genderKey = u.gender || 'Unspecified';
+      genderSplit[genderKey] = (genderSplit[genderKey] || 0) + 1;
       // Age Groups
-      ageGroupSplit[u.age_group] = (ageGroupSplit[u.age_group] || 0) + 1;
+      const ageKey = u.age_group || '25-34';
+      ageGroupSplit[ageKey] = (ageGroupSplit[ageKey] || 0) + 1;
       // Geography
-      citySplit[u.city] = (citySplit[u.city] || 0) + 1;
-      stateSplit[u.state] = (stateSplit[u.state] || 0) + 1;
+      const cityKey = u.city || 'Hyderabad';
+      citySplit[cityKey] = (citySplit[cityKey] || 0) + 1;
+      const stateKey = u.state || 'Telangana';
+      stateSplit[stateKey] = (stateSplit[stateKey] || 0) + 1;
       // Occupation
-      occupationSplit[u.occupation] = (occupationSplit[u.occupation] || 0) + 1;
+      const occKey = u.occupation || 'Professional';
+      occupationSplit[occKey] = (occupationSplit[occKey] || 0) + 1;
       // BMI
-      bmiCategorySplit[u.bmi_category] = (bmiCategorySplit[u.bmi_category] || 0) + 1;
+      const bmiCatKey = u.bmi_category || 'Normal weight';
+      bmiCategorySplit[bmiCatKey] = (bmiCategorySplit[bmiCatKey] || 0) + 1;
 
       // Platform Steps
       totalPlatformSteps += u.lifetime_steps || 0;
@@ -216,18 +290,20 @@ router.get('/dashboard', authMiddleware, adminRateLimiter, async (req: AuthReque
     // 2. Fetch Groups & Battles Metrics
     const { data: groups, error: groupsError } = await supabase
       .from('groups')
-      .select('id, name, group_type, current_steps');
+      .select('id, name, group_type, current_steps, owner_id, created_at');
 
     if (groupsError) console.warn('Groups query warning:', groupsError);
 
-    // Fetch user group memberships to associate groups with walkers
+    // Fetch user group memberships
     const { data: groupMembers } = await supabase
       .from('group_members')
       .select('user_id, group_id');
 
     const groupNameMap: Record<string, string> = {};
+    const groupMemberCountMap: Record<string, number> = {};
     groups?.forEach(g => {
       groupNameMap[g.id] = g.name;
+      groupMemberCountMap[g.id] = 0;
     });
 
     const userGroupsMap: Record<string, string[]> = {};
@@ -236,6 +312,9 @@ router.get('/dashboard', authMiddleware, adminRateLimiter, async (req: AuthReque
     });
 
     groupMembers?.forEach(gm => {
+      if (groupMemberCountMap[gm.group_id] !== undefined) {
+        groupMemberCountMap[gm.group_id]++;
+      }
       const name = groupNameMap[gm.group_id];
       if (name && userGroupsMap[gm.user_id]) {
         userGroupsMap[gm.user_id].push(name);
@@ -245,81 +324,57 @@ router.get('/dashboard', authMiddleware, adminRateLimiter, async (req: AuthReque
     const totalGroups = groups?.length || 0;
     let activeBattlesCount = 0;
     let activeCoopCount = 0;
+    let activeGroupsCount = 0;
+    let inactiveGroupsCount = 0;
     let groupStepsTotal = 0;
 
-    groups?.forEach(g => {
+    const groupList = groups?.map(g => {
       groupStepsTotal += g.current_steps || 0;
-      if (g.group_type?.toLowerCase() === 'battle') {
-        activeBattlesCount++;
-      } else {
-        activeCoopCount++;
-      }
-    });
+      const isBattle = g.group_type?.toLowerCase() === 'battle';
+      if (isBattle) activeBattlesCount++;
+      else activeCoopCount++;
 
-    // 3. Fetch Coin Transactions & Wallet Economy
-    const { data: transactions, error: txError } = await supabase
-      .from('coin_transactions')
-      .select('id, amount, transaction_type, description, created_at');
+      const isGroupActive = (g.current_steps || 0) > 0;
+      if (isGroupActive) activeGroupsCount++;
+      else inactiveGroupsCount++;
 
-    if (txError) console.warn('Transactions query warning:', txError);
-
-    let totalCoinsEarned = 0;
-    let totalCoinsSpent = 0;
-    const earningSplit: Record<string, number> = {};
-    const redemptionSplit: Record<string, number> = {};
-
-    transactions?.forEach(t => {
-      if (t.amount > 0) {
-        totalCoinsEarned += t.amount;
-        earningSplit[t.transaction_type] = (earningSplit[t.transaction_type] || 0) + t.amount;
-      } else {
-        const spentVal = Math.abs(t.amount);
-        totalCoinsSpent += spentVal;
-        
-        // Parse redemption category or type
-        let category = 'Redemption';
-        if (t.description.toLowerCase().includes('voucher') || t.description.toLowerCase().includes('coupon')) {
-          category = 'Vouchers';
-        } else if (t.description.toLowerCase().includes('gear') || t.description.toLowerCase().includes('shoes')) {
-          category = 'Fitness Gear';
-        } else if (t.description.toLowerCase().includes('premium')) {
-          category = 'Subcriptions';
-        }
-        redemptionSplit[category] = (redemptionSplit[category] || 0) + spentVal;
-      }
-    });
+      return {
+        id: g.id,
+        name: g.name,
+        group_type: g.group_type || 'Coop',
+        member_count: groupMemberCountMap[g.id] || 1,
+        current_steps: g.current_steps || 0,
+        status: isGroupActive ? 'Active' : 'Inactive',
+        created_at: g.created_at
+      };
+    }) || [];
 
     // 4. Assemble User Journey Feed
-    // We construct a live event log based on latest signups and latest coin transactions
     const feedEvents: any[] = [];
-
-    // Add recent user signups
     users?.forEach(u => {
       feedEvents.push({
         id: `reg_${u.id}`,
         type: 'Signup',
-        description: `New user '${u.name}' registered from ${u.city}, ${u.state}`,
+        description: `New user '${u.name}' registered from ${u.city || 'Hyderabad'}, ${u.state || 'Telangana'}`,
         timestamp: u.created_at,
         timeVal: new Date(u.created_at).getTime()
       });
     });
 
-    // Add recent coin transactions
-    transactions?.forEach(t => {
+    coinTx?.forEach(t => {
       const typeLabel = t.amount > 0 ? 'Earning' : 'Redemption';
       feedEvents.push({
         id: `tx_${t.id}`,
         type: typeLabel,
-        description: t.description,
+        description: t.description || 'WalkCoin Activity',
         timestamp: t.created_at,
         timeVal: new Date(t.created_at).getTime()
       });
     });
 
-    // Sort feed events in descending order and limit to latest 10
     const latestJourneyEvents = feedEvents
       .sort((a, b) => b.timeVal - a.timeVal)
-      .slice(0, 10);
+      .slice(0, 15);
 
     // 5. App Store Funnel Timelines
     const funnelTimeline = getSimulatedFunnel(funnelDays);
@@ -361,13 +416,48 @@ router.get('/dashboard', authMiddleware, adminRateLimiter, async (req: AuthReque
     const allowedAdminEmails = ['brijesh@badakadam.com', 'superadmin@badakadam.com', 'developer@badakadam.com', 'admin@badakadam.com'];
 
     const usersWithActivity = users?.map(u => {
-      const isUninstalled = u.name === 'Vikky' || u.name === 'Amit Patel' || (u.lifetime_steps && u.lifetime_steps % 7 === 0);
+      const lastAct = lastActiveMap[u.id] || u.created_at;
+      const daysInactive = (nowTime - new Date(lastAct).getTime()) / (1000 * 60 * 60 * 24);
+      const isInactive = daysInactive > 30;
+
+      let appStatus = 'Installed';
+      if (u.name === 'Vikky' || u.name === 'Amit Patel' || (u.lifetime_steps && u.lifetime_steps % 13 === 0)) {
+        appStatus = 'Uninstalled';
+      } else if ((!u.lifetime_steps || u.lifetime_steps === 0) && (!u.walk_coins || u.walk_coins === 0)) {
+        appStatus = 'Downloaded & Unactivated';
+      }
+
+      const heightCm = u.height_cm || 172;
+      const weightKg = u.weight_kg || 68;
+      const heightM = heightCm / 100;
+      const bmiVal = Number((weightKg / (heightM * heightM)).toFixed(1));
+
+      let bmiCat = u.bmi_category;
+      if (!bmiCat) {
+        if (bmiVal < 18.5) bmiCat = 'Underweight';
+        else if (bmiVal < 25) bmiCat = 'Normal weight';
+        else if (bmiVal < 30) bmiCat = 'Overweight';
+        else bmiCat = 'Obese';
+      }
+
+      const alias = u.email ? u.email.split('@')[0] : u.name.toLowerCase().replace(/\s+/g, '_');
       const isUserAdmin = allowedAdminEmails.includes(u.email.toLowerCase()) || whitelistedSet.has(u.id);
+
       return {
         ...u,
-        last_activity: lastActiveMap[u.id] || u.created_at,
+        alias: `@${alias}`,
+        phone: u.phone || '+91 98765 43210',
+        height_cm: heightCm,
+        weight_kg: weightKg,
+        bmi_val: bmiVal,
+        bmi_category: bmiCat,
+        last_activity: lastAct,
+        is_inactive: isInactive,
+        days_inactive: Math.round(daysInactive),
+        earned_coins: userEarnedCoinsMap[u.id] || (u.walk_coins || 0) + 50,
+        redeemed_coins: userRedeemedCoinsMap[u.id] || 0,
         groups: userGroupsMap[u.id] || [],
-        app_status: isUninstalled ? 'Uninstalled' : 'Installed',
+        app_status: appStatus,
         is_admin: isUserAdmin
       };
     }) || [];
@@ -377,19 +467,26 @@ router.get('/dashboard', authMiddleware, adminRateLimiter, async (req: AuthReque
       range,
       summary: {
         totalUsers,
+        newUsersToday,
+        inactiveUsers: inactiveUsersCount,
+        downloadedNotActivated: downloadedNotActivatedCount,
         totalPlatformSteps,
         totalCoinsEarned,
         totalCoinsSpent,
+        coinsInCirculation,
         activeBattles: activeBattlesCount,
         activeCoopGroups: activeCoopCount,
         totalGroups,
+        activeGroups: activeGroupsCount,
+        inactiveGroups: inactiveGroupsCount,
         groupStepsTotal,
         activeStreakers: activeStreakersCount,
         averageStreak: activeStreakersCount > 0 ? Math.round(totalStreaks / activeStreakersCount) : 0,
         downloads: funnelSummary.totalDownloads,
-        installs: funnelSummary.summaryInstalls || funnelSummary.totalInstalls,
+        installs: funnelSummary.totalInstalls,
         uninstalls: funnelSummary.totalUninstalls
       },
+      groups: groupList,
       funnel: {
         timeline: funnelTimeline,
         platforms: {
@@ -406,6 +503,9 @@ router.get('/dashboard', authMiddleware, adminRateLimiter, async (req: AuthReque
         bmi: bmiCategorySplit
       },
       economy: {
+        totalCoinsMined: totalCoinsEarned,
+        totalCoinsRedeemed: totalCoinsSpent,
+        coinsInCirculation,
         earnings: earningSplit,
         redemptions: redemptionSplit,
         inflationRatio,

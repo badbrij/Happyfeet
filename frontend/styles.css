@@ -1524,6 +1524,91 @@ input:focus, select:focus {
   display: none !important;
 }
 
+/* Admin Dashboard Specific UI Tokens & Status Badges */
+.admin-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.admin-status-pill.installed {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.admin-status-pill.uninstalled {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.admin-status-pill.unactivated {
+  background: rgba(245, 158, 11, 0.15);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.admin-status-pill.inactive {
+  background: rgba(139, 92, 246, 0.15);
+  color: #C084FC;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.admin-bmi-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.admin-bmi-badge.normal {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+}
+.admin-bmi-badge.overweight {
+  background: rgba(245, 158, 11, 0.15);
+  color: #FBBF24;
+}
+.admin-bmi-badge.obese {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+}
+.admin-bmi-badge.underweight {
+  background: rgba(6, 182, 212, 0.15);
+  color: #38BDF8;
+}
+
+.admin-btn-action {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.admin-btn-action:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.admin-btn-action.danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+.admin-btn-action.danger:hover {
+  background: #EF4444;
+  color: white;
+}
+
+
 /* Print Media Styles for Executive PDF Report Export */
 @media print {
   .viewport-switcher-bar,

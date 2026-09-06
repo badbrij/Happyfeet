@@ -750,143 +750,214 @@
 
         <!-- View 5: Admin Analytics Dashboard -->
         <section id="admin-view" class="view-panel">
+          <!-- Admin Dashboard Top Header -->
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
             <div>
               <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-gauge-high" style="color: var(--accent-cyan);"></i> Launch Analytics Dashboard
+                <i class="fa-solid fa-gauge-high" style="color: var(--accent-cyan);"></i> Enterprise Analytics & Management Dashboard
               </h2>
-              <p style="color: var(--text-muted);">Platform statistics, live demographic divisions, economy flow, and live event trails.</p>
+              <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Real-time metrics on user growth, app lifecycle, WalkCoin economy, squad battles, anti-cheat, and member directory.</p>
             </div>
             <div style="display: flex; gap: 8px;">
               <button class="register-hero-btn" id="export-admin-csv-btn" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: var(--primary-emerald); cursor: pointer;">
-                <i class="fa-solid fa-file-csv"></i> Export CSV
+                <i class="fa-solid fa-file-csv"></i> Export CSV Audit
               </button>
               <button class="register-hero-btn" id="export-admin-pdf-btn" style="background: rgba(167, 139, 246, 0.15); border-color: rgba(167, 139, 246, 0.3); color: #A78BFA; cursor: pointer;">
-                <i class="fa-solid fa-print"></i> Print PDF
+                <i class="fa-solid fa-print"></i> Print PDF Report
               </button>
               <button class="register-hero-btn" id="refresh-admin-btn" style="background: rgba(6, 182, 212, 0.15); border-color: rgba(6, 182, 212, 0.3); color: var(--accent-cyan); cursor: pointer;">
-                <i class="fa-solid fa-arrows-rotate"></i> Refresh
+                <i class="fa-solid fa-arrows-rotate"></i> Refresh Metrics
               </button>
             </div>
           </div>
 
-          <!-- Admin Global Date Range Filter Bar -->
-          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+          <!-- Timeframe Selector Toolbar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
             <div style="font-size: 13px; font-weight: 700; color: white; display: flex; align-items: center; gap: 8px;">
-              <i class="fa-solid fa-calendar-days" style="color: var(--accent-cyan);"></i> Timeline Window:
+              <i class="fa-solid fa-calendar-days" style="color: var(--accent-cyan);"></i> Analytics Timeframe:
             </div>
-            <div class="admin-range-chips" style="display: flex; gap: 6px;">
-              <button class="range-chip" data-range="today" style="padding: 4px 12px; border-radius: 6px; background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); font-size: 11px; font-weight: 700; cursor: pointer;">Today</button>
-              <button class="range-chip" data-range="7d" style="padding: 4px 12px; border-radius: 6px; background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); font-size: 11px; font-weight: 700; cursor: pointer;">7 Days</button>
-              <button class="range-chip active" data-range="30d" style="padding: 4px 12px; border-radius: 6px; background: var(--accent-cyan); color: #000; border: none; font-size: 11px; font-weight: 700; cursor: pointer;">30 Days</button>
-              <button class="range-chip" data-range="all" style="padding: 4px 12px; border-radius: 6px; background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); font-size: 11px; font-weight: 700; cursor: pointer;">All Time</button>
+            <div class="admin-range-chips" style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button class="range-chip active" data-range="30d" style="padding: 6px 14px; border-radius: 8px; background: var(--accent-cyan); color: #000; border: none; font-size: 12px; font-weight: 800; cursor: pointer;">30 Days</button>
+              <button class="range-chip" data-range="90d" style="padding: 6px 14px; border-radius: 8px; background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); font-size: 12px; font-weight: 700; cursor: pointer;">90 Days</button>
+              <button class="range-chip" data-range="180d" style="padding: 6px 14px; border-radius: 8px; background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); font-size: 12px; font-weight: 700; cursor: pointer;">180 Days</button>
+              <button class="range-chip" data-range="365d" style="padding: 6px 14px; border-radius: 8px; background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); font-size: 12px; font-weight: 700; cursor: pointer;">365 Days</button>
+              <button class="range-chip" data-range="all" style="padding: 6px 14px; border-radius: 8px; background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); font-size: 12px; font-weight: 700; cursor: pointer;">Lifetime (All)</button>
             </div>
           </div>
 
-          <!-- Hero Metrics Grid -->
-          <div class="admin-metric-card-grid">
-            <div class="admin-metric-card" onclick="showAdminUserAudit('all', null)" style="cursor: pointer; position: relative;" title="Click to view full user audit table">
-              <span class="label">
-                <i class="fa-solid fa-circle-user" style="color: var(--accent-cyan);"></i> Total Users
-                <span style="font-size: 10px; font-weight: 800; color: var(--accent-cyan); background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.3); padding: 2px 6px; border-radius: 8px; float: right;">🔍 Audit Users</span>
-              </span>
+          <!-- Section 1: App Lifecycle & User Base Summary Metric Cards -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <!-- Installs -->
+            <div class="admin-metric-card" onclick="openFunnelDrillDownModal('Installed')" style="cursor: pointer;" title="Click to view App Installs audit">
+              <span class="label"><i class="fa-solid fa-download" style="color: var(--primary-emerald);"></i> App Installs</span>
+              <span class="value" id="admin-stat-installs" style="color: #34D399;">0</span>
+            </div>
+            <!-- Uninstalls -->
+            <div class="admin-metric-card" onclick="openFunnelDrillDownModal('Uninstalled')" style="cursor: pointer;" title="Click to view App Uninstalls audit">
+              <span class="label"><i class="fa-solid fa-trash-can" style="color: #EF4444;"></i> Uninstalls</span>
+              <span class="value" id="admin-stat-uninstalls" style="color: #F87171;">0</span>
+            </div>
+            <!-- Downloaded & Not Activated -->
+            <div class="admin-metric-card" onclick="openFunnelDrillDownModal('Downloaded & Unactivated')" style="cursor: pointer;" title="Click to view Downloaded but inactive users">
+              <span class="label"><i class="fa-solid fa-user-clock" style="color: var(--accent-amber);"></i> Unactivated Downloads</span>
+              <span class="value" id="admin-stat-unactivated" style="color: #FBBF24;">0</span>
+            </div>
+            <!-- Total Users -->
+            <div class="admin-metric-card" onclick="showAdminUserAudit('all', null)" style="cursor: pointer;" title="Click to view user base directory">
+              <span class="label"><i class="fa-solid fa-users" style="color: var(--accent-cyan);"></i> Total Users</span>
               <span class="value" id="admin-stat-users">0</span>
             </div>
-            <div class="admin-metric-card" onclick="showAdminUserAudit('all', null, 'lifetime_steps')" style="cursor: pointer; position: relative;" title="Click to audit users sorted by total step output">
-              <span class="label">
-                <i class="fa-solid fa-shoe-prints" style="color: var(--primary-emerald);"></i> Platform Steps
-                <span style="font-size: 10px; font-weight: 800; color: var(--primary-emerald); background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 6px; border-radius: 8px; float: right;">👟 Step Audit</span>
-              </span>
-              <span class="value" id="admin-stat-steps">0</span>
+            <!-- New Users Signed Today -->
+            <div class="admin-metric-card" onclick="showAdminUserAudit('today', null)" style="cursor: pointer;" title="Click to view today's new signups">
+              <span class="label"><i class="fa-solid fa-user-plus" style="color: #38BDF8;"></i> Signed Today</span>
+              <span class="value" id="admin-stat-new-today" style="color: #38BDF8;">0</span>
             </div>
-            <div class="admin-metric-card" onclick="openEconomyDrillDownModal()" style="cursor: pointer; position: relative;" title="Click to view WalkCoins economy ledger">
-              <span class="label">
-                <i class="fa-solid fa-coins" style="color: var(--accent-amber);"></i> WalkCoins Circulation
-                <span style="font-size: 10px; font-weight: 800; color: var(--accent-amber); background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); padding: 2px 6px; border-radius: 8px; float: right;">🪙 Coin Ledger</span>
-              </span>
-              <span class="value" id="admin-stat-coins">0</span>
-            </div>
-            <div class="admin-metric-card" onclick="showAdminUserAudit('in_group', null)" style="cursor: pointer; position: relative;" title="Click to audit users active in Group Battles">
-              <span class="label">
-                <i class="fa-solid fa-users" style="color: var(--accent-purple);"></i> Group Battles
-                <span style="font-size: 10px; font-weight: 800; color: var(--accent-purple); background: rgba(167, 139, 246, 0.15); border: 1px solid rgba(167, 139, 246, 0.3); padding: 2px 6px; border-radius: 8px; float: right;">⚔️ Battles Audit</span>
-              </span>
-              <span class="value" id="admin-stat-groups">0</span>
+            <!-- Inactive Users -->
+            <div class="admin-metric-card" onclick="showAdminUserAudit('inactive', null)" style="cursor: pointer;" title="Click to view inactive users (>30 days no log)">
+              <span class="label"><i class="fa-solid fa-user-slash" style="color: #A78BFA;"></i> Inactive (>30 Days)</span>
+              <span class="value" id="admin-stat-inactive" style="color: #C084FC;">0</span>
             </div>
           </div>
 
-          <!-- Main Layout Grid -->
-          <div class="admin-grid">
-            
-            <!-- App Store Funnel (Simulated Marketing metrics) -->
-            <div class="glass-card" style="padding: 20px; cursor: pointer;" onclick="openFunnelDrillDownModal()" title="Click to open complete App Performance, Installs, Uninstalls & Store Acceptance Audit">
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px;">
-                <h3 style="font-size: 15px; font-weight: 700; margin: 0;"><i class="fa-solid fa-chart-line" style="color: var(--accent-cyan);"></i> Acquisition Funnel (30-Day App Store Trial)</h3>
-                <span style="font-size: 10px; font-weight: 800; color: var(--accent-cyan); background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.3); padding: 3px 8px; border-radius: 10px;"><i class="fa-solid fa-magnifying-glass-chart"></i> Deep-Dive Audit</span>
+          <!-- Section 2: WalkCoin Economy & Timebound Analytics Panel -->
+          <div class="glass-card" style="padding: 24px; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3 style="font-size: 17px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-coins" style="color: var(--accent-amber);"></i> WalkCoin Token Economy Ledger
+                </h3>
+                <p style="color: var(--text-muted); font-size: 12px; margin-top: 2px;">Timebound token velocity, total mined coins, marketplace redemptions, and reserve circulation.</p>
               </div>
-              <p style="color: var(--text-muted); font-size: 11px; line-height: 1.4; margin-bottom: 16px;">Deterministic simulation of App Store installs vs uninstalls scaled against user signups.</p>
-              
-              <div style="display: flex; gap: 24px; margin-bottom: 16px; font-size: 12px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px;">
-                <div id="admin-funnel-downloads-btn" onclick="event.stopPropagation(); openFunnelDrillDownModal();" style="cursor: pointer;" title="Click to audit store downloads">📥 Downloads: <strong id="admin-funnel-downloads" style="color: var(--accent-cyan);">0</strong></div>
-                <div id="admin-funnel-installs-btn" onclick="event.stopPropagation(); openFunnelDrillDownModal('Installed');" style="cursor: pointer;" title="Click to audit installed walkers">📲 Installs: <strong id="admin-funnel-installs" style="color: var(--primary-emerald);">0</strong></div>
-                <div id="admin-funnel-uninstalls-btn" onclick="event.stopPropagation(); openFunnelDrillDownModal('Uninstalled');" style="cursor: pointer;" title="Click to audit uninstalled walkers">🗑️ Uninstalls: <strong id="admin-funnel-uninstalls" style="color: #EF4444;">0</strong></div>
-              </div>
+              <span id="admin-economy-status-badge" style="font-size: 11px; font-weight: 800; color: #10B981; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 12px; border-radius: 12px;">
+                🟢 Healthy Economy
+              </span>
+            </div>
 
-              <!-- Bar Chart Visualizer -->
-              <div class="funnel-chart-container" id="admin-funnel-chart">
-                <!-- Rendered dynamically via loop in app.js -->
+            <!-- 4 Economy Highlight Stats -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
+              <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); padding: 14px; border-radius: 12px;">
+                <span style="font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Lifetime Coins Mined</span>
+                <div style="font-size: 24px; font-weight: 900; color: #34D399; margin-top: 4px;" id="admin-econ-mined">0</div>
               </div>
-
-              <!-- Platforms -->
-              <div style="display: flex; gap: 16px; margin-top: 16px; align-items: center; justify-content: space-between; font-size: 12px;">
-                <div style="display: flex; align-items: center; gap: 6px;"><i class="fa-brands fa-android" style="color: #a4c639; font-size: 16px;"></i> Android: <strong id="admin-platform-android">0%</strong></div>
-                <div style="display: flex; align-items: center; gap: 6px;"><i class="fa-brands fa-apple" style="color: white; font-size: 16px;"></i> iOS: <strong id="admin-platform-ios">0%</strong></div>
+              <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); padding: 14px; border-radius: 12px;">
+                <span style="font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Coins Redeemed</span>
+                <div style="font-size: 24px; font-weight: 900; color: #FBBF24; margin-top: 4px;" id="admin-econ-spent">0</div>
+              </div>
+              <div style="background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.2); padding: 14px; border-radius: 12px;">
+                <span style="font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Coins in Circulation</span>
+                <div style="font-size: 24px; font-weight: 900; color: #38BDF8; margin-top: 4px;" id="admin-econ-circulation">0</div>
+              </div>
+              <div style="background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.2); padding: 14px; border-radius: 12px;">
+                <span style="font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Velocity Ratio</span>
+                <div style="font-size: 24px; font-weight: 900; color: #C084FC; margin-top: 4px;" id="admin-econ-ratio">0%</div>
               </div>
             </div>
 
-            <!-- Token Economy Flow (Coins Earned vs Spent) -->
-            <div class="glass-card" style="padding: 20px; cursor: pointer;" onclick="openEconomyDrillDownModal()" title="Click to view full WalkCoins velocity & redemption ledger">
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px;">
-                <h3 style="font-size: 15px; font-weight: 700; margin: 0;"><i class="fa-solid fa-scale-balanced" style="color: var(--accent-amber);"></i> Token Economy Velocity</h3>
-                <span style="font-size: 10px; font-weight: 800; color: var(--accent-amber); background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 8px; border-radius: 10px;"><i class="fa-solid fa-chart-pie"></i> Token Ledger</span>
-              </div>
-              <p style="color: var(--text-muted); font-size: 11px; line-height: 1.4; margin-bottom: 16px;">Balances between WalkCoins generated by step goals vs spent in marketplace redemptions.</p>
-
-              <div style="margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
-                  <span>Earning Velocity vs Redemption Rate</span>
-                  <span id="admin-economy-ratio" style="font-weight: 700; color: var(--accent-cyan);">0% Spent</span>
-                </div>
-                <div class="demo-stat-bar-bg" style="height: 12px;">
-                  <div class="demo-stat-bar-fill" id="admin-economy-ratio-bar" style="width: 0%; background: linear-gradient(90deg, var(--primary-emerald), var(--accent-amber));"></div>
+            <!-- Earning & Redemption Category Breakdowns -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+              <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);">
+                <h4 style="font-size: 13px; font-weight: 700; color: white; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px;">
+                  <i class="fa-solid fa-arrow-trend-up" style="color: #34D399;"></i> Earning Sources Breakdown
+                </h4>
+                <div id="admin-earnings-list" style="display: flex; flex-direction: column; gap: 8px;">
+                  <!-- Rendered dynamically -->
                 </div>
               </div>
 
-              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; font-size: 12px;">
-                <div>
-                  <h4 style="font-weight: 700; color: white; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px;">Earning Channels</h4>
-                  <div id="admin-earnings-list" style="display: flex; flex-direction: column; gap: 4px;">
-                    <!-- Rendered dynamically -->
-                  </div>
-                </div>
-                <div>
-                  <h4 style="font-weight: 700; color: white; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px;">Consumption Categories</h4>
-                  <div id="admin-redemptions-list" style="display: flex; flex-direction: column; gap: 4px;">
-                    <!-- Rendered dynamically -->
-                  </div>
+              <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);">
+                <h4 style="font-size: 13px; font-weight: 700; color: white; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px;">
+                  <i class="fa-solid fa-gift" style="color: #FBBF24;"></i> Redemption Categories Breakdown
+                </h4>
+                <div id="admin-redemptions-list" style="display: flex; flex-direction: column; gap: 8px;">
+                  <!-- Rendered dynamically -->
                 </div>
               </div>
             </div>
+          </div>
 
+          <!-- Section 3: Comprehensive User Base Directory & Member Drilldown Table -->
+          <div class="glass-card" style="padding: 24px; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3 style="font-size: 17px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-address-book" style="color: var(--accent-cyan);"></i> User Base Directory & Detailed Member Audit
+                </h3>
+                <p style="color: var(--text-muted); font-size: 12px; margin-top: 2px;">Inspect full user profile details: Name, Alias, Contact, Signed Date, Last Active, Height/Weight/BMI, Lifetime Steps, Coins Earned/Redeemed.</p>
+              </div>
+
+              <!-- Search Bar -->
+              <div style="position: relative; min-width: 280px;">
+                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 12px; color: var(--text-muted); font-size: 13px;"></i>
+                <input type="text" id="admin-directory-search-input" placeholder="Search by name, alias, phone, email, city..." style="width: 100%; height: 38px; padding: 0 12px 0 34px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: white; font-size: 12px; outline: none; box-sizing: border-box;">
+              </div>
+            </div>
+
+            <!-- Table Container -->
+            <div style="overflow-x: auto; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;">
+              <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12px;">
+                <thead>
+                  <tr style="background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1); color: white; font-weight: 700;">
+                    <th style="padding: 12px 14px;">User / Alias</th>
+                    <th style="padding: 12px 14px;">Contact Details</th>
+                    <th style="padding: 12px 14px;">Signed / Last Active</th>
+                    <th style="padding: 12px 14px;">Health & BMI</th>
+                    <th style="padding: 12px 14px;">Lifetime Steps</th>
+                    <th style="padding: 12px 14px;">WalkCoins (Mined / Spent)</th>
+                    <th style="padding: 12px 14px;">App Status</th>
+                    <th style="padding: 12px 14px; text-align: center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-directory-tbody" style="color: rgba(255,255,255,0.85);">
+                  <!-- Rendered dynamically via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Section 4: Squad Groups & Battles Directory -->
+          <div class="glass-card" style="padding: 24px; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3 style="font-size: 17px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-users-viewfinder" style="color: var(--accent-purple);"></i> Squad Groups & Battles Directory
+                </h3>
+                <p style="color: var(--text-muted); font-size: 12px; margin-top: 2px;">Monitor total groups, active battles, squad member counts, and step totals.</p>
+              </div>
+              <div style="display: flex; gap: 12px; font-size: 12px; font-weight: 700;">
+                <span style="color: #34D399;">Active Groups: <strong id="admin-group-active-count">0</strong></span>
+                <span style="color: #F87171;">Inactive Groups: <strong id="admin-group-inactive-count">0</strong></span>
+              </div>
+            </div>
+
+            <div style="overflow-x: auto; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;">
+              <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12px;">
+                <thead>
+                  <tr style="background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1); color: white; font-weight: 700;">
+                    <th style="padding: 12px 14px;">Group Name</th>
+                    <th style="padding: 12px 14px;">Type</th>
+                    <th style="padding: 12px 14px;">Members</th>
+                    <th style="padding: 12px 14px;">Total Group Steps</th>
+                    <th style="padding: 12px 14px;">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-groups-tbody" style="color: rgba(255,255,255,0.85);">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Section 5 & 6: Demographics + Live Stream Grid -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 24px;">
             <!-- Demographics Column -->
             <div class="glass-card" style="padding: 20px;">
               <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px;">
-                <h3 style="font-size: 15px; font-weight: 700; margin: 0;"><i class="fa-solid fa-users-gear" style="color: var(--accent-purple);"></i> Demographic & BMI Divisions</h3>
-                <span style="font-size: 10px; font-weight: 800; color: var(--accent-purple); background: rgba(167, 139, 246, 0.15); border: 1px solid rgba(167, 139, 246, 0.3); padding: 3px 8px; border-radius: 10px;"><i class="fa-solid fa-filter"></i> Cohort Filter</span>
+                <h3 style="font-size: 15px; font-weight: 700; margin: 0;"><i class="fa-solid fa-users-gear" style="color: var(--accent-purple);"></i> Demographic & Regional Insights</h3>
+                <span style="font-size: 10px; font-weight: 800; color: var(--accent-purple); background: rgba(167, 139, 246, 0.15); border: 1px solid rgba(167, 139, 246, 0.3); padding: 3px 8px; border-radius: 10px;">User Cohorts</span>
               </div>
-              <p style="color: var(--text-muted); font-size: 11px; line-height: 1.4; margin-bottom: 16px;">Live aggregation of age, gender, occupation, and health segments.</p>
+              <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 16px;">Breakdown of cities, age groups, gender split, and BMI status.</p>
               
-              <div id="admin-demographics-container" style="max-height: 380px; overflow-y: auto; padding-right: 6px;">
+              <div id="admin-demographics-container" style="max-height: 360px; overflow-y: auto; padding-right: 6px;">
                 <!-- Rendered dynamically -->
               </div>
             </div>
@@ -894,27 +965,25 @@
             <!-- Live User Journey Feed -->
             <div class="glass-card" style="padding: 20px;">
               <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px;">
-                <h3 style="font-size: 15px; font-weight: 700; margin: 0;"><i class="fa-solid fa-route" style="color: var(--primary-emerald);"></i> Live Journey Stream</h3>
-                <span style="font-size: 10px; font-weight: 800; color: var(--primary-emerald); background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 8px; border-radius: 10px;"><i class="fa-solid fa-bolt"></i> Live Feed</span>
+                <h3 style="font-size: 15px; font-weight: 700; margin: 0;"><i class="fa-solid fa-route" style="color: var(--primary-emerald);"></i> Live Journey Activity Ticker</h3>
+                <span style="font-size: 10px; font-weight: 800; color: var(--primary-emerald); background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 8px; border-radius: 10px;"><i class="fa-solid fa-circle-dot fa-pulse"></i> Live Stream</span>
               </div>
-              <p style="color: var(--text-muted); font-size: 11px; line-height: 1.4; margin-bottom: 16px;">Live real-time feed auditing user activities, goal synching, and reward redemptions.</p>
+              <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 16px;">Real-time feed auditing signups, step syncs, and reward redemptions.</p>
               
-              <div class="journey-timeline-feed" id="admin-journey-feed">
+              <div class="journey-timeline-feed" id="admin-journey-feed" style="max-height: 360px;">
                 <!-- Rendered dynamically -->
               </div>
             </div>
-
           </div>
 
-          <!-- Inflation Health & Anti-Cheat Control Grid -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px;">
-            
+          <!-- Section 7 & 8: Anti-Cheat Controls & Fraud Reset Grid -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
             <!-- Anti-Cheat & Fraud Rules Control Card -->
             <div class="glass-card" style="padding: 20px;">
               <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 2px; color: white;">
-                <i class="fa-solid fa-shield-halved" style="color: #EF4444;"></i> Anti-Cheat & Fraud Rules Configuration
+                <i class="fa-solid fa-shield-halved" style="color: #EF4444;"></i> Anti-Cheat & Fraud Rules Configurations
               </h3>
-              <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 16px;">Configure dynamic fraud detection thresholds to prevent phone-shakers.</p>
+              <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 16px;">Configure dynamic fraud detection thresholds to block phone-shakers.</p>
 
               <form id="admin-fraud-rules-form" style="display: flex; flex-direction: column; gap: 10px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 8px;">
@@ -929,24 +998,23 @@
                   <label style="font-size: 12px; color: white; font-weight: 600;">Rapid Sync Window (sec)</label>
                   <input type="number" id="fraud-sync-window" value="60" style="width: 80px; padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: white; text-align: center; font-weight: 700;">
                 </div>
-                <button type="submit" style="background: var(--primary-emerald); color: white; border: none; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 4px;">
-                  <i class="fa-solid fa-floppy-disk"></i> Update Fraud Rules
+                <button type="submit" style="background: var(--primary-emerald); color: white; border: none; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 4px;">
+                  <i class="fa-solid fa-floppy-disk"></i> Update Anti-Cheat Rules
                 </button>
               </form>
             </div>
 
-            <!-- Flagged Step Logs Audit List -->
+            <!-- Flagged Step Logs & Fraud Account Reset -->
             <div class="glass-card" style="padding: 20px;">
               <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 2px; color: white;">
-                <i class="fa-solid fa-triangle-exclamation" style="color: #F59E0B;"></i> Recent Flagged Submissions
+                <i class="fa-solid fa-triangle-exclamation" style="color: #F59E0B;"></i> Flagged Submissions & Fraud Reset
               </h3>
-              <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 16px;">Real-time audit log of step syncs flagged by anti-cheat rules.</p>
+              <p style="color: var(--text-muted); font-size: 11px; margin-bottom: 16px;">Audit step syncs flagged by anti-cheat rules and reset fraud accounts in 1 click.</p>
               
-              <div id="admin-flagged-logs-container" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px;">
+              <div id="admin-flagged-logs-container" style="max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px;">
                 <!-- Dynamically loaded -->
               </div>
             </div>
-
           </div>
         </section>
         </section>

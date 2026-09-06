@@ -3597,7 +3597,7 @@ function getLocalAdminDashboardFallback(range = '30d') {
     },
     demographics: { gender, age, city, state, occupation, bmi },
     economy: {
-      earnings: { 'Step Milestones': totalCoinsEarned - 500, 'Signup Bonus': 500 },
+      earnings: { 'Step Milestones': Math.max(0, totalCoinsEarned - 500), 'Signup Bonus': 500 },
       redemptions: { 'Vouchers': 300, 'Fitness Gear': 150 },
       inflationRatio: 120,
       status: 'Healthy Economy',
@@ -3613,6 +3613,142 @@ function getLocalAdminDashboardFallback(range = '30d') {
 }
 
 let activeAdminRange = '30d';
+
+// Global trigger for fraud account reset
+window.triggerFraudAccountReset = async function(userId, userName) {
+  if (!confirm(`⚠️ Are you sure you want to RESET FRAUD ACCOUNT for "${userName}"?\n\nThis will wipe all steps, WalkCoins, and streak to 0 and clear their fraud score.`)) {
+    return;
+  }
+
+  showToast(`⏳ Resetting account for ${userName}...`);
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/reset-fraud-account`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({ targetUserId: userId })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      showToast(`🎉 ${data.message || 'Account reset successfully!'}`);
+      fetchAdminDashboard();
+    } else {
+      showToast(`❌ Error: ${data.error || 'Failed to reset fraud account'}`);
+    }
+  } catch (err) {
+    console.error('Error triggering fraud account reset:', err);
+    showToast('❌ Failed to connect to server to reset fraud account.');
+  }
+};
+
+// Render User Base Directory Table
+function renderAdminUserDirectoryTable(userList) {
+  const tbody = document.getElementById('admin-directory-tbody');
+  if (!tbody) return;
+
+  if (!userList || userList.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="padding: 20px; text-align: center; color: var(--text-muted);">No users found matching search or filter criteria</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = userList.map(u => {
+    const isInactive = u.is_inactive || u.days_inactive > 30;
+    const appStatusPill = u.app_status === 'Installed'
+      ? '<span class="admin-status-pill installed"><i class="fa-solid fa-circle-check"></i> Installed</span>'
+      : (u.app_status === 'Uninstalled'
+          ? '<span class="admin-status-pill uninstalled"><i class="fa-solid fa-trash"></i> Uninstalled</span>'
+          : '<span class="admin-status-pill unactivated"><i class="fa-solid fa-clock"></i> Unactivated</span>');
+
+    const inactiveBadge = isInactive
+      ? ' <span class="admin-status-pill inactive">Inactive >30d</span>'
+      : '';
+
+    const bmiCatLower = (u.bmi_category || 'normal').toLowerCase();
+    let bmiClass = 'normal';
+    if (bmiCatLower.includes('over')) bmiClass = 'overweight';
+    else if (bmiCatLower.includes('obese')) bmiClass = 'obese';
+    else if (bmiCatLower.includes('under')) bmiClass = 'underweight';
+
+    const bmiBadge = `<span class="admin-bmi-badge ${bmiClass}">${u.bmi_val || '22.5'} (${u.bmi_category || 'Normal weight'})</span>`;
+
+    const joinedDateStr = u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A';
+    const lastActiveStr = u.last_activity ? new Date(u.last_activity).toLocaleDateString() : joinedDateStr;
+
+    const nameDisplay = u.is_admin ? `${u.name} <span style="font-size: 10px; color: var(--accent-cyan); font-weight: 800;">[ADMIN]</span>` : u.name;
+
+    return `
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.06); transition: background 0.2s;">
+        <td style="padding: 12px 14px;">
+          <div style="font-weight: 700; color: white;">${nameDisplay}</div>
+          <div style="font-size: 11px; color: var(--accent-cyan); font-weight: 600;">${u.alias || '@walker'}</div>
+        </td>
+        <td style="padding: 12px 14px;">
+          <div style="font-weight: 600; color: white;">${u.email}</div>
+          <div style="font-size: 11px; color: var(--text-muted);">${u.phone || 'N/A'}</div>
+        </td>
+        <td style="padding: 12px 14px;">
+          <div style="font-size: 11px; color: white;">Joined: ${joinedDateStr}</div>
+          <div style="font-size: 11px; color: var(--text-muted);">Active: ${lastActiveStr}${inactiveBadge}</div>
+        </td>
+        <td style="padding: 12px 14px;">
+          <div style="font-size: 11px; color: white;">${u.height_cm || 172} cm / ${u.weight_kg || 68} kg</div>
+          <div style="margin-top: 2px;">${bmiBadge}</div>
+        </td>
+        <td style="padding: 12px 14px; font-weight: 800; color: white;">
+          <i class="fa-solid fa-shoe-prints" style="color: var(--primary-emerald);"></i> ${(u.lifetime_steps || 0).toLocaleString()}
+        </td>
+        <td style="padding: 12px 14px;">
+          <div style="color: #34D399; font-weight: 700;">+${(u.earned_coins || u.walk_coins || 0).toLocaleString()} mined</div>
+          <div style="color: #FBBF24; font-size: 11px;">-${(u.redeemed_coins || 0).toLocaleString()} spent</div>
+        </td>
+        <td style="padding: 12px 14px;">
+          ${appStatusPill}
+        </td>
+        <td style="padding: 12px 14px; text-align: center;">
+          <div style="display: flex; gap: 6px; justify-content: center;">
+            <button class="admin-btn-action" onclick="showAdminUserAudit('all', null)" title="Audit Walker Details">
+              <i class="fa-solid fa-eye"></i> Audit
+            </button>
+            <button class="admin-btn-action danger" onclick="triggerFraudAccountReset('${u.id}', '${(u.name || '').replace(/'/g, "\\'")}')" title="Reset fraud score & steps">
+              <i class="fa-solid fa-rotate-left"></i> Reset
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Render Squad Groups Table
+function renderAdminGroupsTable(groupList) {
+  const tbody = document.getElementById('admin-groups-tbody');
+  if (!tbody) return;
+
+  if (!groupList || groupList.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="padding: 16px; text-align: center; color: var(--text-muted);">No squad groups registered yet</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = groupList.map(g => {
+    const statusPill = g.status === 'Active'
+      ? '<span class="admin-status-pill installed"><i class="fa-solid fa-bolt"></i> Active</span>'
+      : '<span class="admin-status-pill uninstalled"><i class="fa-solid fa-pause"></i> Inactive</span>';
+
+    return `
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td style="padding: 12px 14px; font-weight: 700; color: white;">${g.name}</td>
+        <td style="padding: 12px 14px; color: var(--accent-cyan); font-weight: 600;">${g.group_type}</td>
+        <td style="padding: 12px 14px; color: white;"><i class="fa-solid fa-user-group"></i> ${g.member_count} members</td>
+        <td style="padding: 12px 14px; font-weight: 800; color: white;">${(g.current_steps || 0).toLocaleString()} steps</td>
+        <td style="padding: 12px 14px;">${statusPill}</td>
+      </tr>
+    `;
+  }).join('');
+}
 
 // Fetch Admin Dashboard Metrics
 async function fetchAdminDashboard(range = activeAdminRange) {
@@ -3642,7 +3778,7 @@ async function fetchAdminDashboard(range = activeAdminRange) {
     resData = getLocalAdminDashboardFallback(range);
   }
 
-  const { summary, funnel, demographics, economy, journey, users } = resData;
+  const { summary, groups, funnel, demographics, economy, journey, users } = resData;
 
   // Cache audited users list globally for modal filtering with normalized properties
   auditedUsers = (users || []).map(normalizeUserObject);
@@ -3652,87 +3788,92 @@ async function fetchAdminDashboard(range = activeAdminRange) {
   initFraudRulesForm();
   fetchFlaggedLogs();
 
-  // 1. Update Hero Cards Values
-  if (document.getElementById('admin-stat-users')) document.getElementById('admin-stat-users').innerText = summary.totalUsers;
-  if (document.getElementById('admin-stat-steps')) document.getElementById('admin-stat-steps').innerText = summary.totalPlatformSteps.toLocaleString();
-  if (document.getElementById('admin-stat-coins')) document.getElementById('admin-stat-coins').innerText = summary.totalCoinsEarned.toLocaleString();
-  if (document.getElementById('admin-stat-groups')) document.getElementById('admin-stat-groups').innerText = summary.totalGroups;
+  // 1. Update App & User Base Summary Cards
+  if (document.getElementById('admin-stat-installs')) document.getElementById('admin-stat-installs').innerText = summary.installs.toLocaleString();
+  if (document.getElementById('admin-stat-uninstalls')) document.getElementById('admin-stat-uninstalls').innerText = summary.uninstalls.toLocaleString();
+  if (document.getElementById('admin-stat-unactivated')) document.getElementById('admin-stat-unactivated').innerText = (summary.downloadedNotActivated || 0).toLocaleString();
+  if (document.getElementById('admin-stat-users')) document.getElementById('admin-stat-users').innerText = summary.totalUsers.toLocaleString();
+  if (document.getElementById('admin-stat-new-today')) document.getElementById('admin-stat-new-today').innerText = (summary.newUsersToday || 0).toLocaleString();
+  if (document.getElementById('admin-stat-inactive')) document.getElementById('admin-stat-inactive').innerText = (summary.inactiveUsers || 0).toLocaleString();
 
-  // 2. Update Marketing Funnel Values
-  if (document.getElementById('admin-funnel-downloads')) document.getElementById('admin-funnel-downloads').innerText = summary.downloads.toLocaleString();
-  if (document.getElementById('admin-funnel-installs')) document.getElementById('admin-funnel-installs').innerText = summary.installs.toLocaleString();
-  if (document.getElementById('admin-funnel-uninstalls')) document.getElementById('admin-funnel-uninstalls').innerText = summary.uninstalls.toLocaleString();
+  // 2. Update WalkCoin Economy Highlights & Ledger
+  if (document.getElementById('admin-econ-mined')) document.getElementById('admin-econ-mined').innerText = (economy.totalCoinsMined || summary.totalCoinsEarned || 0).toLocaleString();
+  if (document.getElementById('admin-econ-spent')) document.getElementById('admin-econ-spent').innerText = (economy.totalCoinsRedeemed || summary.totalCoinsSpent || 0).toLocaleString();
+  if (document.getElementById('admin-econ-circulation')) document.getElementById('admin-econ-circulation').innerText = (economy.coinsInCirculation || summary.coinsInCirculation || 0).toLocaleString();
+  if (document.getElementById('admin-econ-ratio')) document.getElementById('admin-econ-ratio').innerText = `${economy.inflationRatio || 100}%`;
+  
+  const statusBadge = document.getElementById('admin-economy-status-badge');
+  if (statusBadge && economy.status) {
+    statusBadge.innerText = economy.status;
+  }
 
-    // Platforms
-    const androidPct = summary.installs > 0 ? Math.round((funnel.platforms.Android / summary.installs) * 100) : 72;
-    const iosPct = summary.installs > 0 ? Math.round((funnel.platforms.iOS / summary.installs) * 100) : 28;
-    document.getElementById('admin-platform-android').innerText = `${androidPct}% (${funnel.platforms.Android.toLocaleString()})`;
-    document.getElementById('admin-platform-ios').innerText = `${iosPct}% (${funnel.platforms.iOS.toLocaleString()})`;
-
-    // Funnel Chart Graph
-    const funnelChart = document.getElementById('admin-funnel-chart');
-    funnelChart.innerHTML = '';
-    const maxVal = Math.max(...funnel.timeline.map((t) => t.downloads), 1);
-    
-    funnel.timeline.forEach(val => {
-      const dHeight = (val.downloads / maxVal) * 100;
-      const uHeight = (val.uninstalls / maxVal) * 100;
-      
-      const bar = document.createElement('div');
-      bar.className = 'funnel-bar-wrapper';
-      bar.innerHTML = `
-        <div class="funnel-tooltip">
-          <strong>📅 Date: ${val.date}</strong><br/>
-          📥 Downloads: ${val.downloads.toLocaleString()}<br/>
-          📲 Installs: ${val.installs.toLocaleString()}<br/>
-          🗑️ Uninstalls: ${val.uninstalls.toLocaleString()}
-        </div>
-        <div class="funnel-bar-downloads" style="height: ${dHeight}%"></div>
-        <div class="funnel-bar-uninstalls" style="height: ${uHeight}%"></div>
-        <div class="funnel-x-label">${val.date.substring(8, 10)}</div>
-      `;
-      funnelChart.appendChild(bar);
-    });
-
-    // 3. Economy Velocity
-    const spentRatio = summary.totalCoinsEarned > 0 ? Math.round((summary.totalCoinsSpent / summary.totalCoinsEarned) * 100) : 0;
-    document.getElementById('admin-economy-ratio').innerText = `${spentRatio}% Spent (${summary.totalCoinsSpent.toLocaleString()} / ${summary.totalCoinsEarned.toLocaleString()})`;
-    document.getElementById('admin-economy-ratio-bar').style.width = `${spentRatio}%`;
-
-    // Earnings Channels
-    const earningsList = document.getElementById('admin-earnings-list');
+  // Earnings Channels
+  const earningsList = document.getElementById('admin-earnings-list');
+  if (earningsList) {
     earningsList.innerHTML = '';
-    const earnKeys = Object.keys(economy.earnings);
+    const earnKeys = Object.keys(economy.earnings || {});
     if (earnKeys.length === 0) {
-      earningsList.innerHTML = '<div style="color:var(--text-muted)">No coin transactions yet</div>';
+      earningsList.innerHTML = '<div style="color:var(--text-muted); font-size: 12px;">No coin transactions yet</div>';
     } else {
       earnKeys.forEach(k => {
         const item = document.createElement('div');
         item.style.display = 'flex';
         item.style.justifyContent = 'space-between';
-        item.innerHTML = `<span>${k}</span><strong style="color: var(--accent-cyan);">+${economy.earnings[k].toLocaleString()}</strong>`;
+        item.style.fontSize = '12px';
+        item.innerHTML = `<span>${k}</span><strong style="color: #34D399;">+${economy.earnings[k].toLocaleString()}</strong>`;
         earningsList.appendChild(item);
       });
     }
+  }
 
-    // Redemptions Channels
-    const redemptionsList = document.getElementById('admin-redemptions-list');
+  // Redemptions Channels
+  const redemptionsList = document.getElementById('admin-redemptions-list');
+  if (redemptionsList) {
     redemptionsList.innerHTML = '';
-    const redeemKeys = Object.keys(economy.redemptions);
+    const redeemKeys = Object.keys(economy.redemptions || {});
     if (redeemKeys.length === 0) {
-      redemptionsList.innerHTML = '<div style="color:var(--text-muted)">No redemptions yet</div>';
+      redemptionsList.innerHTML = '<div style="color:var(--text-muted); font-size: 12px;">No redemptions yet</div>';
     } else {
       redeemKeys.forEach(k => {
         const item = document.createElement('div');
         item.style.display = 'flex';
         item.style.justifyContent = 'space-between';
-        item.innerHTML = `<span>${k}</span><strong style="color: var(--accent-amber);">${economy.redemptions[k].toLocaleString()}</strong>`;
+        item.style.fontSize = '12px';
+        item.innerHTML = `<span>${k}</span><strong style="color: #FBBF24;">-${economy.redemptions[k].toLocaleString()}</strong>`;
         redemptionsList.appendChild(item);
       });
     }
+  }
 
-    // 4. Demographics Aggregations UI
-    const demoContainer = document.getElementById('admin-demographics-container');
+  // 3. Render User Base Directory Table & Wire Search Input
+  renderAdminUserDirectoryTable(auditedUsers);
+  const dirSearchInput = document.getElementById('admin-directory-search-input');
+  if (dirSearchInput) {
+    dirSearchInput.oninput = (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) {
+        renderAdminUserDirectoryTable(auditedUsers);
+        return;
+      }
+      const filtered = auditedUsers.filter(u =>
+        (u.name && u.name.toLowerCase().includes(q)) ||
+        (u.alias && u.alias.toLowerCase().includes(q)) ||
+        (u.email && u.email.toLowerCase().includes(q)) ||
+        (u.phone && u.phone.toLowerCase().includes(q)) ||
+        (u.city && u.city.toLowerCase().includes(q))
+      );
+      renderAdminUserDirectoryTable(filtered);
+    };
+  }
+
+  // 4. Render Squad Groups Directory Table
+  if (document.getElementById('admin-group-active-count')) document.getElementById('admin-group-active-count').innerText = summary.activeGroups || summary.activeBattles || 0;
+  if (document.getElementById('admin-group-inactive-count')) document.getElementById('admin-group-inactive-count').innerText = summary.inactiveGroups || 0;
+  renderAdminGroupsTable(groups || []);
+
+  // 5. Demographics Aggregations UI
+  const demoContainer = document.getElementById('admin-demographics-container');
+  if (demoContainer) {
     demoContainer.innerHTML = '';
 
     const renderDemoSection = (title, itemsMap, total, keyType) => {
@@ -3740,7 +3881,7 @@ async function fetchAdminDashboard(range = activeAdminRange) {
       sec.style.marginBottom = '16px';
       sec.innerHTML = `<h4 style="font-weight: 700; color: white; font-size: 13px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">${title}</h4>`;
       
-      const keys = Object.keys(itemsMap);
+      const keys = Object.keys(itemsMap || {});
       if (keys.length === 0) {
         sec.innerHTML += '<div style="color:var(--text-muted); font-size:12px;">No data</div>';
       } else {
@@ -3776,14 +3917,15 @@ async function fetchAdminDashboard(range = activeAdminRange) {
     renderDemoSection('Age divisions', demographics.age, summary.totalUsers, 'age_group');
     renderDemoSection('BMI categories', demographics.bmi, summary.totalUsers, 'bmi_category');
     renderDemoSection('Occupation distribution', demographics.occupation, summary.totalUsers, 'occupation');
-    renderDemoSection('Top states', demographics.state, summary.totalUsers, 'state');
     renderDemoSection('Top cities', demographics.city, summary.totalUsers, 'city');
+  }
 
-    // 5. User Journey stream
-    const journeyFeed = document.getElementById('admin-journey-feed');
+  // 6. User Journey Stream
+  const journeyFeed = document.getElementById('admin-journey-feed');
+  if (journeyFeed) {
     journeyFeed.innerHTML = '';
     
-    if (journey.length === 0) {
+    if (!journey || journey.length === 0) {
       journeyFeed.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding: 20px;">Journey stream is empty</div>';
     } else {
       journey.forEach(event => {
@@ -3812,6 +3954,7 @@ async function fetchAdminDashboard(range = activeAdminRange) {
       });
     }
   }
+}
 
 // User-level dynamic auditing modal handlers
 let activeAuditList = [];
