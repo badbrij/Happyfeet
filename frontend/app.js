@@ -157,6 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initUserDashboardTileModals();
   initRealtimeStepStream();
   initAdminExportHandlers();
+  initGroupWhitelistHandlers();
   initPWAServiceWorker();
 });
 
@@ -1567,13 +1568,18 @@ async function fetchGroups() {
             <span class="rank-badge" style="margin-bottom: 8px; display: inline-block;">Invite Code: ${g.inviteCode}</span>
             <div style="font-size: 13px; color: var(--text-muted);">${(g.members || []).length} Members Active</div>
           </div>
-          <div style="display: flex; gap: 8px; margin-top: 8px; align-items: center;">
+          <div style="display: flex; gap: 8px; margin-top: 8px; align-items: center; flex-wrap: wrap;">
             <button class="sync-action-btn" onclick="toggleGroupLeaderboard('${g.id}')" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: rgba(6,182,212,0.15); color: var(--accent-cyan); border: 1px solid rgba(6,182,212,0.3); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
               <i class="fa-solid fa-ranking-star"></i> View Battle
             </button>
             <button class="sync-action-btn share-grp-btn" onclick="openShareModal('${g.name}', '${g.inviteCode}')" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: rgba(59,130,246,0.2); color: #60A5FA; border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
               <i class="fa-solid fa-share-nodes"></i> Share
             </button>
+            ${isOwner ? `
+              <button class="sync-action-btn" onclick="openWhitelistManageModal('${g.id}')" style="margin-top: 0; padding: 6px 12px; font-size: 12px; background: rgba(16,185,129,0.15); color: #10B981; border: 1px solid rgba(16,185,129,0.3); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-user-shield"></i> Whitelist
+              </button>
+            ` : ''}
             ${leaveBtnHTML}
           </div>
         </div>
@@ -4445,6 +4451,134 @@ function initAdminExportHandlers() {
     pdfBtn.onclick = () => {
       showToast('📄 Opening Print & Executive PDF Report layout...');
       window.print();
+    };
+  }
+}
+
+let currentManagingGroupId = null;
+
+function openWhitelistManageModal(groupId) {
+  currentManagingGroupId = groupId;
+  const modal = document.getElementById('group-whitelist-modal');
+  if (!modal) return;
+  modal.classList.add('active');
+  renderGroupWhitelistList();
+}
+
+async function renderGroupWhitelistList() {
+  const container = document.getElementById('group-whitelist-list');
+  if (!container || !currentManagingGroupId) return;
+
+  container.innerHTML = '<div style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 10px;">Loading whitelist...</div>';
+
+  try {
+    const res = await fetch(`${API_BASE}/groups/${currentManagingGroupId}`);
+    if (!res.ok) throw new Error('Failed to load group details');
+    const data = await res.json();
+    const group = data.group;
+
+    const allowed = group.allowedPhones || [];
+    if (allowed.length === 0) {
+      container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 10px;">No whitelisted mobile numbers configured yet. Group is open or empty.</div>';
+      return;
+    }
+
+    container.innerHTML = allowed.map(phone => `
+      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+        <span style="font-size: 13px; font-weight: 600; color: white;">📱 ${phone}</span>
+        <button class="sync-action-btn" style="background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); color: #EF4444; padding: 4px 8px; font-size: 11px;" onclick="removeGroupWhitelistNumber('${phone}')">Remove</button>
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error('Error loading whitelist:', err);
+    container.innerHTML = '<div style="color: #EF4444; font-size: 12px; text-align: center; padding: 10px;">Failed to fetch whitelisted members.</div>';
+  }
+}
+
+async function removeGroupWhitelistNumber(phoneToRemove) {
+  if (!currentManagingGroupId) return;
+  try {
+    const res = await fetch(`${API_BASE}/groups/${currentManagingGroupId}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    let allowed = data.group.allowedPhones || [];
+    allowed = allowed.filter(p => p !== phoneToRemove);
+
+    const updateRes = await fetch(`${API_BASE}/groups/${currentManagingGroupId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({ allowedPhones: allowed })
+    });
+
+    if (updateRes.ok) {
+      showToast(`✅ Removed ${phoneToRemove} from group whitelist.`);
+      renderGroupWhitelistList();
+    } else {
+      showToast('❌ Failed to update whitelist');
+    }
+  } catch (err) {
+    showToast('❌ Error removing phone number');
+  }
+}
+
+function initGroupWhitelistHandlers() {
+  const closeBtn = document.getElementById('close-whitelist-modal-btn');
+  const modal = document.getElementById('group-whitelist-modal');
+  const addBtn = document.getElementById('add-whitelist-phone-btn');
+  const input = document.getElementById('new-whitelist-phone-input');
+
+  if (closeBtn && modal) {
+    closeBtn.onclick = () => {
+      modal.classList.remove('active');
+      currentManagingGroupId = null;
+    };
+  }
+
+  if (addBtn && input) {
+    addBtn.onclick = async () => {
+      const rawPhone = input.value.trim();
+      if (!rawPhone) {
+        showToast('⚠️ Please enter a mobile number');
+        return;
+      }
+      const phone = normalizePhoneFrontend(rawPhone);
+      if (!currentManagingGroupId) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/groups/${currentManagingGroupId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        let allowed = data.group.allowedPhones || [];
+        if (allowed.includes(phone)) {
+          showToast('⚠️ Number is already whitelisted!');
+          input.value = '';
+          return;
+        }
+
+        allowed.push(phone);
+
+        const updateRes = await fetch(`${API_BASE}/groups/${currentManagingGroupId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({ allowedPhones: allowed })
+        });
+
+        if (updateRes.ok) {
+          showToast(`🎉 Added ${phone} to group whitelist!`);
+          input.value = '';
+          renderGroupWhitelistList();
+        } else {
+          showToast('❌ Failed to update whitelist');
+        }
+      } catch (err) {
+        showToast('❌ Error updating whitelist');
+      }
     };
   }
 }
