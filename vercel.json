@@ -20,6 +20,24 @@
       "dest": "/frontend/manifest.json"
     },
     {
+      "src": "/BadaKadam.apk",
+      "dest": "/frontend/BadaKadam.apk",
+      "headers": {
+        "content-type": "application/vnd.android.package-archive",
+        "content-disposition": "attachment; filename=\"BadaKadam_Fitness.apk\"",
+        "cache-control": "public, max-age=0, must-revalidate"
+      }
+    },
+    {
+      "src": "/(.*)\\.apk$",
+      "dest": "/frontend/$1.apk",
+      "headers": {
+        "content-type": "application/vnd.android.package-archive",
+        "content-disposition": "attachment; filename=\"BadaKadam_Fitness.apk\"",
+        "cache-control": "public, max-age=0, must-revalidate"
+      }
+    },
+    {
       "src": "/(.*)",
       "dest": "/frontend/$1"
     }
