@@ -7,6 +7,42 @@
       "use": "@vercel/static"
     }
   ],
+  "headers": [
+    {
+      "source": "/BadaKadam.apk",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/vnd.android.package-archive"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"BadaKadam_Fitness.apk\""
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/frontend/BadaKadam.apk",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/vnd.android.package-archive"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"BadaKadam_Fitness.apk\""
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ],
   "routes": [
     {
       "src": "/sw.js",
@@ -18,24 +54,6 @@
     {
       "src": "/manifest.json",
       "dest": "/frontend/manifest.json"
-    },
-    {
-      "src": "/BadaKadam.apk",
-      "dest": "/frontend/BadaKadam.apk",
-      "headers": {
-        "content-type": "application/vnd.android.package-archive",
-        "content-disposition": "attachment; filename=\"BadaKadam_Fitness.apk\"",
-        "cache-control": "public, max-age=0, must-revalidate"
-      }
-    },
-    {
-      "src": "/(.*)\\.apk$",
-      "dest": "/frontend/$1.apk",
-      "headers": {
-        "content-type": "application/vnd.android.package-archive",
-        "content-disposition": "attachment; filename=\"BadaKadam_Fitness.apk\"",
-        "cache-control": "public, max-age=0, must-revalidate"
-      }
     },
     {
       "src": "/(.*)",
