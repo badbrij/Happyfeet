@@ -13,9 +13,9 @@ CREATE TYPE bmi_category_enum AS ENUM ('Underweight', 'Normal', 'Overweight', 'O
 CREATE TYPE activity_tier_enum AS ENUM ('Beginner (0-5k)', 'Moderate (5k-10k)', 'Advanced (10k-15k)', 'Elite (15k+)');
 CREATE TYPE group_type_enum AS ENUM ('Family', 'Friends', 'Office', 'Neighborhood', 'Community');
 
--- 2. USERS TABLE (Extends Supabase auth.users)
+-- 2. USERS TABLE
 CREATE TABLE public.users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id TEXT PRIMARY KEY,
   auth_id UUID UNIQUE, -- Foreign key to auth.users if using Supabase Auth
   name VARCHAR(100) NOT NULL,
   alias VARCHAR(100),
@@ -55,7 +55,7 @@ CREATE TABLE public.users (
 -- 3. HEALTH PROFILES TABLE
 CREATE TABLE public.health_profiles (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   height_cm NUMERIC(5,2) NOT NULL,
   weight_kg NUMERIC(5,2) NOT NULL,
   bmi NUMERIC(4,1) GENERATED ALWAYS AS (ROUND((weight_kg / ((height_cm / 100.0) * (height_cm / 100.0)))::NUMERIC, 1)) STORED,
@@ -69,7 +69,7 @@ CREATE TABLE public.health_profiles (
 -- 4. DAILY STEP SUMMARIES TABLE
 CREATE TABLE public.daily_summaries (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   date DATE NOT NULL DEFAULT CURRENT_DATE,
   total_steps INT NOT NULL DEFAULT 0,
   total_distance_meters INT DEFAULT 0,
@@ -82,7 +82,7 @@ CREATE TABLE public.daily_summaries (
 
 CREATE TABLE public.daily_steps (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   date DATE NOT NULL DEFAULT CURRENT_DATE,
   total_steps INT NOT NULL DEFAULT 0,
   total_distance_meters INT DEFAULT 0,
@@ -96,7 +96,7 @@ CREATE TABLE public.daily_steps (
 -- 5. STEP LOGS TABLE
 CREATE TABLE public.step_logs (
   id TEXT PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   timestamp TIMESTAMPTZ DEFAULT NOW(),
   date DATE NOT NULL,
   count INT DEFAULT 0,
@@ -111,7 +111,7 @@ CREATE TABLE public.step_logs (
 -- 6. COIN TRANSACTIONS TABLE
 CREATE TABLE public.coin_transactions (
   id TEXT PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   amount INT NOT NULL,
   transaction_type VARCHAR(50) NOT NULL,
   description TEXT,
@@ -120,10 +120,10 @@ CREATE TABLE public.coin_transactions (
 
 -- 7. SOCIAL GROUPS TABLE
 CREATE TABLE public.groups (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id TEXT PRIMARY KEY DEFAULT uuid_generate_v4(),
   name VARCHAR(100) NOT NULL,
   description TEXT,
-  owner_id UUID NOT NULL REFERENCES public.users(id),
+  owner_id TEXT NOT NULL REFERENCES public.users(id),
   invite_code VARCHAR(10) UNIQUE NOT NULL,
   group_type group_type_enum DEFAULT 'Friends',
   target_steps BIGINT DEFAULT 1000000,
@@ -136,7 +136,7 @@ CREATE TABLE public.groups (
 CREATE TABLE public.group_members (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   group_id UUID NOT NULL REFERENCES public.groups(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   role VARCHAR(20) DEFAULT 'Member' CHECK (role IN ('Owner', 'Admin', 'Member')),
   joined_at TIMESTAMPTZ DEFAULT NOW(),
   CONSTRAINT unique_group_member UNIQUE (group_id, user_id)

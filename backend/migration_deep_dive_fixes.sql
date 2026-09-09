@@ -27,7 +27,7 @@ ALTER TABLE public.groups ADD COLUMN IF NOT EXISTS current_steps BIGINT DEFAULT 
 -- 3. CREATE DAILY SUMMARIES TABLE (Used by stepRoutes.ts & groupRoutes.ts)
 CREATE TABLE IF NOT EXISTS public.daily_summaries (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   date DATE NOT NULL DEFAULT CURRENT_DATE,
   total_steps INT NOT NULL DEFAULT 0,
   total_distance_meters INT DEFAULT 0,
@@ -38,10 +38,10 @@ CREATE TABLE IF NOT EXISTS public.daily_summaries (
   CONSTRAINT unique_user_date_summary UNIQUE (user_id, date)
 );
 
--- Alias view/table for backwards compatibility if daily_steps is referenced
+-- Alias table for backwards compatibility if daily_steps is referenced
 CREATE TABLE IF NOT EXISTS public.daily_steps (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   date DATE NOT NULL DEFAULT CURRENT_DATE,
   total_steps INT NOT NULL DEFAULT 0,
   total_distance_meters INT DEFAULT 0,
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS public.daily_steps (
 -- 4. CREATE STEP LOGS TABLE (For granular sync entries & anti-cheat audit)
 CREATE TABLE IF NOT EXISTS public.step_logs (
   id TEXT PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   timestamp TIMESTAMPTZ DEFAULT NOW(),
   date DATE NOT NULL,
   count INT DEFAULT 0,
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS public.step_logs (
 -- 5. CREATE COIN TRANSACTIONS TABLE
 CREATE TABLE IF NOT EXISTS public.coin_transactions (
   id TEXT PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   amount INT NOT NULL,
   transaction_type VARCHAR(50) NOT NULL,
   description TEXT,
