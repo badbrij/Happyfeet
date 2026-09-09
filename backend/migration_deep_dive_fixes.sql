@@ -1,5 +1,5 @@
 -- ========================================================
--- BadaKadam Database Migration Script (Deep Dive Fixes)
+-- BadaKadam Database Migration Script (Bulletproof Fix)
 -- Run this script against your Supabase PostgreSQL database
 -- ========================================================
 
@@ -24,10 +24,10 @@ ALTER TABLE public.groups ADD COLUMN IF NOT EXISTS allowed_phones TEXT[] DEFAULT
 ALTER TABLE public.groups ADD COLUMN IF NOT EXISTS group_pic_url TEXT;
 ALTER TABLE public.groups ADD COLUMN IF NOT EXISTS current_steps BIGINT DEFAULT 0;
 
--- 3. CREATE DAILY SUMMARIES TABLE (Used by stepRoutes.ts & groupRoutes.ts)
+-- 3. CREATE DAILY SUMMARIES TABLE
 CREATE TABLE IF NOT EXISTS public.daily_summaries (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
   date DATE NOT NULL DEFAULT CURRENT_DATE,
   total_steps INT NOT NULL DEFAULT 0,
   total_distance_meters INT DEFAULT 0,
@@ -37,11 +37,12 @@ CREATE TABLE IF NOT EXISTS public.daily_summaries (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   CONSTRAINT unique_user_date_summary UNIQUE (user_id, date)
 );
+ALTER TABLE public.daily_summaries ALTER COLUMN user_id TYPE TEXT USING user_id::text;
 
--- Alias table for backwards compatibility if daily_steps is referenced
+-- 4. CREATE DAILY STEPS TABLE (Backwards compatibility)
 CREATE TABLE IF NOT EXISTS public.daily_steps (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
   date DATE NOT NULL DEFAULT CURRENT_DATE,
   total_steps INT NOT NULL DEFAULT 0,
   total_distance_meters INT DEFAULT 0,
@@ -51,11 +52,12 @@ CREATE TABLE IF NOT EXISTS public.daily_steps (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   CONSTRAINT unique_user_date_steps UNIQUE (user_id, date)
 );
+ALTER TABLE public.daily_steps ALTER COLUMN user_id TYPE TEXT USING user_id::text;
 
--- 4. CREATE STEP LOGS TABLE (For granular sync entries & anti-cheat audit)
+-- 5. CREATE STEP LOGS TABLE
 CREATE TABLE IF NOT EXISTS public.step_logs (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
   timestamp TIMESTAMPTZ DEFAULT NOW(),
   date DATE NOT NULL,
   count INT DEFAULT 0,
@@ -66,25 +68,31 @@ CREATE TABLE IF NOT EXISTS public.step_logs (
   is_flagged BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE public.step_logs ALTER COLUMN user_id TYPE TEXT USING user_id::text;
 
--- 5. CREATE COIN TRANSACTIONS TABLE
+-- 6. CREATE COIN TRANSACTIONS TABLE
 CREATE TABLE IF NOT EXISTS public.coin_transactions (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
   amount INT NOT NULL,
   transaction_type VARCHAR(50) NOT NULL,
   description TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE public.coin_transactions ALTER COLUMN user_id TEXT USING user_id::text;
 
 -- Enable RLS on new tables
 ALTER TABLE public.daily_summaries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.daily_steps ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.step_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.coin_transactions ENABLE ROW LEVEL SECURITY;
 
 -- Permissive policies for API Service Role / backend access
 DROP POLICY IF EXISTS "Public access to daily_summaries" ON public.daily_summaries;
 CREATE POLICY "Public access to daily_summaries" ON public.daily_summaries FOR ALL USING (true);
+
+DROP POLICY IF EXISTS "Public access to daily_steps" ON public.daily_steps;
+CREATE POLICY "Public access to daily_steps" ON public.daily_steps FOR ALL USING (true);
 
 DROP POLICY IF EXISTS "Public access to step_logs" ON public.step_logs;
 CREATE POLICY "Public access to step_logs" ON public.step_logs FOR ALL USING (true);
