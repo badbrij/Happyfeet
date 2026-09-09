@@ -47,6 +47,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       target_steps: targetSteps || 1000000,
       current_steps: 0,
       allowed_phones: allowedPhones || [],
+      group_pic_url: pic,
     };
 
     // Insert Group
@@ -138,7 +139,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       let startDate = g.created_at ? g.created_at.split('T')[0] : new Date().toISOString().split('T')[0];
       let endDate: string | null = null;
 
-      let groupPic = '🏆';
+      let groupPic = g.group_pic_url || '🏆';
 
       if (parts[1]) {
         try {
@@ -146,7 +147,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
           battleDuration = meta.battleDuration || 'Infinite';
           startDate = meta.startDate || startDate;
           endDate = meta.endDate || null;
-          groupPic = meta.groupPic || meta.avatar || '🏆';
+          groupPic = g.group_pic_url || meta.groupPic || meta.avatar || '🏆';
         } catch (e) {
           // fallback
         }
@@ -477,7 +478,10 @@ router.put('/:id/avatar', authMiddleware, async (req: AuthRequest, res: Response
 
     const { error: updateError } = await supabase
       .from('groups')
-      .update({ description: serializedDescription })
+      .update({
+        description: serializedDescription,
+        group_pic_url: groupPic,
+      })
       .eq('id', groupId);
 
     if (updateError) {

@@ -2589,19 +2589,31 @@ function checkPendingInvite() {
   const pendingInvite = localStorage.getItem('pending_invite_code');
   if (pendingInvite && currentUser) {
     localStorage.removeItem('pending_invite_code');
-    // Switch to groups tab
+    
+    // Auto-join group via API
+    fetch(`${API_BASE}/groups/join`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentToken}`
+      },
+      body: JSON.stringify({ inviteCode: pendingInvite })
+    }).then(res => res.json()).then(data => {
+      if (data.group) {
+        showToast(`🎉 Joined group "${data.group.name}" successfully!`);
+      } else if (data.message) {
+        showToast(`ℹ️ ${data.message}`);
+      }
+      if (typeof loadGroups === 'function') loadGroups();
+    }).catch(err => {
+      console.warn('Auto-join invite error:', err);
+      if (typeof loadGroups === 'function') loadGroups();
+    });
+
     const groupsTab = document.querySelector('[data-tab="groups-view"]');
     if (groupsTab) {
       groupsTab.click();
     }
-    
-    setTimeout(() => {
-      const joinModal = document.getElementById('join-group-modal');
-      if (joinModal) {
-        document.getElementById('join-grp-code').value = pendingInvite;
-        joinModal.classList.add('active');
-      }
-    }, 500);
   }
 }
 

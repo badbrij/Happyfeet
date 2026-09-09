@@ -150,11 +150,11 @@ router.post('/sync', authMiddleware, stepSyncRateLimiter, async (req: AuthReques
 
     if (summaryFetchError) console.error(summaryFetchError);
 
-    let updatedSteps = (todaySummary?.total_steps || 0) + totalNewSteps;
-    let updatedDistance = (todaySummary?.total_distance_meters || 0) + totalNewDistance;
-    let updatedCalories = (todaySummary?.total_calories || 0) + totalNewCalories;
-    let updatedActiveMins = (todaySummary?.total_active_minutes || 0) + totalNewActiveMinutes;
-    let goalMet = updatedSteps >= user.daily_step_goal;
+    let updatedSteps = Math.max(todaySummary?.total_steps || 0, totalNewSteps);
+    let updatedDistance = Math.max(todaySummary?.total_distance_meters || 0, totalNewDistance);
+    let updatedCalories = Math.max(todaySummary?.total_calories || 0, totalNewCalories);
+    let updatedActiveMins = Math.max(todaySummary?.total_active_minutes || 0, totalNewActiveMinutes);
+    let goalMet = updatedSteps >= (user.daily_step_goal || 10000);
 
     if (todaySummary) {
       await supabase
@@ -182,9 +182,14 @@ router.post('/sync', authMiddleware, stepSyncRateLimiter, async (req: AuthReques
         }]);
     }
 
-    // Update User Lifetime Metrics & WalkCoins
-    let newWalkCoins = user.walk_coins;
-    let streakCount = user.current_streak;
+    // Update User Lifetime Metrics, Streak & WalkCoins
+    let newWalkCoins = user.walk_coins || 0;
+    let streakCount = user.current_streak || 1;
+
+    // Increment streak if goal met today and was not met prior to this sync
+    if (goalMet && (!todaySummary || !todaySummary.goal_met)) {
+      streakCount += 1;
+    }
 
     // Calculate daily step goal coins with dynamic 10% bonus for every additional 50% over and above daily goal
     const getCoinsForSteps = (steps: number, goal: number): number => {
@@ -199,8 +204,8 @@ router.post('/sync', authMiddleware, stepSyncRateLimiter, async (req: AuthReques
     };
 
     const oldSteps = todaySummary ? todaySummary.total_steps : 0;
-    const oldCoins = getCoinsForSteps(oldSteps, user.daily_step_goal);
-    const newCoins = getCoinsForSteps(updatedSteps, user.daily_step_goal);
+    const oldCoins = getCoinsForSteps(oldSteps, user.daily_step_goal || 10000);
+    const newCoins = getCoinsForSteps(updatedSteps, user.daily_step_goal || 10000);
     const coinsToReward = newCoins - oldCoins;
 
     if (coinsToReward > 0) {
@@ -218,11 +223,13 @@ router.post('/sync', authMiddleware, stepSyncRateLimiter, async (req: AuthReques
       }]);
     }
 
+    const addedSteps = Math.max(0, updatedSteps - oldSteps);
     const { error: userUpdateError } = await supabase
       .from('users')
       .update({
-        lifetime_steps: user.lifetime_steps + totalNewSteps,
+        lifetime_steps: (user.lifetime_steps || 0) + addedSteps,
         walk_coins: newWalkCoins,
+        current_streak: streakCount,
         fraud_score: currentFraudScore,
       })
       .eq('id', userId);
