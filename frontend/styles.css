@@ -1774,4 +1774,38 @@ input:focus, select:focus {
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
 }
 
+/* Landing Page Tile Swapping Carousel CSS */
+.landing-tile-btn {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.landing-tile-btn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+}
+
+.landing-tile-btn.active {
+  background: rgba(6, 182, 212, 0.18) !important;
+  border-color: var(--accent-cyan) !important;
+  color: white !important;
+  box-shadow: 0 0 14px rgba(6, 182, 212, 0.3);
+}
+
+.landing-tile-content {
+  animation: tileSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tileSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
 

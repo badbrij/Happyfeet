@@ -215,233 +215,279 @@
       <main id="app-main">
         <!-- View 0: Landing Experience for Visitors -->
         <section id="landing-view" class="view-panel active">
-          <div class="landing-container" style="display: flex; flex-direction: column; gap: 32px; padding: 12px 0;">
+          <div class="landing-container" style="display: flex; flex-direction: column; gap: 28px; padding: 12px 0;">
             
+            <!-- Invite Welcome Context Banner (Dynamic if ?invite= is in URL) -->
+            <div id="landing-invite-banner" style="display: none; background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%); border: 1px solid rgba(6, 182, 212, 0.4); border-radius: 16px; padding: 16px 20px; text-align: center;">
+              <div style="display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                <span style="font-size: 20px;">🎉</span>
+                <span style="font-size: 14px; color: white; font-weight: 700;">You've been invited to join <strong id="landing-invite-name" style="color: var(--accent-cyan);">BadaKadam Squad</strong>!</span>
+                <span style="font-size: 12px; background: var(--primary-emerald); color: white; font-weight: 800; padding: 3px 10px; border-radius: 12px; font-weight: 800;">+50 Bonus WalkCoins</span>
+              </div>
+            </div>
+
             <!-- Landing Hero Section -->
-            <div class="landing-hero-card glass-card" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(11, 15, 25, 0.95) 100%); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 24px; padding: 36px 28px; position: relative; overflow: hidden;">
+            <div class="landing-hero-card glass-card" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(11, 15, 25, 0.98) 100%); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 24px; padding: 32px 24px; position: relative; overflow: hidden;">
               <div style="position: absolute; top: -60px; right: -60px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, rgba(0, 0, 0, 0) 70%); pointer-events: none;"></div>
               
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 36px; align-items: center;">
-                <div style="display: flex; flex-direction: column; gap: 16px;">
-                  <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(6, 182, 212, 0.12); border: 1px solid rgba(6, 182, 212, 0.3); color: var(--accent-cyan); font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; width: fit-content;">
-                    <i class="fa-solid fa-person-walking"></i> The All-in-One Movement Platform
-                  </div>
-                  
-                  <h1 style="font-size: clamp(28px, 4vw, 42px); font-weight: 900; color: white; line-height: 1.15; margin: 0;">
-                    Step Into a <span style="background: linear-gradient(135deg, #10B981, #34D399); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Healthier,</span> <span style="background: linear-gradient(135deg, #06B6D4, #38BDF8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Wealthier You.</span>
-                  </h1>
-                  
-                  <p style="font-size: 14px; color: rgba(255, 255, 255, 0.8); line-height: 1.6; margin: 0; max-width: 520px;">
-                    Transform daily movement into group battles with friends, health habits, and real WalkCoin rewards. Automatic background step tracking with Google Fit & HealthKit.
-                  </p>
-                  
-                  <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px;">
-                    <button class="open-quick-login-trigger" style="background: linear-gradient(135deg, #10B981, #059669); color: white; border: none; font-size: 14px; font-weight: 800; padding: 12px 24px; border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); transition: transform 0.2s;">
-                      <i class="fa-solid fa-rocket"></i> Join Bada Kadam — Free
-                    </button>
-                    <a href="#landing-features-section" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); color: white; font-size: 14px; font-weight: 700; padding: 12px 20px; border-radius: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                      <i class="fa-solid fa-compass"></i> Explore Features
-                    </a>
-                  </div>
-
-                  <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; font-size: 12px; color: var(--text-muted);">
-                    <span><i class="fa-solid fa-circle-check" style="color: #10B981;"></i> 100% Auto Sync</span>
-                    <span><i class="fa-solid fa-circle-check" style="color: #10B981;"></i> 100 Steps = 1 WalkCoin</span>
-                    <span><i class="fa-solid fa-circle-check" style="color: #10B981;"></i> Squad Battles</span>
+              <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; max-width: 780px; margin: 0 auto;">
+                
+                <!-- Authentic Logo Badge -->
+                <div style="display: flex; align-items: center; gap: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); padding: 8px 18px; border-radius: 20px;">
+                  <img src="logo.png" style="height: 36px; object-fit: contain;">
+                  <div style="display: flex; flex-direction: column; text-align: left;">
+                    <span style="color: #000000; -webkit-text-fill-color: #000000; font-size: 20px; font-weight: 900; text-shadow: 0 0 3px rgba(255,255,255,0.4); line-height: 1;">BadaKadam</span>
+                    <span style="font-size: 8px; font-weight: 800; color: var(--accent-cyan); letter-spacing: 1.2px; text-transform: uppercase;">EVERY STRIDE COUNTS</span>
                   </div>
                 </div>
+                
+                <h1 style="font-size: clamp(28px, 4vw, 42px); font-weight: 900; color: white; line-height: 1.15; margin: 0;">
+                  Step Into a <span style="background: linear-gradient(135deg, #10B981, #34D399); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Healthier,</span> <span style="background: linear-gradient(135deg, #06B6D4, #38BDF8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Wealthier You.</span>
+                </h1>
+                
+                <p style="font-size: 14px; color: rgba(255, 255, 255, 0.85); line-height: 1.6; margin: 0; max-width: 580px;">
+                  Transform daily walking into friendly squad battles, active health habits, and real WalkCoin rewards. Automatic background step sync with Google Fit & Apple Health.
+                </p>
+                
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 6px;">
+                  <button class="open-quick-login-trigger" style="background: linear-gradient(135deg, #10B981, #059669); color: white; border: none; font-size: 15px; font-weight: 800; padding: 13px 28px; border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35); transition: transform 0.2s;">
+                    <i class="fa-solid fa-rocket"></i> Get Started Free — Claim 50 Coins
+                  </button>
+                  <a href="BadaKadam.apk" download="BadaKadam_Fitness.apk" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); color: #34D399; font-size: 14px; font-weight: 800; padding: 12px 20px; border-radius: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fa-brands fa-android"></i> Download APK
+                  </a>
+                </div>
 
-                <!-- Hero Graphic Mockup Card -->
-                <div style="display: flex; justify-content: center;">
-                  <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; padding: 24px; width: 100%; max-width: 340px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                      <span style="font-size: 11px; font-weight: 800; color: #F59E0B; background: rgba(245, 158, 11, 0.15); padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.3);"><i class="fa-solid fa-bolt"></i> Live Activity</span>
-                      <span style="font-size: 12px; font-weight: 800; color: #F59E0B;"><i class="fa-solid fa-coins"></i> <span id="landing-hero-coins-val">+0 WalkCoins</span></span>
-                    </div>
-                    
-                    <div class="step-progress-circle-container" style="margin: 12px auto;">
-                      <svg class="step-progress-svg" viewBox="0 0 180 180" style="overflow: visible;">
-                        <defs>
-                          <linearGradient id="landing-neon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#06B6D4" />
-                            <stop offset="50%" stop-color="#22D3EE" />
-                            <stop offset="100%" stop-color="#10B981" />
-                          </linearGradient>
-                        </defs>
-                        <circle class="step-progress-circle-bg" cx="90" cy="90" r="80" />
-                        <circle class="step-progress-circle-fill" id="landing-hero-ring-fill" cx="90" cy="90" r="80" stroke-dasharray="502.6" stroke-dashoffset="502.6" style="stroke: url(#landing-neon-grad) !important; stroke-width: 12; stroke-linecap: round; fill: none; filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.8)) drop-shadow(0 0 18px rgba(16, 185, 129, 0.6)); transition: stroke-dashoffset 0.08s linear;" />
-                      </svg>
-                      <div class="step-circle-inner-text">
-                        <div class="step-circle-val" id="landing-hero-step-val" style="font-size: 28px;">0</div>
-                        <div class="step-circle-label">Steps Today</div>
-                      </div>
-                    </div>
-
-                    <div style="font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 14px;">
-                      Daily Target: <strong style="color: white;">10,000</strong> steps (<span id="landing-hero-percent-val" style="color: var(--primary-emerald); font-weight: 700;">0%</span> completed)
-                    </div>
-
-                    <div style="display: flex; gap: 8px; justify-content: center;">
-                      <span style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #EF4444; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 12px;"><i class="fa-solid fa-fire"></i> 🔥 7 Day Streak</span>
-                      <span style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #F59E0B; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 12px;"><i class="fa-solid fa-trophy"></i> 🏆 Rank #1 Squad</span>
-                    </div>
-                  </div>
+                <div style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 6px; font-size: 12px; color: var(--text-muted);">
+                  <span><i class="fa-solid fa-circle-check" style="color: #10B981;"></i> 100% Background Sync</span>
+                  <span><i class="fa-solid fa-circle-check" style="color: #10B981;"></i> 100 Steps = 1 WalkCoin</span>
+                  <span><i class="fa-solid fa-circle-check" style="color: #10B981;"></i> Squad Battles</span>
                 </div>
               </div>
             </div>
 
-            <!-- Core Value Pillars Section -->
-            <div id="landing-features-section" style="text-align: center; margin-top: 16px;">
-              <span style="font-size: 12px; font-weight: 800; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 1px;">Beyond Simple Step Counting</span>
-              <h2 style="font-size: 26px; font-weight: 900; color: white; margin-top: 4px;">Everything You Need to Walk & Succeed</h2>
+            <!-- Auto-Swapping Feature Showcase Tiles Header -->
+            <div style="text-align: center; margin-top: 8px;">
+              <span style="font-size: 11px; font-weight: 800; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 1.5px;">Interactive Feature Showcase</span>
+              <h2 style="font-size: 24px; font-weight: 900; color: white; margin-top: 4px;">Experience BadaKadam in Action</h2>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
-              <!-- Pillar 1: Smart Step Sync -->
-              <div class="glass-card" style="padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px;">
-                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); display: flex; align-items: center; justify-content: center; font-size: 18px;">
-                  <i class="fa-solid fa-rotate-right"></i>
-                </div>
-                <h3 style="font-size: 16px; font-weight: 800; color: white; margin: 0;">Smart Step Sync</h3>
-                <p style="font-size: 12px; color: var(--text-muted); margin: 0; line-height: 1.5;">Direct 1-Click sync with Google Fit & HealthKit. Automatic step fetching without manual key-ins.</p>
-              </div>
-
-              <!-- Pillar 2: Group Battles -->
-              <div class="glass-card" style="padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px;">
-                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(239, 68, 68, 0.15); color: #EF4444; display: flex; align-items: center; justify-content: center; font-size: 18px;">
-                  <i class="fa-solid fa-users"></i>
-                </div>
-                <h3 style="font-size: 16px; font-weight: 800; color: white; margin: 0;">Squad Group Battles</h3>
-                <p style="font-size: 12px; color: var(--text-muted); margin: 0; line-height: 1.5;">Create custom walking squads with friends, family, or coworkers. Compete on leaderboards and maintain streaks.</p>
-              </div>
-
-              <!-- Pillar 3: WalkCoins Marketplace -->
-              <div class="glass-card" style="padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px;">
-                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(245, 158, 11, 0.15); color: #F59E0B; display: flex; align-items: center; justify-content: center; font-size: 18px;">
-                  <i class="fa-solid fa-coins"></i>
-                </div>
-                <h3 style="font-size: 16px; font-weight: 800; color: white; margin: 0;">WalkCoins Marketplace</h3>
-                <p style="font-size: 12px; color: var(--text-muted); margin: 0; line-height: 1.5;">Movement that pays! Earn 1 WalkCoin for every 100 steps and redeem for fitness rewards and vouchers.</p>
-              </div>
-
-              <!-- Pillar 4: Target Better Health -->
-              <div class="glass-card" style="padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px;">
-                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); color: var(--primary-emerald); display: flex; align-items: center; justify-content: center; font-size: 18px;">
-                  <i class="fa-solid fa-heart-pulse"></i>
-                </div>
-                <h3 style="font-size: 16px; font-weight: 800; color: white; margin: 0;">Target Better Health</h3>
-                <p style="font-size: 12px; color: var(--text-muted); margin: 0; line-height: 1.5;">Track health indicators (calories burned, distance, active minutes, BMI) and build sustainable daily walking habits.</p>
-              </div>
-            </div>
-
-            <!-- Live App Preview Snippets Interactive Showcase -->
-            <div style="text-align: center; margin-top: 20px;">
-              <span style="font-size: 12px; font-weight: 800; color: var(--primary-emerald); text-transform: uppercase; letter-spacing: 1px;">Experience The Platform</span>
-              <h2 style="font-size: 26px; font-weight: 900; color: white; margin-top: 4px;">Live App Snippets</h2>
-            </div>
-
-            <div class="glass-card" style="padding: 24px; border-radius: 20px;">
-              <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
-                <button class="landing-tab-btn active" data-target="preview-activity" style="background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.4); color: white; padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer;">
-                  <i class="fa-solid fa-person-walking"></i> Activity Meter
-                </button>
-                <button class="landing-tab-btn" data-target="preview-battles" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-muted); padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer;">
-                  <i class="fa-solid fa-users"></i> Squad Leaderboard
-                </button>
-                <button class="landing-tab-btn" data-target="preview-rewards" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-muted); padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer;">
-                  <i class="fa-solid fa-gift"></i> Rewards Marketplace
-                </button>
-                <button class="landing-tab-btn" data-target="preview-share" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-muted); padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer;">
-                  <i class="fa-solid fa-share-nodes"></i> Social Share Card
-                </button>
-              </div>
-
-              <div>
-                <!-- Snippet 1: Activity Meter -->
-                <div class="landing-panel active" id="preview-activity" style="display: block;">
-                  <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 20px; border-radius: 14px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                      <strong style="color: white; font-size: 14px;">Today's Activity Meter</strong>
-                      <span style="font-size: 11px; color: var(--primary-emerald); font-weight: 700;">🟢 Live Sync</span>
-                    </div>
-                    <div style="display: flex; gap: 24px; align-items: center; justify-content: center; flex-wrap: wrap;">
-                      <div style="text-align: center;">
-                        <div style="font-size: 36px; font-weight: 900; color: white;">8,420</div>
-                        <div style="font-size: 12px; color: var(--text-muted);">Steps Taken Today</div>
-                      </div>
-                      <div style="text-align: center;">
-                        <div style="font-size: 20px; font-weight: 800; color: #EF4444;">353 kcal</div>
-                        <div style="font-size: 11px; color: var(--text-muted);">Calories</div>
-                      </div>
-                      <div style="text-align: center;">
-                        <div style="font-size: 20px; font-weight: 800; color: var(--accent-cyan);">6.2 km</div>
-                        <div style="font-size: 11px; color: var(--text-muted);">Distance</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Snippet 2: Squad Leaderboard -->
-                <div class="landing-panel" id="preview-battles" style="display: none;">
-                  <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 22px; border-radius: 16px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                      <strong style="color: white; font-size: 16px; font-weight: 800;">Hyderabad Striders Squad</strong>
-                      <span style="font-size: 12px; color: #F59E0B; font-weight: 800; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); padding: 4px 12px; border-radius: 12px;"><i class="fa-solid fa-trophy"></i> Rank #1 Squad</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 12px;">
-                      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); padding: 12px 16px; border-radius: 12px;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                          <span style="font-size: 24px; line-height: 1;">🥇</span>
-                          <span style="font-size: 15px; color: white; font-weight: 800;">Priya Verma</span>
-                        </div>
-                        <span style="font-size: 15px; color: #10B981; font-weight: 900; background: rgba(16, 185, 129, 0.15); padding: 4px 12px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3);">14,200 steps</span>
-                      </div>
-                      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.2); padding: 12px 16px; border-radius: 12px;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                          <span style="font-size: 24px; line-height: 1;">🥈</span>
-                          <span style="font-size: 15px; color: white; font-weight: 800;">Brijesh Shukla</span>
-                        </div>
-                        <span style="font-size: 15px; color: var(--accent-cyan); font-weight: 900; background: rgba(6, 182, 212, 0.15); padding: 4px 12px; border-radius: 8px; border: 1px solid rgba(6, 182, 212, 0.3);">11,850 steps</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Snippet 3: Rewards Marketplace -->
-                <div class="landing-panel" id="preview-rewards" style="display: none;">
-                  <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 20px; border-radius: 14px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                      <strong style="color: white; font-size: 14px;">Featured WalkCoin Reward</strong>
-                      <span style="font-size: 12px; color: #F59E0B; font-weight: 800;"><i class="fa-solid fa-coins"></i> 100 Coins</span>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 14px; border-radius: 10px;">
-                      <div style="font-size: 14px; font-weight: 700; color: white; margin-bottom: 4px;">🎯 ₹500 Nike Fitness Voucher</div>
-                      <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Redeem 100 WalkCoins for ₹500 off sports apparel & footwear.</p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Snippet 4: Social Share Card -->
-                <div class="landing-panel" id="preview-share" style="display: none;">
-                  <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 20px; border-radius: 14px; text-align: center;">
-                    <div style="font-size: 12px; color: var(--accent-cyan); font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Social Share Card</div>
-                    <div style="font-size: 20px; font-weight: 900; color: white;">"I hit 10,000 steps on BadaKadam!"</div>
-                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Share your daily achievements on WhatsApp, Instagram & Twitter</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Final Conversion CTA Banner -->
-            <div class="glass-card" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 20px; padding: 32px 24px; text-align: center; margin-top: 12px;">
-              <h2 style="font-size: 24px; font-weight: 900; color: white; margin-bottom: 8px;">Ready to Make Your Big Step Today?</h2>
-              <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; max-width: 500px; margin: 0 auto 20px auto; line-height: 1.5;">
-                Join thousands of walkers stepping towards better health, squad group battles, and daily WalkCoin rewards.
-              </p>
-              <button class="open-quick-login-trigger" style="background: linear-gradient(135deg, #10B981, #059669); color: white; border: none; font-size: 16px; font-weight: 800; padding: 14px 32px; border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);">
-                <i class="fa-solid fa-star"></i> Join Bada Kadam Now — It's Free
+            <!-- Tile Selector Chips / Indicators Bar -->
+            <div class="landing-tile-selector-bar" style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+              <button class="landing-tile-btn active" data-tile="1" style="background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.4); color: white; padding: 8px 16px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                <i class="fa-solid fa-person-walking" style="color: var(--accent-cyan);"></i> <span>1. Activity Meter</span>
+              </button>
+              <button class="landing-tile-btn" data-tile="2" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-muted); padding: 8px 16px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                <i class="fa-solid fa-users" style="color: #EF4444;"></i> <span>2. Squad Battles</span>
+              </button>
+              <button class="landing-tile-btn" data-tile="3" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-muted); padding: 8px 16px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                <i class="fa-solid fa-trophy" style="color: #F59E0B;"></i> <span>3. Rankings & Podium</span>
+              </button>
+              <button class="landing-tile-btn" data-tile="4" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-muted); padding: 8px 16px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                <i class="fa-solid fa-coins" style="color: #10B981;"></i> <span>4. WalkCoins Economy</span>
               </button>
             </div>
+
+            <!-- Auto-Swapping Tile Container Deck -->
+            <div id="landing-tiles-deck" class="glass-card" style="padding: 28px; border-radius: 20px; min-height: 320px; position: relative; overflow: hidden; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.12);">
+              
+              <!-- TILE 1: Live Activity Meter -->
+              <div class="landing-tile-content active" id="landing-tile-1" style="display: block;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; align-items: center;">
+                  <div>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.3); color: var(--accent-cyan); font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 12px; margin-bottom: 12px;">
+                      <i class="fa-solid fa-bolt"></i> REAL-TIME ACTIVITY TRACKER
+                    </div>
+                    <h3 style="font-size: 22px; font-weight: 900; color: white; margin: 0 0 8px 0;">Live Step Progress & Coin Mining</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0 0 16px 0;">
+                      Watch your daily steps transform into WalkCoins in real-time. Every 100 steps earns 1 WalkCoin, tracking calories, distance, and streaks automatically.
+                    </p>
+                    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                      <div style="background: rgba(255,255,255,0.04); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
+                        <div style="font-size: 11px; color: var(--text-muted);">Step Goal</div>
+                        <div style="font-size: 16px; font-weight: 800; color: white;">10,000 steps</div>
+                      </div>
+                      <div style="background: rgba(255,255,255,0.04); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
+                        <div style="font-size: 11px; color: var(--text-muted);">Coin Conversion</div>
+                        <div style="font-size: 16px; font-weight: 800; color: #F59E0B;">+84 WalkCoins</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Step Ring Widget -->
+                  <div style="display: flex; justify-content: center;">
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; width: 100%; max-width: 280px; text-align: center;">
+                      <div class="step-progress-circle-container" style="margin: 0 auto 10px auto;">
+                        <svg class="step-progress-svg" viewBox="0 0 180 180" style="overflow: visible;">
+                          <defs>
+                            <linearGradient id="tile-neon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stop-color="#06B6D4" />
+                              <stop offset="100%" stop-color="#10B981" />
+                            </linearGradient>
+                          </defs>
+                          <circle class="step-progress-circle-bg" cx="90" cy="90" r="80" />
+                          <circle class="step-progress-circle-fill" id="landing-hero-ring-fill" cx="90" cy="90" r="80" stroke-dasharray="502.6" stroke-dashoffset="502.6" style="stroke: url(#tile-neon-grad) !important; stroke-width: 12; stroke-linecap: round; fill: none; filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.8)); transition: stroke-dashoffset 0.08s linear;" />
+                        </svg>
+                        <div class="step-circle-inner-text">
+                          <div class="step-circle-val" id="landing-hero-step-val" style="font-size: 26px;">8,420</div>
+                          <div class="step-circle-label">Steps Today</div>
+                        </div>
+                      </div>
+                      <div style="font-size: 11px; color: var(--primary-emerald); font-weight: 700;">🔥 84% Daily Goal Complete</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TILE 2: Squad Battles -->
+              <div class="landing-tile-content" id="landing-tile-2" style="display: none;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; align-items: center;">
+                  <div>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #EF4444; font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 12px; margin-bottom: 12px;">
+                      <i class="fa-solid fa-users"></i> SOCIAL SQUAD ENGAGEMENT
+                    </div>
+                    <h3 style="font-size: 22px; font-weight: 900; color: white; margin: 0 0 8px 0;">Squad Group Battles & Rivalries</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0 0 16px 0;">
+                      Form walking squads with colleagues, friends, or family. Compete in weekly step battles, cheer team members, and maintain group victory streaks.
+                    </p>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                      <span style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #F87171; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 10px;">⚔️ Weekly Squad Matches</span>
+                      <span style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); color: #FBBF24; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 10px;">🏆 Team Streaks</span>
+                    </div>
+                  </div>
+
+                  <!-- Squad Matchup Widget -->
+                  <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                      <strong style="color: white; font-size: 13px;">🏆 Regional Squad Battle</strong>
+                      <span style="font-size: 10px; color: #EF4444; font-weight: 800; background: rgba(239,68,68,0.2); padding: 2px 8px; border-radius: 8px;">LIVE BATTLE</span>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                      <div style="display: flex; justify-content: space-between; font-size: 12px; color: white; font-weight: 700; margin-bottom: 4px;">
+                        <span>Hyderabadi Striders</span>
+                        <span style="color: var(--primary-emerald);">142,500 steps</span>
+                      </div>
+                      <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden;">
+                        <div style="width: 70%; background: var(--primary-emerald); height: 100%;"></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); font-weight: 600; margin-bottom: 4px;">
+                        <span>Mumbai Walkers</span>
+                        <span>98,200 steps</span>
+                      </div>
+                      <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden;">
+                        <div style="width: 48%; background: var(--accent-cyan); height: 100%;"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TILE 3: Rankings & Leaderboard Podium -->
+              <div class="landing-tile-content" id="landing-tile-3" style="display: none;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; align-items: center;">
+                  <div>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #F59E0B; font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 12px; margin-bottom: 12px;">
+                      <i class="fa-solid fa-trophy"></i> FRIENDLY COMPETITION
+                    </div>
+                    <h3 style="font-size: 22px; font-weight: 900; color: white; margin: 0 0 8px 0;">Local & Nationwide Leaderboards</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0 0 16px 0;">
+                      See how your daily movement compares against peers locally in your city and nationwide. Win rank badges and claim bragging rights.
+                    </p>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                      <span style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); color: #FBBF24; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 10px;">🥇 1st Place Gold Podium</span>
+                      <span style="background: rgba(6, 182, 212, 0.12); border: 1px solid rgba(6, 182, 212, 0.3); color: var(--accent-cyan); font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 10px;">📊 Real-time Rank Updates</span>
+                    </div>
+                  </div>
+
+                  <!-- Leaderboard Podium Widget -->
+                  <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); padding: 10px 14px; border-radius: 10px;">
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 20px;">🥇</span>
+                        <div>
+                          <strong style="color: white; font-size: 13px;">Priya Verma</strong>
+                          <div style="font-size: 10px; color: var(--text-muted);">@priya_fit</div>
+                        </div>
+                      </div>
+                      <span style="font-weight: 800; color: #10B981; font-size: 13px;">14,200 steps</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 10px 14px; border-radius: 10px;">
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 20px;">🥈</span>
+                        <div>
+                          <strong style="color: white; font-size: 13px;">Brijesh Sharma</strong>
+                          <div style="font-size: 10px; color: var(--text-muted);">@brijesh_admin</div>
+                        </div>
+                      </div>
+                      <span style="font-weight: 800; color: var(--accent-cyan); font-size: 13px;">11,850 steps</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TILE 4: WalkCoins Economy -->
+              <div class="landing-tile-content" id="landing-tile-4" style="display: none;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; align-items: center;">
+                  <div>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--primary-emerald); font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 12px; margin-bottom: 12px;">
+                      <i class="fa-solid fa-coins"></i> MOVEMENT THAT PAYS
+                    </div>
+                    <h3 style="font-size: 22px; font-weight: 900; color: white; margin: 0 0 8px 0;">WalkCoins Token Marketplace</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0 0 16px 0;">
+                      Earn 1 WalkCoin for every 100 steps. Redeem coins in the Marketplace for real-world rewards like Cult.fit passes, Nike gear, and Amazon gift cards.
+                    </p>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                      <span style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 10px;">🛍️ Real Vouchers & Gear</span>
+                      <span style="background: rgba(6, 182, 212, 0.12); border: 1px solid rgba(6, 182, 212, 0.3); color: var(--accent-cyan); font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 10px;">⚡ Instant Code Delivery</span>
+                    </div>
+                  </div>
+
+                  <!-- Rewards Vouchers Widget -->
+                  <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+                    <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                      <div>
+                        <strong style="color: white; font-size: 13px;">Cult.fit 1-Month Pass</strong>
+                        <div style="font-size: 11px; color: var(--text-muted);">Vouchers</div>
+                      </div>
+                      <span style="color: #F59E0B; font-weight: 800; font-size: 13px;"><i class="fa-solid fa-coins"></i> 300 Coins</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                      <div>
+                        <strong style="color: white; font-size: 13px;">Amazon Gift Card ₹500</strong>
+                        <div style="font-size: 11px; color: var(--text-muted);">Vouchers</div>
+                      </div>
+                      <span style="color: #F59E0B; font-weight: 800; font-size: 13px;"><i class="fa-solid fa-coins"></i> 500 Coins</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bottom Auto-Swap Progress Indicator Bar -->
+              <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: rgba(255,255,255,0.08);">
+                <div id="landing-tile-progress-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-cyan), var(--primary-emerald)); transition: width 0.1s linear;"></div>
+              </div>
+            </div>
+
+            <!-- Brand Motto Banner -->
+            <div style="text-align: center; padding: 14px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px;">
+              <span style="font-size: 14px; font-weight: 800; color: white; letter-spacing: 1px; text-transform: uppercase;">
+                ✨ "MAKE EVERY STRIDE COUNT" ✨
+              </span>
+            </div>
+
+            <!-- Final High-Converting Conversion CTA -->
+            <div class="glass-card" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.18) 0%, rgba(16, 185, 129, 0.18) 100%); border: 1px solid rgba(6, 182, 212, 0.4); border-radius: 20px; padding: 32px 24px; text-align: center;">
+              <h2 style="font-size: 24px; font-weight: 900; color: white; margin-bottom: 8px;">Ready to Start Your Walking Journey?</h2>
+              <p style="color: rgba(255, 255, 255, 0.85); font-size: 14px; max-width: 520px; margin: 0 auto 20px auto; line-height: 1.5;">
+                Join thousands of striders today. Create your account in 10 seconds and claim your 50 WalkCoin Welcome Bonus.
+              </p>
+              <button class="open-quick-login-trigger" style="background: linear-gradient(135deg, #10B981, #059669); color: white; border: none; font-size: 16px; font-weight: 800; padding: 14px 32px; border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); transition: transform 0.2s;">
+                <i class="fa-solid fa-star"></i> Register Now in 10 Seconds — It's Free
+              </button>
+            </div>
+
           </div>
         </section>
 

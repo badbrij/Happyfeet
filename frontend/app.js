@@ -166,6 +166,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initAdminExportHandlers();
   initGroupWhitelistHandlers();
   initPWAServiceWorker();
+  initLandingCarousel();
+  checkInviteUrlAndRender();
 });
 
 // Tab Navigation
@@ -2027,6 +2029,120 @@ function initLandingHeroAnimation() {
       }, 1800); // Hold at 10,000 steps for 1.8s
     }
   }, 60);
+}
+
+let landingCarouselTimer = null;
+let currentLandingTileIndex = 1;
+const totalLandingTiles = 4;
+
+function initLandingCarousel() {
+  const tileBtns = document.querySelectorAll('.landing-tile-btn');
+  const tileContents = document.querySelectorAll('.landing-tile-content');
+  const progressBar = document.getElementById('landing-tile-progress-bar');
+  const deck = document.getElementById('landing-tiles-deck');
+
+  if (tileBtns.length === 0 || tileContents.length === 0) return;
+
+  function switchTile(tileIndex) {
+    currentLandingTileIndex = tileIndex;
+
+    tileBtns.forEach(btn => {
+      const idx = Number(btn.getAttribute('data-tile'));
+      if (idx === tileIndex) {
+        btn.classList.add('active');
+        btn.style.background = 'rgba(6, 182, 212, 0.18)';
+        btn.style.borderColor = 'var(--accent-cyan)';
+        btn.style.color = 'white';
+      } else {
+        btn.classList.remove('active');
+        btn.style.background = 'rgba(255, 255, 255, 0.05)';
+        btn.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        btn.style.color = 'var(--text-muted)';
+      }
+    });
+
+    tileContents.forEach(content => {
+      if (content.id === `landing-tile-${tileIndex}`) {
+        content.style.display = 'block';
+        content.classList.add('active');
+      } else {
+        content.style.display = 'none';
+        content.classList.remove('active');
+      }
+    });
+
+    if (progressBar) {
+      progressBar.style.width = '0%';
+    }
+  }
+
+  // Bind click handlers to manual selector buttons
+  tileBtns.forEach(btn => {
+    btn.onclick = () => {
+      const idx = Number(btn.getAttribute('data-tile'));
+      switchTile(idx);
+      restartCarouselTimer();
+    };
+  });
+
+  let progressPercent = 0;
+  function startCarouselProgress() {
+    if (landingCarouselTimer) clearInterval(landingCarouselTimer);
+    progressPercent = 0;
+
+    landingCarouselTimer = setInterval(() => {
+      const landingView = document.getElementById('landing-view');
+      if (!landingView || !landingView.classList.contains('active')) return;
+
+      progressPercent += 2.5; // Update every 100ms (100% in 4 seconds)
+      if (progressBar) {
+        progressBar.style.width = `${Math.min(100, progressPercent)}%`;
+      }
+
+      if (progressPercent >= 100) {
+        let nextIndex = currentLandingTileIndex + 1;
+        if (nextIndex > totalLandingTiles) nextIndex = 1;
+        switchTile(nextIndex);
+        progressPercent = 0;
+      }
+    }, 100);
+  }
+
+  function restartCarouselTimer() {
+    if (progressBar) progressBar.style.width = '0%';
+    startCarouselProgress();
+  }
+
+  if (deck) {
+    deck.onmouseenter = () => {
+      if (landingCarouselTimer) clearInterval(landingCarouselTimer);
+    };
+    deck.onmouseleave = () => {
+      startCarouselProgress();
+    };
+  }
+
+  switchTile(1);
+  startCarouselProgress();
+}
+
+function checkInviteUrlAndRender() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const inviteCode = urlParams.get('invite') || localStorage.getItem('pending_invite_code');
+
+  if (inviteCode) {
+    const banner = document.getElementById('landing-invite-banner');
+    const nameEl = document.getElementById('landing-invite-name');
+    if (banner && nameEl) {
+      let displayName = inviteCode.replace(/_/g, ' ').toUpperCase();
+      if (displayName.includes('HYDERABAD')) displayName = 'Hyderabadi Striders Squad';
+      else if (displayName.includes('MUMBAI')) displayName = 'Mumbai Walkers Squad';
+      else if (displayName.includes('BADASPEED')) displayName = 'BadaKadam VIP Squad';
+
+      nameEl.innerText = displayName;
+      banner.style.display = 'block';
+    }
+  }
 }
 
 function updateAdminTabVisibility() {
