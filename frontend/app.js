@@ -167,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initGroupWhitelistHandlers();
   initPWAServiceWorker();
   initLandingCarousel();
+  initLandingGridAnimation();
   checkInviteUrlAndRender();
 });
 
@@ -5944,6 +5945,76 @@ function initViewportSwitcher() {
     if (viewportWrapper.classList.contains('view-mode-mobile')) {
       setViewportMode('mobile');
     }
+  }
+}
+
+// -------------------------------------------------------------
+// Interactive 4-Tile Landing Grid Animations (Live Step Ring 0 -> 10,000 & Battle Ticker)
+// -------------------------------------------------------------
+function initLandingGridAnimation() {
+  const stepValEl = document.getElementById('landing-grid-step-val');
+  const ringFillEl = document.getElementById('landing-grid-ring-fill');
+  const kcalValEl = document.getElementById('landing-grid-kcal-val');
+  const kmValEl = document.getElementById('landing-grid-km-val');
+  const bonusValEl = document.getElementById('landing-grid-bonus-val');
+  const coinsValEl = document.getElementById('landing-grid-coins-val');
+
+  if (!stepValEl || !ringFillEl) return;
+
+  const targetSteps = 8420;
+  const maxGoal = 10000;
+  const maxDashoffset = 427; // 2 * PI * 68 = 427.26
+
+  let currentSteps = 0;
+  let duration = 2500; // 2.5s count up
+  let startTime = null;
+
+  function animate(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const progress = Math.min((timestamp - startTime) / duration, 1);
+    
+    // Ease out cubic
+    const easeProgress = 1 - Math.pow(1 - progress, 3);
+    currentSteps = Math.floor(easeProgress * targetSteps);
+
+    stepValEl.innerText = currentSteps.toLocaleString();
+    
+    // Update Ring Fill offset
+    const currentOffset = maxDashoffset - (maxDashoffset * (currentSteps / maxGoal));
+    ringFillEl.style.strokeDashoffset = Math.max(0, currentOffset);
+
+    // Metrics animation
+    if (kcalValEl) kcalValEl.innerText = Math.floor(easeProgress * 353);
+    if (kmValEl) kmValEl.innerText = (easeProgress * 6.2).toFixed(1);
+    if (bonusValEl) bonusValEl.innerText = Math.floor(easeProgress * 84);
+    if (coinsValEl) coinsValEl.innerText = Math.floor(easeProgress * 84);
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      // Pause for 3 seconds then loop smoothly
+      setTimeout(() => {
+        startTime = null;
+        requestAnimationFrame(animate);
+      }, 3000);
+    }
+  }
+
+  requestAnimationFrame(animate);
+
+  // Live timer countdown ticker for Squad Battle (Tile 2)
+  const timerEl = document.getElementById('landing-grid-battle-timer');
+  if (timerEl) {
+    let secondsLeft = 2 * 86400 + 6 * 3600 + 45 * 60;
+    setInterval(() => {
+      secondsLeft--;
+      if (secondsLeft <= 0) secondsLeft = 2 * 86400;
+      const d = Math.floor(secondsLeft / 86400);
+      const h = Math.floor((secondsLeft % 86400) / 3600);
+      const m = Math.floor((secondsLeft % 3600) / 60);
+      const s = secondsLeft % 60;
+      timerEl.innerHTML = `<i class="fa-solid fa-clock" style="color: var(--accent-cyan);"></i> ${d}d ${h < 10 ? '0' : ''}${h}h ${m < 10 ? '0' : ''}${m}m ${s < 10 ? '0' : ''}${s}s left`;
+    }, 1000);
   }
 }
 
