@@ -228,12 +228,12 @@
                 </div>
               </div>
 
-              <!-- Center Quick Navigation Links -->
+              <!-- Center Quick Navigation Links (wired to swap tiles via data-tile-index) -->
               <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap;" class="landing-header-links">
-                <a href="#landing-tile-1" style="color: white; text-decoration: none; font-size: 14px; font-weight: 700; transition: color 0.2s;" onmouseover="this.style.color='var(--accent-cyan)'" onmouseout="this.style.color='white'">Activity</a>
-                <a href="#landing-tile-2" style="color: white; text-decoration: none; font-size: 14px; font-weight: 700; transition: color 0.2s;" onmouseover="this.style.color='var(--accent-cyan)'" onmouseout="this.style.color='white'">Teams</a>
-                <a href="#landing-tile-3" style="color: white; text-decoration: none; font-size: 14px; font-weight: 700; transition: color 0.2s;" onmouseover="this.style.color='var(--accent-cyan)'" onmouseout="this.style.color='white'">Leaderboard</a>
-                <a href="#landing-tile-4" style="color: white; text-decoration: none; font-size: 14px; font-weight: 700; transition: color 0.2s;" onmouseover="this.style.color='var(--accent-cyan)'" onmouseout="this.style.color='white'">Rewards</a>
+                <a href="#" data-tile-index="0" class="lnav-link" style="color: white; text-decoration: none; font-size: 14px; font-weight: 700; transition: color 0.2s;">Activity</a>
+                <a href="#" data-tile-index="1" class="lnav-link" style="color: white; text-decoration: none; font-size: 14px; font-weight: 700; transition: color 0.2s;">Teams</a>
+                <a href="#" data-tile-index="2" class="lnav-link" style="color: white; text-decoration: none; font-size: 14px; font-weight: 700; transition: color 0.2s;">Leaderboard</a>
+                <a href="#" data-tile-index="3" class="lnav-link" style="color: white; text-decoration: none; font-size: 14px; font-weight: 700; transition: color 0.2s;">Rewards</a>
               </div>
 
               <!-- Right Join Now Button -->
@@ -251,219 +251,233 @@
               </div>
             </div>
 
-            <!-- 2x2 Interactive Feature Tiles Grid (Exact Replicated Mockup Layout) -->
-            <div class="landing-tiles-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+            <!-- Single-Tile Feature Carousel (auto-swaps every 5s) -->
+            <div class="landing-carousel-wrapper">
 
-              <!-- TILE 1: LIVE ACTIVITY METER -->
-              <div id="landing-tile-1" class="landing-feature-tile" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(6, 182, 212, 0.5); box-shadow: 0 0 20px rgba(6, 182, 212, 0.15); border-radius: 20px; padding: 22px; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;">
-                <!-- Tile Header -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                  <span style="font-size: 15px; font-weight: 900; color: white; letter-spacing: 0.5px;">LIVE ACTIVITY METER</span>
-                  <span style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text-muted); font-size: 12px; font-weight: 800; padding: 2px 10px; border-radius: 8px;">1</span>
+              <!-- ── TILE 1 · LIVE ACTIVITY METER ── -->
+              <div class="lc-tile active" data-tile="0">
+                <div class="lc-tile-header">
+                  <span class="lc-tile-label">🏃 LIVE ACTIVITY METER</span>
+                  <span class="lc-tile-badge" style="background:rgba(6,182,212,0.15);border-color:rgba(6,182,212,0.4);color:var(--accent-cyan);">Today</span>
                 </div>
 
-                <!-- Tile Body Content -->
-                <div style="display: flex; align-items: center; justify-content: space-around; gap: 16px; flex-wrap: wrap;">
-                  <!-- Dynamic SVG Step Ring -->
-                  <div style="position: relative; width: 150px; height: 150px; display: flex; align-items: center; justify-content: center;">
-                    <svg viewBox="0 0 160 160" style="width: 100%; height: 100%; transform: rotate(-90deg);">
+                <div class="lc-tile-body" style="justify-content:space-around;">
+                  <!-- Animated Step Ring -->
+                  <div style="position:relative;width:170px;height:170px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                    <svg viewBox="0 0 160 160" style="width:100%;height:100%;transform:rotate(-90deg);">
                       <defs>
-                        <linearGradient id="landing-ring-neon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stop-color="#06B6D4" />
-                          <stop offset="100%" stop-color="#10B981" />
+                        <linearGradient id="lc-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stop-color="#06B6D4"/>
+                          <stop offset="100%" stop-color="#10B981"/>
                         </linearGradient>
+                        <filter id="lc-ring-glow">
+                          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                          <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
                       </defs>
-                      <circle cx="80" cy="80" r="68" stroke="rgba(255, 255, 255, 0.08)" stroke-width="12" fill="none" />
-                      <circle id="landing-grid-ring-fill" cx="80" cy="80" r="68" stroke="url(#landing-ring-neon-grad)" stroke-width="12" stroke-linecap="round" fill="none" stroke-dasharray="427" stroke-dashoffset="427" style="filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.8)); transition: stroke-dashoffset 0.05s linear;" />
+                      <!-- Track -->
+                      <circle cx="80" cy="80" r="68" stroke="rgba(255,255,255,0.07)" stroke-width="14" fill="none"/>
+                      <!-- Fill -->
+                      <circle id="lc-ring-fill" cx="80" cy="80" r="68"
+                        stroke="url(#lc-ring-grad)" stroke-width="14" stroke-linecap="round" fill="none"
+                        stroke-dasharray="427" stroke-dashoffset="427"
+                        filter="url(#lc-ring-glow)"
+                        style="transition:stroke-dashoffset 0.04s linear;"/>
                     </svg>
-                    <div style="position: absolute; text-align: center;">
-                      <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">Today</div>
-                      <div id="landing-grid-step-val" style="font-size: 26px; font-weight: 900; color: white; line-height: 1;">0</div>
-                      <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">steps</div>
-                      <div style="font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 2px;">Goal: 10,000</div>
+                    <div style="position:absolute;text-align:center;">
+                      <div style="font-size:10px;color:var(--text-muted);font-weight:600;letter-spacing:0.5px;">TODAY</div>
+                      <div id="lc-step-val" style="font-size:30px;font-weight:900;color:#fff;line-height:1.1;">0</div>
+                      <div style="font-size:11px;color:var(--text-muted);font-weight:700;">steps</div>
+                      <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:3px;">Goal 10,000</div>
                     </div>
                   </div>
 
-                  <!-- Right Stats Panel -->
-                  <div style="display: flex; flex-direction: column; gap: 10px; min-width: 120px;">
-                    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: white; font-weight: 700;">
-                      <span style="color: #EF4444;">🔥</span> <span id="landing-grid-kcal-val">0</span> kcal
+                  <!-- Live Stats Panel -->
+                  <div style="display:flex;flex-direction:column;gap:14px;">
+                    <div class="lc-stat-row">
+                      <span class="lc-stat-icon" style="color:#EF4444;">🔥</span>
+                      <div>
+                        <div class="lc-stat-val"><span id="lc-kcal-val">0</span> kcal</div>
+                        <div class="lc-stat-lbl">Calories Burned</div>
+                      </div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: white; font-weight: 700;">
-                      <span style="color: var(--accent-cyan);">🗺️</span> <span id="landing-grid-km-val">0.0</span> km
+                    <div class="lc-stat-row">
+                      <span class="lc-stat-icon" style="color:var(--accent-cyan);">🗺️</span>
+                      <div>
+                        <div class="lc-stat-val"><span id="lc-km-val">0.0</span> km</div>
+                        <div class="lc-stat-lbl">Distance</div>
+                      </div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: white; font-weight: 700;">
-                      <span style="color: #10B981;">📈</span> +<span id="landing-grid-bonus-val">0</span>
+                    <div class="lc-stat-row">
+                      <span class="lc-stat-icon" style="color:#10B981;">📈</span>
+                      <div>
+                        <div class="lc-stat-val">+<span id="lc-bonus-val">0</span></div>
+                        <div class="lc-stat-lbl">Gains This Week</div>
+                      </div>
                     </div>
-                    <div style="background: rgba(245, 158, 11, 0.18); border: 1px solid rgba(245, 158, 11, 0.4); color: var(--accent-amber); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; margin-top: 4px;">
-                      🪙 +<span id="landing-grid-coins-val">0</span> WalkCoins
+                    <div style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);color:var(--accent-amber);padding:7px 14px;border-radius:22px;font-size:13px;font-weight:800;display:inline-flex;align-items:center;gap:6px;">
+                      🪙 +<span id="lc-coins-val">0</span> WalkCoins
                     </div>
                   </div>
                 </div>
 
-                <!-- Footer Text -->
-                <div style="text-align: center; color: var(--primary-emerald); font-size: 13px; font-weight: 800; margin-top: 14px;">
-                  Keep Moving!
-                </div>
+                <div class="lc-tile-footer" style="color:var(--primary-emerald);">Keep Moving — You're crushing it! 💪</div>
               </div>
 
-              <!-- TILE 2: SQUAD BATTLES -->
-              <div id="landing-tile-2" class="landing-feature-tile" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(14, 165, 233, 0.5); box-shadow: 0 0 20px rgba(14, 165, 233, 0.15); border-radius: 20px; padding: 22px; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;">
-                <!-- Tile Header -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                  <span style="font-size: 15px; font-weight: 900; color: white; letter-spacing: 0.5px;">SQUAD BATTLES</span>
-                  <span style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text-muted); font-size: 12px; font-weight: 800; padding: 2px 10px; border-radius: 8px;">2</span>
+              <!-- ── TILE 2 · SQUAD BATTLES ── -->
+              <div class="lc-tile" data-tile="1">
+                <div class="lc-tile-header">
+                  <span class="lc-tile-label">⚔️ SQUAD BATTLES</span>
+                  <span class="lc-tile-badge" style="background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.4);color:#F87171;">LIVE</span>
                 </div>
 
-                <!-- Tile Body Content -->
-                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 12px;">
-                  <div style="text-align: center; font-size: 11px; color: var(--text-muted); font-weight: 600;">Active Battle</div>
-                  
-                  <!-- Matchup row -->
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                      <div style="width: 32px; height: 32px; border-radius: 50%; background: #10B981; display: flex; align-items: center; justify-content: center;">
-                        <i class="fa-solid fa-shoe-prints" style="color: white; font-size: 13px;"></i>
+                <div class="lc-tile-body" style="flex-direction:column;gap:18px;">
+                  <div class="lc-battle-card">
+                    <div class="lc-battle-side">
+                      <div class="lc-battle-avatar" style="background:linear-gradient(135deg,#10B981,#059669);box-shadow:0 0 12px rgba(16,185,129,0.5);">
+                        <i class="fa-solid fa-shoe-prints" style="color:#fff;font-size:15px;"></i>
                       </div>
                       <div>
-                        <div style="font-size: 11px; color: var(--text-muted);">Hyderabadi Striders</div>
-                        <div style="font-size: 16px; font-weight: 900; color: #10B981;">18,650</div>
+                        <div style="font-size:11px;color:var(--text-muted);">Hyderabadi Striders</div>
+                        <div style="font-size:22px;font-weight:900;color:#10B981;">18,650</div>
+                        <div style="font-size:10px;color:var(--text-muted);">steps</div>
                       </div>
                     </div>
 
-                    <span style="font-size: 13px; font-weight: 900; color: rgba(255,255,255,0.4);">VS</span>
+                    <div class="lc-vs-badge">VS</div>
 
-                    <div style="display: flex; align-items: center; gap: 8px; text-align: right;">
+                    <div class="lc-battle-side" style="text-align:right;">
                       <div>
-                        <div style="font-size: 11px; color: var(--text-muted);">Mumbai Walkers</div>
-                        <div style="font-size: 16px; font-weight: 900; color: var(--accent-cyan);">16,920</div>
+                        <div style="font-size:11px;color:var(--text-muted);">Mumbai Walkers</div>
+                        <div style="font-size:22px;font-weight:900;color:var(--accent-cyan);">16,920</div>
+                        <div style="font-size:10px;color:var(--text-muted);">steps</div>
                       </div>
-                      <div style="width: 32px; height: 32px; border-radius: 50%; background: #06B6D4; display: flex; align-items: center; justify-content: center;">
-                        <i class="fa-solid fa-shield-halved" style="color: white; font-size: 13px;"></i>
+                      <div class="lc-battle-avatar" style="background:linear-gradient(135deg,#06B6D4,#0891B2);box-shadow:0 0 12px rgba(6,182,212,0.5);">
+                        <i class="fa-solid fa-shield-halved" style="color:#fff;font-size:15px;"></i>
                       </div>
                     </div>
                   </div>
 
-                  <!-- Progress bar -->
-                  <div style="background: rgba(6, 182, 212, 0.2); height: 8px; border-radius: 4px; overflow: hidden; display: flex; width: 100%;">
-                    <div style="width: 53%; background: #10B981; height: 100%;"></div>
-                    <div style="width: 47%; background: #06B6D4; height: 100%;"></div>
+                  <!-- Battle Progress bar -->
+                  <div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:6px;">
+                      <span>53%</span><span>Battle Progress</span><span>47%</span>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.08);height:10px;border-radius:5px;overflow:hidden;display:flex;">
+                      <div style="width:53%;background:linear-gradient(90deg,#10B981,#059669);box-shadow:0 0 8px rgba(16,185,129,0.6);"></div>
+                      <div style="width:47%;background:linear-gradient(90deg,#06B6D4,#0891B2);box-shadow:0 0 8px rgba(6,182,212,0.6);"></div>
+                    </div>
                   </div>
 
-                  <!-- Timer subtext -->
-                  <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted);">
-                    <span>Steps</span>
-                    <span id="landing-grid-battle-timer" style="color: white; font-weight: 800;"><i class="fa-solid fa-clock" style="color: var(--accent-cyan);"></i> 2d 06h 45m left</span>
-                    <span>Steps</span>
+                  <div style="text-align:center;font-size:13px;color:white;font-weight:800;">
+                    <i class="fa-solid fa-clock" style="color:var(--accent-amber);"></i>
+                    &nbsp;<span id="lc-battle-timer">2d 06h 45m left</span>
                   </div>
                 </div>
 
-                <!-- Footer Stats -->
-                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); margin-top: 10px;">
-                  <span>Teams <span style="background: rgba(16,185,129,0.2); color: #34D399; padding: 1px 6px; border-radius: 6px; font-size: 10px; font-weight: 700;">👥 Grace</span></span>
-                  <span style="font-weight: 700; color: white;">VS Battle Stats</span>
-                  <span>Mumbai <span style="font-size: 12px;">👥👥</span></span>
-                </div>
+                <div class="lc-tile-footer" style="color:#F59E0B;">Join a squad — walk together, win together! 🏆</div>
               </div>
 
-              <!-- TILE 3: LEADERBOARDS -->
-              <div id="landing-tile-3" class="landing-feature-tile" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(245, 158, 11, 0.4); box-shadow: 0 0 20px rgba(245, 158, 11, 0.15); border-radius: 20px; padding: 22px; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;">
-                <!-- Tile Header -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                  <span style="font-size: 15px; font-weight: 900; color: white; letter-spacing: 0.5px;">LEADERBOARDS</span>
-                  <span style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text-muted); font-size: 12px; font-weight: 800; padding: 2px 10px; border-radius: 8px;">3</span>
+              <!-- ── TILE 3 · LEADERBOARDS ── -->
+              <div class="lc-tile" data-tile="2">
+                <div class="lc-tile-header">
+                  <span class="lc-tile-label">🏆 LEADERBOARDS</span>
+                  <span class="lc-tile-badge" style="background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.4);color:#FBBF24;">This Week</span>
                 </div>
 
-                <!-- Podium Representation -->
-                <div style="display: flex; justify-content: center; align-items: flex-end; gap: 14px; margin-top: 8px;">
-                  <!-- 2nd Place -->
-                  <div style="display: flex; flex-direction: column; align-items: center; width: 85px;">
-                    <div style="position: relative; width: 44px; height: 44px; border-radius: 50%; border: 2px solid #94A3B8; background: #1E293B; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                      <span style="font-size: 22px;">👨</span>
-                      <span style="position: absolute; bottom: -4px; background: #94A3B8; color: #000; font-size: 9px; font-weight: 900; padding: 1px 5px; border-radius: 6px;">2nd</span>
-                    </div>
-                    <div style="font-size: 12px; font-weight: 800; color: white; margin-top: 8px;">Rahul</div>
-                    <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">39,120</div>
-                    <div style="background: rgba(148, 163, 184, 0.15); height: 50px; width: 100%; border-radius: 8px 8px 0 0; margin-top: 6px; border-top: 2px solid #94A3B8;"></div>
-                  </div>
+                <div class="lc-tile-body" style="flex-direction:column;align-items:center;gap:16px;">
+                  <!-- Podium -->
+                  <div style="display:flex;justify-content:center;align-items:flex-end;gap:16px;width:100%;">
 
-                  <!-- 1st Place (Center - Gold Halo) -->
-                  <div style="display: flex; flex-direction: column; align-items: center; width: 100px;">
-                    <div style="position: relative; width: 56px; height: 56px; border-radius: 50%; border: 3px solid #F59E0B; background: #1E293B; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);">
-                      <span style="font-size: 30px;">👩</span>
-                      <span style="position: absolute; top: -12px; font-size: 16px;">👑</span>
-                      <span style="position: absolute; bottom: -4px; background: #F59E0B; color: #000; font-size: 10px; font-weight: 900; padding: 1px 7px; border-radius: 8px;">1st</span>
+                    <!-- 2nd -->
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                      <div style="width:50px;height:50px;border-radius:50%;border:2px solid #94A3B8;background:#1E293B;display:flex;align-items:center;justify-content:center;font-size:26px;position:relative;">
+                        👨
+                        <span style="position:absolute;bottom:-2px;background:#94A3B8;color:#000;font-size:9px;font-weight:900;padding:1px 5px;border-radius:6px;">2nd</span>
+                      </div>
+                      <div style="font-size:13px;font-weight:800;color:#fff;">Rahul</div>
+                      <div style="font-size:12px;font-weight:700;color:var(--text-muted);">39,120</div>
+                      <div style="background:rgba(148,163,184,0.15);height:56px;width:80px;border-radius:8px 8px 0 0;border-top:2px solid #94A3B8;"></div>
                     </div>
-                    <div style="font-size: 14px; font-weight: 900; color: white; margin-top: 8px;">Priya</div>
-                    <div style="font-size: 12px; color: #F59E0B; font-weight: 900;">42,500</div>
-                    <div style="font-size: 10px; color: #FBBF24; font-weight: 700;">Gold Steps</div>
-                    <div style="background: rgba(245, 158, 11, 0.2); height: 70px; width: 100%; border-radius: 8px 8px 0 0; margin-top: 6px; border-top: 3px solid #F59E0B;"></div>
-                  </div>
 
-                  <!-- 3rd Place -->
-                  <div style="display: flex; flex-direction: column; align-items: center; width: 85px;">
-                    <div style="position: relative; width: 44px; height: 44px; border-radius: 50%; border: 2px solid #D97706; background: #1E293B; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                      <span style="font-size: 22px;">👩‍🦱</span>
-                      <span style="position: absolute; bottom: -4px; background: #D97706; color: #fff; font-size: 9px; font-weight: 900; padding: 1px 5px; border-radius: 6px;">3rd</span>
+                    <!-- 1st -->
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                      <span style="font-size:18px;">👑</span>
+                      <div style="width:64px;height:64px;border-radius:50%;border:3px solid #F59E0B;background:#1E293B;display:flex;align-items:center;justify-content:center;font-size:34px;box-shadow:0 0 18px rgba(245,158,11,0.65);position:relative;">
+                        👩
+                        <span style="position:absolute;bottom:-2px;background:#F59E0B;color:#000;font-size:10px;font-weight:900;padding:1px 7px;border-radius:8px;">1st</span>
+                      </div>
+                      <div style="font-size:15px;font-weight:900;color:#fff;">Priya</div>
+                      <div style="font-size:13px;font-weight:900;color:#F59E0B;">42,500</div>
+                      <div style="background:rgba(245,158,11,0.18);height:76px;width:90px;border-radius:8px 8px 0 0;border-top:3px solid #F59E0B;box-shadow:0 0 14px rgba(245,158,11,0.3);"></div>
                     </div>
-                    <div style="font-size: 12px; font-weight: 800; color: white; margin-top: 8px;">Anjali</div>
-                    <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">37,800</div>
-                    <div style="background: rgba(217, 119, 6, 0.15); height: 40px; width: 100%; border-radius: 8px 8px 0 0; margin-top: 6px; border-top: 2px solid #D97706;"></div>
+
+                    <!-- 3rd -->
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                      <div style="width:50px;height:50px;border-radius:50%;border:2px solid #D97706;background:#1E293B;display:flex;align-items:center;justify-content:center;font-size:26px;position:relative;">
+                        👩‍🦱
+                        <span style="position:absolute;bottom:-2px;background:#D97706;color:#fff;font-size:9px;font-weight:900;padding:1px 5px;border-radius:6px;">3rd</span>
+                      </div>
+                      <div style="font-size:13px;font-weight:800;color:#fff;">Anjali</div>
+                      <div style="font-size:12px;font-weight:700;color:var(--text-muted);">37,800</div>
+                      <div style="background:rgba(217,119,6,0.15);height:40px;width:80px;border-radius:8px 8px 0 0;border-top:2px solid #D97706;"></div>
+                    </div>
                   </div>
                 </div>
+
+                <div class="lc-tile-footer" style="color:#FBBF24;">Your position is waiting — start walking today! 🏅</div>
               </div>
 
-              <!-- TILE 4: WALKCOINS REWARDS -->
-              <div id="landing-tile-4" class="landing-feature-tile" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(16, 185, 129, 0.5); box-shadow: 0 0 20px rgba(16, 185, 129, 0.15); border-radius: 20px; padding: 22px; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;">
-                <!-- Tile Header -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                  <span style="font-size: 15px; font-weight: 900; color: white; letter-spacing: 0.5px;">WALKCOINS REWARDS</span>
-                  <span style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text-muted); font-size: 12px; font-weight: 800; padding: 2px 10px; border-radius: 8px;">4</span>
+              <!-- ── TILE 4 · WALKCOINS REWARDS ── -->
+              <div class="lc-tile" data-tile="3">
+                <div class="lc-tile-header">
+                  <span class="lc-tile-label">🪙 WALKCOINS REWARDS</span>
+                  <span class="lc-tile-badge" style="background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.4);color:#34D399;">Redeem Now</span>
                 </div>
 
-                <!-- 3 Side-by-Side Voucher Cards -->
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-                  <!-- Nike Card -->
-                  <div style="background: linear-gradient(135deg, #FF5500 0%, #CC3300 100%); border-radius: 12px; padding: 12px 8px; text-align: center; color: white; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;">
-                    <div style="font-size: 9px; font-weight: 800; text-align: right; opacity: 0.9;">Nike</div>
-                    <div style="font-size: 24px; margin: 4px 0;"><i class="fa-solid fa-check-double"></i></div>
-                    <div>
-                      <div style="font-size: 10px; opacity: 0.9;">Nike</div>
-                      <div style="font-size: 16px; font-weight: 900;">₹1000</div>
+                <div class="lc-tile-body" style="flex-direction:column;gap:16px;">
+                  <!-- Voucher row -->
+                  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+
+                    <!-- Nike -->
+                    <div class="lc-voucher" style="background:linear-gradient(135deg,#FF5500,#CC3300);">
+                      <div style="font-size:10px;font-weight:800;text-align:right;opacity:0.85;color:#fff;">Nike</div>
+                      <div style="font-size:28px;color:#fff;text-align:center;margin:6px 0;">✔✔</div>
+                      <div style="font-size:18px;font-weight:900;color:#fff;text-align:center;">₹1,000</div>
+                      <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:4px;font-size:11px;font-weight:800;text-align:center;color:#fff;margin-top:8px;">🪙 1000</div>
                     </div>
-                    <div style="background: rgba(0,0,0,0.3); border-radius: 10px; padding: 3px; font-size: 10px; font-weight: 800; margin-top: 6px;">
-                      🪙 1000 Coins
+
+                    <!-- Amazon -->
+                    <div class="lc-voucher" style="background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1);">
+                      <div style="font-size:10px;font-weight:800;text-align:right;color:var(--text-muted);">amazon</div>
+                      <div style="font-size:24px;color:#F59E0B;text-align:center;margin:6px 0;"><i class="fa-brands fa-amazon"></i></div>
+                      <div style="font-size:18px;font-weight:900;color:#fff;text-align:center;">₹500</div>
+                      <button class="open-quick-login-trigger" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:10px;padding:4px 8px;font-size:10px;font-weight:800;cursor:pointer;width:100%;margin-top:8px;">Redeem</button>
+                    </div>
+
+                    <!-- Cult.fit -->
+                    <div class="lc-voucher" style="background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1);">
+                      <div style="font-size:10px;font-weight:800;text-align:right;color:var(--text-muted);">Cult.fit</div>
+                      <div style="font-size:24px;color:#8B5CF6;text-align:center;margin:6px 0;"><i class="fa-solid fa-asterisk"></i></div>
+                      <div style="font-size:18px;font-weight:900;color:#fff;text-align:center;">₹750</div>
+                      <button class="open-quick-login-trigger" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);color:#FBBF24;border-radius:10px;padding:4px 8px;font-size:10px;font-weight:800;cursor:pointer;width:100%;margin-top:8px;">Redeem</button>
                     </div>
                   </div>
 
-                  <!-- Amazon Card -->
-                  <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 12px 8px; text-align: center; color: white; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;">
-                    <div style="font-size: 9px; color: var(--text-muted); font-weight: 800; text-align: right;">amazon</div>
-                    <div style="font-size: 20px; color: #F59E0B; margin: 4px 0;"><i class="fa-brands fa-amazon"></i></div>
-                    <div>
-                      <div style="font-size: 10px; color: var(--text-muted);">Amazon</div>
-                      <div style="font-size: 16px; font-weight: 900;">₹500</div>
-                    </div>
-                    <button class="open-quick-login-trigger" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 10px; padding: 4px; font-size: 10px; font-weight: 800; cursor: pointer; margin-top: 6px;">
-                      Redeem
-                    </button>
-                  </div>
-
-                  <!-- Cult.fit Card -->
-                  <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 12px 8px; text-align: center; color: white; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;">
-                    <div style="font-size: 9px; color: var(--text-muted); font-weight: 800; text-align: right;">Cult.fit</div>
-                    <div style="font-size: 20px; color: #8B5CF6; margin: 4px 0;"><i class="fa-solid fa-asterisk"></i></div>
-                    <div>
-                      <div style="font-size: 10px; color: var(--text-muted);">Cult.fit</div>
-                      <div style="font-size: 16px; font-weight: 900;">₹750</div>
-                    </div>
-                    <button class="open-quick-login-trigger" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #FBBF24; border-radius: 10px; padding: 4px; font-size: 10px; font-weight: 800; cursor: pointer; margin-top: 6px;">
-                      Redeem
-                    </button>
-                  </div>
+                  <p style="text-align:center;font-size:12px;color:var(--text-muted);font-weight:600;">Walk → Earn WalkCoins → Redeem for real vouchers 🎁</p>
                 </div>
+
+                <div class="lc-tile-footer" style="color:#10B981;">Every step earns you rewards — no gym needed! 🌟</div>
               </div>
 
+            </div><!-- /landing-carousel-wrapper -->
+
+            <!-- Carousel Dot Indicators -->
+            <div class="lc-dots" id="lc-dots">
+              <button class="lc-dot active" data-dot="0" aria-label="Activity tile"></button>
+              <button class="lc-dot" data-dot="1" aria-label="Squad Battles tile"></button>
+              <button class="lc-dot" data-dot="2" aria-label="Leaderboard tile"></button>
+              <button class="lc-dot" data-dot="3" aria-label="Rewards tile"></button>
             </div>
 
             <!-- Bottom Motto Title -->

@@ -5951,70 +5951,167 @@ function initViewportSwitcher() {
 // -------------------------------------------------------------
 // Interactive 4-Tile Landing Grid Animations (Live Step Ring 0 -> 10,000 & Battle Ticker)
 // -------------------------------------------------------------
+// =============================================================
+// Landing Page — Single-Tile Swap Carousel + Live Animations
+// =============================================================
 function initLandingGridAnimation() {
-  const stepValEl = document.getElementById('landing-grid-step-val');
-  const ringFillEl = document.getElementById('landing-grid-ring-fill');
-  const kcalValEl = document.getElementById('landing-grid-kcal-val');
-  const kmValEl = document.getElementById('landing-grid-km-val');
-  const bonusValEl = document.getElementById('landing-grid-bonus-val');
-  const coinsValEl = document.getElementById('landing-grid-coins-val');
+  const tiles      = Array.from(document.querySelectorAll('.lc-tile'));
+  const dots       = Array.from(document.querySelectorAll('.lc-dot'));
+  const navLinks   = Array.from(document.querySelectorAll('.lnav-link'));
+  const wrapper    = document.querySelector('.landing-carousel-wrapper');
 
-  if (!stepValEl || !ringFillEl) return;
+  if (!tiles.length) return;
 
-  const targetSteps = 8420;
-  const maxGoal = 10000;
-  const maxDashoffset = 427; // 2 * PI * 68 = 427.26
+  let current      = 0;
+  let autoTimer    = null;
+  let ringAnimId   = null;
+  let ringStarted  = false;
 
-  let currentSteps = 0;
-  let duration = 2500; // 2.5s count up
-  let startTime = null;
+  // ── Carousel switching ──────────────────────────────────────
+  function goTo(idx, direction = 1) {
+    if (idx === current) return;
 
-  function animate(timestamp) {
-    if (!startTime) startTime = timestamp;
-    const progress = Math.min((timestamp - startTime) / duration, 1);
-    
-    // Ease out cubic
-    const easeProgress = 1 - Math.pow(1 - progress, 3);
-    currentSteps = Math.floor(easeProgress * targetSteps);
+    const prev = current;
+    current = idx;
 
-    stepValEl.innerText = currentSteps.toLocaleString();
-    
-    // Update Ring Fill offset
-    const currentOffset = maxDashoffset - (maxDashoffset * (currentSteps / maxGoal));
-    ringFillEl.style.strokeDashoffset = Math.max(0, currentOffset);
+    // Exit previous
+    tiles[prev].classList.remove('active');
+    tiles[prev].classList.add('exit');
+    setTimeout(() => tiles[prev].classList.remove('exit'), 500);
 
-    // Metrics animation
-    if (kcalValEl) kcalValEl.innerText = Math.floor(easeProgress * 353);
-    if (kmValEl) kmValEl.innerText = (easeProgress * 6.2).toFixed(1);
-    if (bonusValEl) bonusValEl.innerText = Math.floor(easeProgress * 84);
-    if (coinsValEl) coinsValEl.innerText = Math.floor(easeProgress * 84);
+    // Set entry direction
+    tiles[current].style.transform = direction >= 0
+      ? 'translateX(60px) scale(0.97)'
+      : 'translateX(-60px) scale(0.97)';
+    tiles[current].style.opacity = '0';
 
-    if (progress < 1) {
-      requestAnimationFrame(animate);
-    } else {
-      // Pause for 3 seconds then loop smoothly
-      setTimeout(() => {
-        startTime = null;
-        requestAnimationFrame(animate);
-      }, 3000);
-    }
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        tiles[current].classList.add('active');
+        tiles[current].style.transform = '';
+        tiles[current].style.opacity   = '';
+      });
+    });
+
+    // Update dots
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+
+    // Update nav link highlight
+    navLinks.forEach((a, i) => {
+      a.style.color = i === current ? 'var(--accent-cyan)' : 'white';
+    });
+
+    // If arriving at Activity tile, replay ring animation
+    if (current === 0) startRingAnimation();
   }
 
-  requestAnimationFrame(animate);
+  function next() { goTo((current + 1) % tiles.length, 1); }
 
-  // Live timer countdown ticker for Squad Battle (Tile 2)
-  const timerEl = document.getElementById('landing-grid-battle-timer');
-  if (timerEl) {
-    let secondsLeft = 2 * 86400 + 6 * 3600 + 45 * 60;
+  function startAutoSwap() {
+    stopAutoSwap();
+    autoTimer = setInterval(next, 5000);
+  }
+  function stopAutoSwap() {
+    clearInterval(autoTimer);
+    autoTimer = null;
+  }
+
+  // ── Dot clicks ──────────────────────────────────────────────
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => {
+      const dir = i > current ? 1 : -1;
+      goTo(i, dir);
+      startAutoSwap(); // Reset timer on manual interaction
+    });
+  });
+
+  // ── Nav-link clicks ─────────────────────────────────────────
+  navLinks.forEach((a, i) => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const dir = i > current ? 1 : -1;
+      goTo(i, dir);
+      startAutoSwap();
+    });
+  });
+
+  // ── Pause on hover ──────────────────────────────────────────
+  if (wrapper) {
+    wrapper.addEventListener('mouseenter', stopAutoSwap);
+    wrapper.addEventListener('mouseleave', startAutoSwap);
+  }
+
+  // ── Step Ring Animation (Tile 1 — Activity Meter) ───────────
+  const ringFill  = document.getElementById('lc-ring-fill');
+  const stepEl    = document.getElementById('lc-step-val');
+  const kcalEl    = document.getElementById('lc-kcal-val');
+  const kmEl      = document.getElementById('lc-km-val');
+  const bonusEl   = document.getElementById('lc-bonus-val');
+  const coinsEl   = document.getElementById('lc-coins-val');
+
+  const TARGET_STEPS = 8420;
+  const MAX_GOAL     = 10000;
+  const MAX_OFFSET   = 427; // 2π × 68
+  const ANIM_DURATION = 2600; // ms
+
+  function startRingAnimation() {
+    cancelAnimationFrame(ringAnimId);
+    // Reset to zero
+    if (ringFill)  ringFill.style.strokeDashoffset = MAX_OFFSET;
+    if (stepEl)    stepEl.textContent  = '0';
+    if (kcalEl)    kcalEl.textContent  = '0';
+    if (kmEl)      kmEl.textContent    = '0.0';
+    if (bonusEl)   bonusEl.textContent = '0';
+    if (coinsEl)   coinsEl.textContent = '0';
+
+    let startTime = null;
+
+    function tick(ts) {
+      if (!startTime) startTime = ts;
+      const raw  = Math.min((ts - startTime) / ANIM_DURATION, 1);
+      const ease = 1 - Math.pow(1 - raw, 3); // ease-out cubic
+
+      const steps = Math.floor(ease * TARGET_STEPS);
+
+      if (stepEl)  stepEl.textContent  = steps.toLocaleString('en-IN');
+      if (kcalEl)  kcalEl.textContent  = Math.floor(ease * 353);
+      if (kmEl)    kmEl.textContent    = (ease * 6.2).toFixed(1);
+      if (bonusEl) bonusEl.textContent = Math.floor(ease * 84);
+      if (coinsEl) coinsEl.textContent = Math.floor(ease * 84);
+
+      if (ringFill) {
+        const offset = MAX_OFFSET - MAX_OFFSET * (steps / MAX_GOAL);
+        ringFill.style.strokeDashoffset = Math.max(0, offset);
+      }
+
+      if (raw < 1) {
+        ringAnimId = requestAnimationFrame(tick);
+      } else {
+        // Hold for 4s then loop
+        setTimeout(startRingAnimation, 4000);
+      }
+    }
+
+    ringAnimId = requestAnimationFrame(tick);
+  }
+
+  // ── Battle Timer Countdown (Tile 2) ─────────────────────────
+  const battleTimerEl = document.getElementById('lc-battle-timer');
+  if (battleTimerEl) {
+    let secsLeft = 2 * 86400 + 6 * 3600 + 45 * 60;
     setInterval(() => {
-      secondsLeft--;
-      if (secondsLeft <= 0) secondsLeft = 2 * 86400;
-      const d = Math.floor(secondsLeft / 86400);
-      const h = Math.floor((secondsLeft % 86400) / 3600);
-      const m = Math.floor((secondsLeft % 3600) / 60);
-      const s = secondsLeft % 60;
-      timerEl.innerHTML = `<i class="fa-solid fa-clock" style="color: var(--accent-cyan);"></i> ${d}d ${h < 10 ? '0' : ''}${h}h ${m < 10 ? '0' : ''}${m}m ${s < 10 ? '0' : ''}${s}s left`;
+      secsLeft = Math.max(0, secsLeft - 1);
+      const d = Math.floor(secsLeft / 86400);
+      const h = Math.floor((secsLeft % 86400) / 3600);
+      const m = Math.floor((secsLeft % 3600) / 60);
+      const s = secsLeft % 60;
+      battleTimerEl.textContent =
+        `${d}d ${h < 10 ? '0' : ''}${h}h ${m < 10 ? '0' : ''}${m}m ${s < 10 ? '0' : ''}${s}s left`;
     }, 1000);
   }
+
+  // ── Boot ────────────────────────────────────────────────────
+  startRingAnimation();  // Run immediately (tile 0 is active by default)
+  startAutoSwap();       // Begin 5s auto-rotate
 }
 
