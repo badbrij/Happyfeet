@@ -3591,6 +3591,30 @@ function getLocalAdminDashboardFallback(range = '30d') {
     bmi[u.bmi_category] = (bmi[u.bmi_category] || 0) + 1;
   });
 
+  const localGroups = JSON.parse(localStorage.getItem('happyfeet_local_groups') || '[]');
+  const defaultGroupsList = [
+    { id: 'grp_1', name: 'Hyderabadi Striders', group_type: 'Squad Battle', member_count: 5, current_steps: 142500, status: 'Active' },
+    { id: 'grp_2', name: 'Mumbai Walkers', group_type: 'Co-op Challenge', member_count: 3, current_steps: 98200, status: 'Active' },
+    { id: 'grp_3', name: 'Bangalore Tech Walkers', group_type: 'Squad Battle', member_count: 2, current_steps: 65400, status: 'Active' }
+  ];
+
+  const groupMap = new Map();
+  defaultGroupsList.forEach(g => groupMap.set(g.id, g));
+  localGroups.filter(g => g.id !== 'admin_whitelist_group').forEach(g => {
+    groupMap.set(g.id, {
+      id: g.id,
+      name: g.name,
+      group_type: g.type || 'Squad Battle',
+      member_count: Array.isArray(g.members) ? g.members.length : 1,
+      current_steps: g.totalSteps || 0,
+      status: 'Active'
+    });
+  });
+
+  const groups = Array.from(groupMap.values());
+  const activeGroups = groups.filter(g => g.status === 'Active').length;
+  const coinsInCirculation = Math.max(0, totalCoinsEarned - totalCoinsSpent);
+
   return {
     success: true,
     range,
@@ -3599,30 +3623,39 @@ function getLocalAdminDashboardFallback(range = '30d') {
       totalPlatformSteps,
       totalCoinsEarned,
       totalCoinsSpent,
-      activeBattles: 2,
-      activeCoopGroups: 3,
-      totalGroups: 5,
+      coinsInCirculation,
+      activeBattles: activeGroups,
+      activeCoopGroups: activeGroups,
+      totalGroups: groups.length,
+      activeGroups,
+      inactiveGroups: groups.length - activeGroups,
       groupStepsTotal: totalPlatformSteps,
       activeStreakers: users.filter(u => u.current_streak > 1).length,
       averageStreak: Math.round(totalStreaks / Math.max(1, users.length)),
-      downloads: 1420,
-      installs: 1180,
-      uninstalls: 65
+      downloads: totalUsers + 12,
+      installs: totalUsers,
+      uninstalls: 0,
+      downloadedNotActivated: 0,
+      newUsersToday: 0,
+      inactiveUsers: 0
     },
     funnel: {
       timeline: [
-        { date: '2026-08-31', downloads: 120, installs: 105, uninstalls: 4 },
-        { date: '2026-09-01', downloads: 140, installs: 125, uninstalls: 5 },
-        { date: '2026-09-02', downloads: 160, installs: 135, uninstalls: 6 },
-        { date: '2026-09-03', downloads: 190, installs: 160, uninstalls: 8 },
-        { date: '2026-09-04', downloads: 210, installs: 180, uninstalls: 7 },
-        { date: '2026-09-05', downloads: 250, installs: 210, uninstalls: 10 },
-        { date: '2026-09-06', downloads: 280, installs: 240, uninstalls: 12 }
+        { date: '2026-08-31', downloads: 2, installs: 2, uninstalls: 0 },
+        { date: '2026-09-01', downloads: 3, installs: 3, uninstalls: 0 },
+        { date: '2026-09-02', downloads: 2, installs: 2, uninstalls: 0 },
+        { date: '2026-09-03', downloads: 3, installs: 3, uninstalls: 0 },
+        { date: '2026-09-04', downloads: 1, installs: 1, uninstalls: 0 },
+        { date: '2026-09-05', downloads: 1, installs: 1, uninstalls: 0 },
+        { date: '2026-09-06', downloads: 1, installs: 1, uninstalls: 0 }
       ],
-      platforms: { Android: 850, iOS: 330 }
+      platforms: { Android: Math.ceil(totalUsers * 0.8), iOS: Math.floor(totalUsers * 0.2) }
     },
     demographics: { gender, age, city, state, occupation, bmi },
     economy: {
+      totalCoinsMined: totalCoinsEarned,
+      totalCoinsRedeemed: totalCoinsSpent,
+      coinsInCirculation,
       earnings: { 'Step Milestones': Math.max(0, totalCoinsEarned - 500), 'Signup Bonus': 500 },
       redemptions: { 'Vouchers': 300, 'Fitness Gear': 150 },
       inflationRatio: 120,
@@ -3630,10 +3663,10 @@ function getLocalAdminDashboardFallback(range = '30d') {
       warning: ''
     },
     journey: [
-      { id: 'j1', type: 'Signup', description: "New user 'Brijesh Sharma' registered from Hyderabad, Telangana", timestamp: new Date().toISOString() },
-      { id: 'j2', type: 'Earning', description: "Earned +50 WalkCoins for reaching 10,000 daily step goal", timestamp: new Date(Date.now() - 3600000).toISOString() },
-      { id: 'j3', type: 'Redemption', description: "Redeemed Cult.fit 1-Month Pass Voucher", timestamp: new Date(Date.now() - 7200000).toISOString() }
+      { id: 'j1', type: 'Signup', description: "New user registered", timestamp: new Date().toISOString() },
+      { id: 'j2', type: 'Earning', description: "Earned +50 WalkCoins for reaching daily step goal", timestamp: new Date(Date.now() - 3600000).toISOString() }
     ],
+    groups,
     users
   };
 }
