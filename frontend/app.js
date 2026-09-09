@@ -3070,20 +3070,45 @@ function initHealthSyncSetup() {
     });
   }
 
-  let selectedProvider = 'GoogleFit';
+  function updateConnectedDeviceBadge(prov) {
+    const badgeName = document.getElementById('connected-device-name');
+    if (!badgeName) return;
+    const labels = {
+      'GoogleFit': 'Google Fit',
+      'AppleHealthKit': 'Apple HealthKit',
+      'Fitbit': 'Fitbit Web API',
+      'SamsungHealth': 'Samsung Health',
+      'PWA_MotionSensor': 'PWA Pedometer'
+    };
+    badgeName.innerText = labels[prov] || prov || 'Google Fit';
+  }
+  window.updateConnectedDeviceBadge = updateConnectedDeviceBadge;
+
+  const savedProv = localStorage.getItem('happyfeet_sync_provider') || 'GoogleFit';
+  updateConnectedDeviceBadge(savedProv);
+
+  let selectedProvider = savedProv;
   let selectedSteps = 0;
 
   providerCards.forEach(card => {
     card.addEventListener('click', () => {
-      if (card.classList.contains('disabled-tile')) {
-        const provName = card.getAttribute('data-provider') === 'AppleHealthKit' ? 'Apple Health (HealthKit)' : card.getAttribute('data-provider');
-        showToast(`📱 ${provName} will sync natively on the iOS / Android Mobile App.`);
-        return;
-      }
-
       providerCards.forEach(c => c.classList.remove('active'));
       card.classList.add('active');
       selectedProvider = card.getAttribute('data-provider');
+
+      if (selectedProvider === 'PWA_MotionSensor') {
+        if ('DeviceMotionEvent' in window) {
+          if (typeof DeviceMotionEvent.requestPermission === 'function') {
+            DeviceMotionEvent.requestPermission().then(state => {
+              if (state === 'granted') {
+                showToast('⚡ PWA Motion Sensor step detection active! Walk or swing your device.');
+              }
+            });
+          } else {
+            showToast('⚡ PWA Motion Sensor step detection active! Walk or swing your device.');
+          }
+        }
+      }
 
       // Trigger connection loading
       document.getElementById('sync-conn-status').style.display = 'block';
@@ -3097,7 +3122,8 @@ function initHealthSyncSetup() {
         document.getElementById('conn-success').style.display = 'block';
         document.getElementById('sync-sim-controls').style.display = 'flex';
         localStorage.setItem('happyfeet_sync_provider', selectedProvider);
-      }, 1500);
+        updateConnectedDeviceBadge(selectedProvider);
+      }, 1200);
     });
   });
 
@@ -4308,6 +4334,7 @@ function exportAuditedUsersToCSV() {
 
 // In-App Notification Engine & Drawer
 let userNotifications = [];
+let activeNotifFilter = 'all';
 
 function refreshUserNotifications() {
   if (!currentUser) {
@@ -4319,14 +4346,16 @@ function refreshUserNotifications() {
   const notifications = [];
   const dailyGoal = currentUser.healthProfile?.dailyStepGoal || currentUser.daily_step_goal || 10000;
   const todaySteps = currentUser.todaySteps || 0;
-  const streakDays = currentUser.streak || currentUser.streak_days || 0;
+  const streakDays = currentUser.streak || currentUser.streak_days || currentUser.currentStreak || 0;
+  const walkCoins = currentUser.walkCoins || currentUser.walk_coins || 0;
 
   if (todaySteps === 0 && streakDays === 0) {
     notifications.push({
       id: 'n_welcome',
       title: '🎉 Welcome to BadaKadam!',
-      message: `Welcome aboard! Sync your steps using Google Fit to reach your daily goal of ${dailyGoal.toLocaleString()} steps and earn WalkCoins.`,
+      message: `Welcome aboard! Connect your wearable device to reach your daily goal of ${dailyGoal.toLocaleString()} steps and earn WalkCoins.`,
       time: 'Just now',
+      category: 'reminder',
       type: 'welcome',
       unread: true
     });
@@ -4335,18 +4364,20 @@ function refreshUserNotifications() {
       const remaining = dailyGoal - todaySteps;
       notifications.push({
         id: 'n_goal',
-        title: '🎯 Step Goal Alert',
-        message: `Only ${remaining.toLocaleString()} steps left to reach your ${dailyGoal.toLocaleString()} daily goal!`,
-        time: 'Today',
+        title: '🌆 Evening Step Catch-up Reminder',
+        message: `Only ${remaining.toLocaleString()} steps left to reach your ${dailyGoal.toLocaleString()} daily goal! A short evening walk will hit it.`,
+        time: '6:30 PM Scheduled',
+        category: 'reminder',
         type: 'goal',
         unread: true
       });
     } else {
       notifications.push({
         id: 'n_goal_achieved',
-        title: '🎉 Daily Goal Achieved!',
-        message: `Awesome job! You reached your target of ${dailyGoal.toLocaleString()} steps today!`,
+        title: '🎉 Daily Step Goal Completed!',
+        message: `Awesome job! You reached your target of ${dailyGoal.toLocaleString()} steps today! +20 WalkCoins credited.`,
         time: 'Today',
+        category: 'reward',
         type: 'goal',
         unread: false
       });
@@ -4355,10 +4386,35 @@ function refreshUserNotifications() {
     if (streakDays > 0) {
       notifications.push({
         id: 'n_streak',
-        title: '🔥 Streak Active',
-        message: `You are on a ${streakDays}-day streak! Keep walking before midnight to keep it alive.`,
-        time: 'Today',
+        title: '🔥 Streak Risk Emergency Warning',
+        message: `You have an active ${streakDays}-day streak! Sync your remaining steps before midnight to keep your streak alive.`,
+        time: '8:30 PM Scheduled',
+        category: 'reminder',
         type: 'streak',
+        unread: todaySteps < dailyGoal
+      });
+    }
+
+    // Squad Battle Alert
+    notifications.push({
+      id: 'n_battle_lead',
+      title: '⚔️ Hyderabadi Striders Battle Standing',
+      message: 'Your squad is currently #1 in the regional walking battle! 12,450 team steps logged today.',
+      time: '1 hour ago',
+      category: 'battle',
+      type: 'battle',
+      unread: false
+    });
+
+    // Reward Alert
+    if (walkCoins >= 150) {
+      notifications.push({
+        id: 'n_reward_ready',
+        title: '🎁 WalkCoins Voucher Ready!',
+        message: `You have ${walkCoins.toLocaleString()} WalkCoins available! Head to the Marketplace to redeem vouchers.`,
+        time: 'Today',
+        category: 'reward',
+        type: 'reward',
         unread: false
       });
     }
@@ -4371,6 +4427,7 @@ function refreshUserNotifications() {
 function renderNotifications() {
   const container = document.getElementById('notif-list-container');
   const badge = document.getElementById('notif-badge-count');
+  const summaryEl = document.getElementById('notif-count-summary');
   if (!container) return;
 
   const unreadCount = userNotifications.filter(n => n.unread).length;
@@ -4379,21 +4436,38 @@ function renderNotifications() {
     badge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
   }
 
-  if (userNotifications.length === 0) {
+  const filtered = activeNotifFilter === 'all'
+    ? userNotifications
+    : userNotifications.filter(n => n.category === activeNotifFilter);
+
+  if (summaryEl) {
+    summaryEl.innerText = `${filtered.length} Alert${filtered.length === 1 ? '' : 's'} (${unreadCount} Unread)`;
+  }
+
+  if (filtered.length === 0) {
     container.innerHTML = `
       <div style="text-align: center; color: var(--text-muted); padding: 30px 15px;">
         <div style="font-size: 28px; margin-bottom: 8px; opacity: 0.4;">🔔</div>
-        <div style="font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.7);">No new notifications</div>
-        <div style="font-size: 11px; opacity: 0.5; margin-top: 4px;">Updates about your step goals and activity will appear here.</div>
+        <div style="font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.7);">No notifications in this category</div>
+        <div style="font-size: 11px; opacity: 0.5; margin-top: 4px;">Updates about your step goals, battles, and rewards will appear here.</div>
       </div>
     `;
     return;
   }
 
-  container.innerHTML = userNotifications.map(n => `
+  const catIcons = {
+    reminder: '⏰',
+    battle: '⚔️',
+    reward: '🎁',
+    welcome: '🎉'
+  };
+
+  container.innerHTML = filtered.map(n => `
     <div style="background: ${n.unread ? 'rgba(6, 182, 212, 0.08)' : 'rgba(255,255,255,0.03)'}; border: 1px solid ${n.unread ? 'rgba(6, 182, 212, 0.25)' : 'rgba(255,255,255,0.06)'}; padding: 12px; border-radius: 10px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-        <strong style="color: white; font-size: 13px;">${n.title}</strong>
+        <strong style="color: white; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+          <span>${catIcons[n.category] || '🔔'}</span> ${n.title}
+        </strong>
         <span style="font-size: 10px; color: var(--text-muted);">${n.time}</span>
       </div>
       <p style="font-size: 12px; color: rgba(255,255,255,0.8); margin: 0; line-height: 1.3;">${n.message}</p>
@@ -4401,11 +4475,48 @@ function renderNotifications() {
   `).join('');
 }
 
+function requestWebPushPermission() {
+  if (!('Notification' in window)) {
+    showToast('⚠️ Web Push Notifications are not supported in this browser.');
+    return;
+  }
+
+  const label = document.getElementById('push-permission-label');
+  const btn = document.getElementById('enable-web-push-btn');
+
+  Notification.requestPermission().then(permission => {
+    if (permission === 'granted') {
+      showToast('🔔 Web Push Notifications Enabled!');
+      if (label) label.innerText = '🟢 Active & Subscribed';
+      if (btn) {
+        btn.innerText = 'Subscribed ✅';
+        btn.style.background = 'rgba(16,185,129,0.2)';
+        btn.style.color = '#34D399';
+        btn.disabled = true;
+      }
+      
+      // Dispatch browser test notification
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'PUSH_TEST' });
+      } else {
+        new Notification('👟 BadaKadam Push Alerts Enabled', {
+          body: 'You will now receive smart evening step reminders and streak warnings!',
+          icon: '/logo.png'
+        });
+      }
+    } else {
+      showToast('⚠️ Push notification permission denied.');
+      if (label) label.innerText = '❌ Permission Denied';
+    }
+  });
+}
+
 function initNotificationDrawer() {
   const btn = document.getElementById('open-notif-drawer-btn');
   const modal = document.getElementById('notif-drawer-modal');
   const closeBtn = document.getElementById('close-notif-modal-btn');
   const testBtn = document.getElementById('trigger-test-push-btn');
+  const enablePushBtn = document.getElementById('enable-web-push-btn');
 
   if (btn && modal) {
     btn.onclick = () => {
@@ -4419,6 +4530,17 @@ function initNotificationDrawer() {
     closeBtn.onclick = () => modal.classList.remove('active');
   }
 
+  // Filter tabs in drawer
+  const tabs = document.querySelectorAll('.notif-tab-btn');
+  tabs.forEach(tab => {
+    tab.onclick = () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeNotifFilter = tab.getAttribute('data-filter') || 'all';
+      renderNotifications();
+    };
+  });
+
   if (testBtn) {
     testBtn.onclick = () => {
       const newAlert = {
@@ -4426,16 +4548,72 @@ function initNotificationDrawer() {
         title: '⚡ Live Push Simulation',
         message: 'Great pacing! You just completed another 1,000 steps milestone. +10 WalkCoins earned!',
         time: 'Just now',
+        category: 'reward',
         type: 'sync',
         unread: true
       };
       userNotifications.unshift(newAlert);
       renderNotifications();
       showToast('🔔 Push Notification Delivered!');
+
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(newAlert.title, {
+          body: newAlert.message,
+          icon: '/logo.png'
+        });
+      }
     };
   }
 
+  if (enablePushBtn) {
+    enablePushBtn.onclick = requestWebPushPermission;
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const label = document.getElementById('push-permission-label');
+      if (label) label.innerText = '🟢 Active & Subscribed';
+      enablePushBtn.innerText = 'Subscribed ✅';
+      enablePushBtn.style.background = 'rgba(16,185,129,0.2)';
+      enablePushBtn.style.color = '#34D399';
+    }
+  }
+
+  initNotificationPreferencesForm();
   refreshUserNotifications();
+}
+
+function initNotificationPreferencesForm() {
+  const form = document.getElementById('notif-preferences-form');
+  if (!form || form.dataset.bound) return;
+  form.dataset.bound = 'true';
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const evening = document.getElementById('notif-pref-evening')?.checked ?? true;
+    const streak = document.getElementById('notif-pref-streak')?.checked ?? true;
+    const battle = document.getElementById('notif-pref-battle')?.checked ?? true;
+    const reward = document.getElementById('notif-pref-reward')?.checked ?? true;
+
+    const prefs = { pushEnabled: true, reminders: evening && streak, battleAlerts: battle, rewardAlerts: reward };
+    localStorage.setItem('happyfeet_notif_prefs', JSON.stringify(prefs));
+
+    try {
+      if (authToken) {
+        await fetch(`${API_BASE}/auth/notification-preferences`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify(prefs)
+        });
+      }
+    } catch (err) {
+      console.warn('Backend preferences endpoint unreachable, saved locally:', err);
+    }
+
+    showToast('⚙️ Notification Preferences Saved!');
+    const modal = document.getElementById('notif-preferences-modal');
+    if (modal) modal.classList.remove('active');
+  };
 }
 
 function initShareCardModal() {

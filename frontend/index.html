@@ -169,6 +169,10 @@
           <span id="sse-stream-badge" style="font-size: 10px; font-weight: 800; color: #10B981; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 8px; border-radius: 12px; display: flex; align-items: center; gap: 5px;" title="Connected to Real-Time Step Broadcast Stream">
             <i class="fa-solid fa-circle-dot fa-pulse" style="font-size: 8px;"></i> LIVE STREAM
           </span>
+          <!-- CONNECTED DEVICE BADGE -->
+          <span id="connected-device-badge" style="font-size: 10px; font-weight: 800; color: #38BDF8; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); padding: 3px 8px; border-radius: 12px; display: flex; align-items: center; gap: 5px; cursor: pointer;" title="Connected Wearable Device Status. Click to manage." onclick="document.getElementById('health-sync-modal').classList.add('active')">
+            <i class="fa-solid fa-plug" style="font-size: 9px; color: #38BDF8;"></i> <span id="connected-device-name">Google Fit</span>
+          </span>
         </div>
 
         <div class="header-scroll-row">
@@ -1634,41 +1638,50 @@
       <div class="modal-body" style="display: flex; flex-direction: column; gap: 20px;">
         <!-- Provider Select Grid -->
         <div id="sync-provider-select">
-          <label style="font-weight: 700; font-size: 13px; color: white; display: block; margin-bottom: 12px;">Choose your Health Platform</label>
+          <label style="font-weight: 700; font-size: 13px; color: white; display: block; margin-bottom: 12px;">Choose your Health & Wearable Platform</label>
           <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
             <!-- Active Google Fit Web Provider Tile -->
             <div class="provider-card active" data-provider="GoogleFit" style="background: rgba(66, 133, 244, 0.12); border: 1.5px solid rgba(66, 133, 244, 0.6); padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s; box-shadow: 0 0 12px rgba(66, 133, 244, 0.2);">
               <i class="fa-brands fa-google" style="font-size: 22px; color: #4285f4;"></i>
               <div style="display: flex; flex-direction: column;">
                 <span style="font-size: 13px; font-weight: 800; color: white;">Google Fit</span>
-                <span style="font-size: 9px; color: #60A5FA; font-weight: 700;">🟢 Active (Web REST API)</span>
+                <span style="font-size: 9px; color: #60A5FA; font-weight: 700;">🟢 Active (REST API)</span>
               </div>
             </div>
             
-            <!-- Disabled Apple Health Tile -->
-            <div class="provider-card disabled-tile" data-provider="AppleHealthKit" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px; opacity: 0.45; filter: grayscale(70%); cursor: not-allowed; pointer-events: none; display: flex; align-items: center; gap: 10px;">
+            <!-- Apple HealthKit Simulator Tile -->
+            <div class="provider-card" data-provider="AppleHealthKit" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s;">
               <i class="fa-brands fa-apple" style="font-size: 24px; color: #ff2d55;"></i>
               <div style="display: flex; flex-direction: column;">
-                <span style="font-size: 13px; font-weight: 600; color: white;">Apple Health</span>
-                <span style="font-size: 9px; color: var(--text-muted); font-weight: 600;">📱 iOS Native App Only</span>
+                <span style="font-size: 13px; font-weight: 700; color: white;">Apple HealthKit</span>
+                <span style="font-size: 9px; color: #F472B6; font-weight: 700;">🍎 iOS & Web Bridge</span>
               </div>
             </div>
 
-            <!-- Disabled Fitbit Tile -->
-            <div class="provider-card disabled-tile" data-provider="Fitbit" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px; opacity: 0.45; filter: grayscale(70%); cursor: not-allowed; pointer-events: none; display: flex; align-items: center; gap: 10px;">
+            <!-- Fitbit Tracker Tile -->
+            <div class="provider-card" data-provider="Fitbit" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s;">
               <i class="fa-solid fa-heart" style="font-size: 20px; color: #00b0b9;"></i>
               <div style="display: flex; flex-direction: column;">
-                <span style="font-size: 13px; font-weight: 600; color: white;">Fitbit Tracker</span>
-                <span style="font-size: 9px; color: var(--text-muted); font-weight: 600;">🔒 Coming Soon</span>
+                <span style="font-size: 13px; font-weight: 700; color: white;">Fitbit Web API</span>
+                <span style="font-size: 9px; color: #2DD4BF; font-weight: 700;">⌚ Wearable OAuth 2.0</span>
               </div>
             </div>
 
-            <!-- Disabled Samsung Health Tile -->
-            <div class="provider-card disabled-tile" data-provider="SamsungHealth" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px; opacity: 0.45; filter: grayscale(70%); cursor: not-allowed; pointer-events: none; display: flex; align-items: center; gap: 10px;">
+            <!-- Samsung Health Tile -->
+            <div class="provider-card" data-provider="SamsungHealth" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s;">
               <i class="fa-solid fa-mobile-screen" style="font-size: 20px; color: #ff8c00;"></i>
               <div style="display: flex; flex-direction: column;">
-                <span style="font-size: 13px; font-weight: 600; color: white;">Samsung Health</span>
-                <span style="font-size: 9px; color: var(--text-muted); font-weight: 600;">🔒 Coming Soon</span>
+                <span style="font-size: 13px; font-weight: 700; color: white;">Samsung Health</span>
+                <span style="font-size: 9px; color: #F59E0B; font-weight: 700;">📲 Health Connect</span>
+              </div>
+            </div>
+
+            <!-- PWA Smartphone Motion Sensor Tile -->
+            <div class="provider-card" data-provider="PWA_MotionSensor" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s; grid-column: span 2;">
+              <i class="fa-solid fa-gauge-simple-high" style="font-size: 20px; color: #A855F7;"></i>
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-size: 13px; font-weight: 700; color: white;">Smartphone Motion Sensor (PWA Pedometer)</span>
+                <span style="font-size: 9px; color: #C084FC; font-weight: 700;">⚡ Real-Time Accelerometer Step Detection</span>
               </div>
             </div>
           </div>
@@ -1828,25 +1841,119 @@
 
   <!-- NOTIFICATION DRAWER MODAL -->
   <div class="modal-overlay" id="notif-drawer-modal">
-    <div class="modal-card" style="max-width: 480px; width: 90%; background: #0F172A; border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 24px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px;">
+    <div class="modal-card" style="max-width: 500px; width: 92%; background: #0F172A; border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 14px;">
         <div style="display: flex; align-items: center; gap: 10px;">
           <i class="fa-solid fa-bell" style="color: var(--accent-cyan); font-size: 20px;"></i>
           <h2 style="font-size: 18px; margin: 0; color: white;">Notification Center</h2>
         </div>
-        <button class="close-modal-btn" id="close-notif-modal-btn">&times;</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button id="open-notif-pref-modal-btn" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: white; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Notification Settings" onclick="document.getElementById('notif-preferences-modal').classList.add('active')">
+            <i class="fa-solid fa-gear" style="font-size: 14px;"></i>
+          </button>
+          <button class="close-modal-btn" id="close-notif-modal-btn">&times;</button>
+        </div>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div style="display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 2px;">
+        <button class="notif-tab-btn active" data-filter="all" style="padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; background: rgba(6, 182, 212, 0.15); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); cursor: pointer; white-space: nowrap;">All Alerts</button>
+        <button class="notif-tab-btn" data-filter="reminder" style="padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); cursor: pointer; white-space: nowrap;">⏰ Reminders</button>
+        <button class="notif-tab-btn" data-filter="battle" style="padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); cursor: pointer; white-space: nowrap;">⚔️ Battles</button>
+        <button class="notif-tab-btn" data-filter="reward" style="padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); cursor: pointer; white-space: nowrap;">🎁 Rewards</button>
       </div>
 
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <span style="font-size: 12px; color: var(--text-muted);">Real-time Activity & Goal Alerts</span>
+        <span style="font-size: 11px; color: var(--text-muted);" id="notif-count-summary">Smart Scheduled & Real-time Alerts</span>
         <button id="trigger-test-push-btn" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--primary-emerald); border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer;">
           ⚡ Send Test Push Alert
         </button>
       </div>
 
-      <div id="notif-list-container" style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px;">
+      <div id="notif-list-container" style="max-height: 340px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px;">
         <!-- Dynamically rendered notification items -->
       </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION PREFERENCES SETTINGS MODAL -->
+  <div class="modal-overlay" id="notif-preferences-modal">
+    <div class="modal-card" style="max-width: 440px; width: 90%; background: #0B0F19; border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-sliders" style="color: var(--accent-cyan); font-size: 20px;"></i>
+          <h2 style="font-size: 18px; margin: 0; color: white;">Notification Preferences</h2>
+        </div>
+        <button class="close-modal-btn" onclick="document.getElementById('notif-preferences-modal').classList.remove('active')">&times;</button>
+      </div>
+
+      <form id="notif-preferences-form" style="display: flex; flex-direction: column; gap: 16px;">
+        <!-- Push Permission Status Box -->
+        <div style="background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.25); padding: 12px 14px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-paper-plane" style="color: var(--accent-cyan); font-size: 18px;"></i>
+            <div>
+              <div style="font-size: 13px; font-weight: 700; color: white;">Browser Web Push</div>
+              <div style="font-size: 10px; color: var(--text-muted);" id="push-permission-label">Permission Needed</div>
+            </div>
+          </div>
+          <button type="button" id="enable-web-push-btn" style="background: var(--accent-cyan); color: #000; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer;">
+            Enable Push
+          </button>
+        </div>
+
+        <!-- Toggle Item 1: Evening Goal Reminders -->
+        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px;">
+          <div>
+            <div style="font-size: 13px; font-weight: 700; color: white;">🌆 Evening Step Catch-up Reminder</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Alert if daily step goal is < 80% completed at 6:30 PM</div>
+          </div>
+          <label class="switch-toggle" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+            <input type="checkbox" id="notif-pref-evening" checked style="opacity: 0; width: 0; height: 0;">
+            <span class="toggle-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #374151; transition: .3s; border-radius: 24px;"></span>
+          </label>
+        </div>
+
+        <!-- Toggle Item 2: Streak Emergency Warning -->
+        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px;">
+          <div>
+            <div style="font-size: 13px; font-weight: 700; color: white;">🔥 Streak Emergency Warning</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Urgent 8:30 PM alert to prevent losing active streak</div>
+          </div>
+          <label class="switch-toggle" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+            <input type="checkbox" id="notif-pref-streak" checked style="opacity: 0; width: 0; height: 0;">
+            <span class="toggle-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #374151; transition: .3s; border-radius: 24px;"></span>
+          </label>
+        </div>
+
+        <!-- Toggle Item 3: Battle Standing Updates -->
+        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px;">
+          <div>
+            <div style="font-size: 13px; font-weight: 700; color: white;">⚔️ Squad Battle Over-take Alerts</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Get notified when rival squad takes lead on leaderboard</div>
+          </div>
+          <label class="switch-toggle" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+            <input type="checkbox" id="notif-pref-battle" checked style="opacity: 0; width: 0; height: 0;">
+            <span class="toggle-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #374151; transition: .3s; border-radius: 24px;"></span>
+          </label>
+        </div>
+
+        <!-- Toggle Item 4: WalkCoins & Reward Alerts -->
+        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px;">
+          <div>
+            <div style="font-size: 13px; font-weight: 700; color: white;">🎁 WalkCoin & Voucher Milestone Alerts</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Notify when WalkCoins earned or voucher ready</div>
+          </div>
+          <label class="switch-toggle" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+            <input type="checkbox" id="notif-pref-reward" checked style="opacity: 0; width: 0; height: 0;">
+            <span class="toggle-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #374151; transition: .3s; border-radius: 24px;"></span>
+          </label>
+        </div>
+
+        <button type="submit" class="submit-btn" style="width: 100%; margin-top: 4px; background: var(--primary-emerald); color: white; border: none;">
+          <i class="fa-solid fa-check"></i> Save Preferences
+        </button>
+      </form>
     </div>
   </div>
 

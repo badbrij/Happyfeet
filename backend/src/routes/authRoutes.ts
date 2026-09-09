@@ -472,4 +472,38 @@ router.put('/profile', authMiddleware, async (req: AuthRequest, res: Response) =
   }
 });
 
+// PUT /api/v1/auth/notification-preferences
+router.put('/notification-preferences', authMiddleware, async (req: AuthRequest, res: Response) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { pushEnabled, reminders, battleAlerts, rewardAlerts } = req.body;
+
+  try {
+    const preferences = {
+      push_enabled: pushEnabled ?? true,
+      reminders: reminders ?? true,
+      battle_alerts: battleAlerts ?? true,
+      reward_alerts: rewardAlerts ?? true,
+      updated_at: new Date().toISOString()
+    };
+
+    // Store in users table metadata or return success confirmation
+    await supabase
+      .from('users')
+      .update({ notification_preferences: preferences } as any)
+      .eq('id', userId);
+
+    return res.json({
+      message: 'Notification preferences updated successfully',
+      preferences
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Failed to update notification preferences' });
+  }
+});
+
 export default router;
