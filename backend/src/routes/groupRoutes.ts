@@ -122,15 +122,21 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       const g = m.groups as any;
       if (!g) continue;
 
-      // Count members in group
-      const { count, error: countError } = await supabase
+      // Get members with user details
+      const { data: memberRows } = await supabase
         .from('group_members')
-        .select('*', { count: 'exact', head: true })
+        .select('user_id, role, users(name, alias, profile_pic)')
         .eq('group_id', g.id);
 
-      if (countError) {
-        console.error(countError);
-      }
+      const membersList = (memberRows || []).map((mb: any) => {
+        const u = mb.users as any;
+        return {
+          userId: mb.user_id,
+          role: mb.role,
+          name: u ? (u.alias || u.name) : 'Walker',
+          profilePic: u ? u.profile_pic : null,
+        };
+      });
 
       // Parse metadata from description
       const parts = (g.description || '').split(' ||METADATA|| ');
@@ -138,7 +144,6 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       let battleDuration = 'Infinite';
       let startDate = g.created_at ? g.created_at.split('T')[0] : new Date().toISOString().split('T')[0];
       let endDate: string | null = null;
-
       let groupPic = g.group_pic_url || '🏆';
 
       if (parts[1]) {
@@ -184,7 +189,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         status,
         daysRemaining,
         groupPic,
-        members: new Array(count || 0).fill({}), // Populate empty objects of proper length for frontend length check
+        members: membersList,
       });
     }
 

@@ -113,30 +113,35 @@ async function checkIsAdmin(userId: string, email?: string, phone?: string): Pro
   return false;
 }
 
-router.get('/dashboard', authMiddleware, adminRateLimiter, async (req: AuthRequest, res: Response) => {
+const requireAdmin = async (req: AuthRequest, res: Response, next: any) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized: Missing login session' });
+  }
+
+  let userRecord: { email?: string; phone?: string } | null = null;
   try {
-    const userId = req.userId;
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized: Missing login session' });
-    }
+    const { data } = await supabase
+      .from('users')
+      .select('email, phone')
+      .eq('id', userId)
+      .maybeSingle();
+    userRecord = data;
+  } catch (e) {
+    // fallback
+  }
 
-    let userRecord: { email?: string; phone?: string } | null = null;
-    try {
-      const { data } = await supabase
-        .from('users')
-        .select('email, phone')
-        .eq('id', userId)
-        .maybeSingle();
-      userRecord = data;
-    } catch (e) {
-      console.warn('Failed to fetch user record in dashboard:', e);
-    }
+  const isAdmin = await checkIsAdmin(userId, userRecord?.email, userRecord?.phone);
+  if (!isAdmin) {
+    return res.status(403).json({ error: 'Forbidden: Access restricted to whitelisted administrators only' });
+  }
+  next();
+};
 
-    const isAdmin = await checkIsAdmin(userId, userRecord?.email, userRecord?.phone);
-    if (!isAdmin) {
-      return res.status(403).json({ error: 'Forbidden: Access restricted to whitelisted administrators only' });
-    }
+router.use(authMiddleware, adminRateLimiter, requireAdmin);
 
+router.get('/dashboard', async (req: AuthRequest, res: Response) => {
+  try {
     const range = (req.query.range as string) || '30d';
     let funnelDays = 30;
     if (range === 'today') funnelDays = 1;

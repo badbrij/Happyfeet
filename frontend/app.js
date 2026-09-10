@@ -44,12 +44,18 @@ async function openWebcamCapture(targetPreviewEl, targetInputEl) {
 
   try {
     webcamStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user', width: 400, height: 400 }
+      video: { facingMode: 'user', width: { ideal: 400 }, height: { ideal: 400 } }
     });
     video.srcObject = webcamStream;
   } catch (err) {
     console.error('Webcam access error:', err);
-    showToast('❌ Camera access denied or not available.');
+    let msg = '❌ Camera access denied or not available.';
+    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+      msg = '📷 Please enable camera access in your browser settings to take a photo.';
+    } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+      msg = '📷 No camera found on your device.';
+    }
+    showToast(msg);
     modal.classList.remove('active');
   }
 }
@@ -3484,7 +3490,8 @@ function initHealthSyncSetup() {
       }
 
       if (!selectedProvider) {
-        selectedProvider = 'Apple Health';
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        selectedProvider = isAndroid ? 'Google Fit' : 'Apple Health';
       }
 
       submitBtn.setAttribute('disabled', 'true');
