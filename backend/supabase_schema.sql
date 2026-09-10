@@ -171,10 +171,16 @@ CREATE POLICY "Public coin_transactions lookup" ON public.coin_transactions FOR 
 CREATE POLICY "Public groups lookup" ON public.groups FOR ALL USING (true);
 CREATE POLICY "Public group_members lookup" ON public.group_members FOR ALL USING (true);
 
--- Seed Initial Rewards
-INSERT INTO public.rewards_marketplace (title, brand, description, cost_walk_coins, category, image_url) VALUES
-('₹250 Gift Voucher', 'Amazon', 'Applicable on any shopping order', 500, 'Voucher', 'https://img.icons8.com/color/96/amazon.png'),
-('Free Delivery Pack', 'Swiggy', '5 free deliveries on food orders', 250, 'Food', 'https://img.icons8.com/color/96/swiggy.png'),
-('20% Off Fitness Gear', 'Decathlon', 'Valid on footwear & sports gear', 400, 'Fitness', 'https://img.icons8.com/color/96/decathlon.png'),
-('Free Health Checkup', 'Apollo', 'Full body diagnostic package', 1000, 'Insurance', 'https://img.icons8.com/color/96/hospital-3.png')
-ON CONFLICT DO NOTHING;
+-- 10. PERFORMANCE & DISK IO OPTIMIZATION INDEXES
+CREATE INDEX IF NOT EXISTS idx_daily_summaries_user_date ON public.daily_summaries(user_id, date);
+CREATE INDEX IF NOT EXISTS idx_daily_steps_user_date ON public.daily_steps(user_id, date);
+CREATE INDEX IF NOT EXISTS idx_step_logs_user_timestamp ON public.step_logs(user_id, timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_step_logs_user_date ON public.step_logs(user_id, date);
+CREATE INDEX IF NOT EXISTS idx_group_members_user_id ON public.group_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_group_members_group_id ON public.group_members(group_id);
+CREATE INDEX IF NOT EXISTS idx_groups_invite_code ON public.groups(invite_code);
+CREATE INDEX IF NOT EXISTS idx_groups_owner_id ON public.groups(owner_id);
+CREATE INDEX IF NOT EXISTS idx_users_phone ON public.users(phone);
+CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
+CREATE INDEX IF NOT EXISTS idx_users_auth_id ON public.users(auth_id);
+CREATE INDEX IF NOT EXISTS idx_coin_transactions_user_id ON public.coin_transactions(user_id);
