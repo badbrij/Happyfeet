@@ -20,7 +20,6 @@ CREATE INDEX IF NOT EXISTS idx_groups_owner_id ON public.groups(owner_id);
 -- 4. INDEXES FOR USER AUTHENTICATION & LOOKUPS
 CREATE INDEX IF NOT EXISTS idx_users_phone ON public.users(phone);
 CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
-CREATE INDEX IF NOT EXISTS idx_users_auth_id ON public.users(auth_id);
 
 -- 5. INDEXES FOR COIN TRANSACTIONS
 CREATE INDEX IF NOT EXISTS idx_coin_transactions_user_id ON public.coin_transactions(user_id);
